@@ -41,7 +41,7 @@ export const Icon = React.forwardRef(
     ref: Ref<HTMLSpanElement>
   ) => {
     const iconStyle: React.CSSProperties = {
-      fontSize: "18px",
+      fontSize: "24px",
       verticalAlign: "text-bottom",
       ...style,
     };
