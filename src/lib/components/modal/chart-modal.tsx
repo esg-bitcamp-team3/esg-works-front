@@ -5,32 +5,27 @@ import {
   Button,
   Input,
   Text,
-  Image,
-  SimpleGrid,
   Flex,
   CloseButton,
   Dialog,
   Portal,
   Select,
   createListCollection,
-  NativeSelect,
   InputGroup,
   Checkbox,
 } from "@chakra-ui/react";
-import { FaPen, FaSearch, FaUsers } from "react-icons/fa";
-import { LuEarth } from "react-icons/lu";
+import { FaPen, FaSearch } from "react-icons/fa";
 import { useState } from "react";
 
 const gristandards = createListCollection({
   items: [
-    { icons: <LuEarth />, label: "Environment", value: "environment" },
-    { icons: <FaUsers />, label: "Social", value: "social" },
-    { icons: <FaUsers />, label: "Governance", value: "governance" },
+    { label: "Environment", value: "environment" },
+    { label: "Social", value: "social" },
+    { label: "Governance", value: "governance" },
   ],
 });
 
 export default function ChartModal() {
-  const [title, setTitle] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
@@ -105,7 +100,6 @@ export default function ChartModal() {
                             rounded="md"
                             justifyContent={"start"}
                           >
-                            {/* {gristandard.icons} */}
                             {gristandard.label}
                             <Select.ItemIndicator />
                           </Select.Item>

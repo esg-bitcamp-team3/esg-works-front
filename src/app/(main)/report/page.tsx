@@ -1,5 +1,5 @@
-import ChartModal from "@/components/modal/chart-modal";
-import ReportModal from "@/components/modal/document-modal";
+import ChartModal from "@/lib/components/modal/chart-modal";
+import ReportModal from "@/lib/components/modal/document-modal";
 
 const Page = () => {
 
