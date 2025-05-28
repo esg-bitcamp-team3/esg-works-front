@@ -1,10 +1,13 @@
 import { Table } from "@chakra-ui/react";
 const items = [
-  { id: 1, name: "Laptop", category: "Electronics", price: 999.99 },
-  { id: 2, name: "Coffee Maker", category: "Home Appliances", price: 49.99 },
-  { id: 3, name: "Desk Chair", category: "Furniture", price: 150.0 },
-  { id: 4, name: "Smartphone", category: "Electronics", price: 799.99 },
-  { id: 5, name: "Headphones", category: "Accessories", price: 199.99 },
+  { id: 1, name: "201-1", price: "직접적인 경제가치 발생과 분배" },
+  {
+    id: 2,
+    name: "201-2",
+    price: "기후변화에 따른 재무적 영향 및 기타 리스크와 기회",
+  },
+  { id: 3, name: "201-3", price: "확정급여형 연금 채무 및 기타 퇴직연금안 " },
+  { id: 4, name: "201-4", price: "정부 재정지원" },
 ];
 const TableContent = () => {
   return (
@@ -23,14 +26,7 @@ const TableContent = () => {
               padding={2}
               justifyContent="center"
               textAlign="center"
-            >
-              지표명
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              padding={2}
-              justifyContent="center"
-              textAlign="center"
-              width={"60%"}
+              width={"70%"}
             >
               내용
             </Table.ColumnHeader>
@@ -45,13 +41,6 @@ const TableContent = () => {
                 textAlign="center"
               >
                 {item.name}
-              </Table.Cell>
-              <Table.Cell
-                padding={2}
-                justifyContent="center"
-                textAlign="center"
-              >
-                {item.category}
               </Table.Cell>
               <Table.Cell
                 padding={2}

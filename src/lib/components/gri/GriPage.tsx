@@ -1,5 +1,12 @@
 "use client";
-import { Box, Input, Container, VStack, HStack } from "@chakra-ui/react";
+import {
+  Box,
+  Input,
+  Container,
+  VStack,
+  HStack,
+  InputGroup,
+} from "@chakra-ui/react";
 import { useState } from "react";
 import Selector from "./Selector";
 import { FaSearch } from "react-icons/fa";
@@ -39,15 +46,24 @@ const GriPage = () => {
   return (
     <Box {...CARD_STYLES} p={2} w={{ base: "100%", md: "100%" }}>
       <Container maxW="100%" py={5}>
-        <VStack spaceX={6}>
+        <VStack gap={8}>
           <HStack w="80%" gap={4} justifyContent="space-between">
             <HStack>
-              <FaSearch color="#2F6EEA" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                flex={1}
-              />
+              <InputGroup
+                startElement={
+                  <Box pl="3" display="flex" alignItems="center">
+                    <FaSearch color="#2F6EEA" />
+                  </Box>
+                }
+                alignItems="start"
+                w="lg"
+              >
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  flex={1}
+                />
+              </InputGroup>
             </HStack>
 
             <HStack>

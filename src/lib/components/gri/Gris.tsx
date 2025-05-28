@@ -51,7 +51,7 @@ const Gri = () => {
 const items = [
   {
     value: "economic",
-    title: "GRI 201",
+    title: "GRI 201: 경제성과",
     content: <TableContent />,
   },
   {

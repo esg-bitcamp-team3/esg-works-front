@@ -27,6 +27,7 @@ const Selector = ({ items, text }: Props) => {
               <Select.Indicator color="#2F6EEA" />
             </Select.IndicatorGroup>
             <Select.ValueText
+              padding={2}
               placeholder={text}
               style={{
                 fontSize: "md",
