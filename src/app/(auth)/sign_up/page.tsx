@@ -14,6 +14,7 @@ import {
   Card,
   Heading,
 } from "@chakra-ui/react";
+import { signup } from "@/lib/api/auth/auth"; // 회원가입 API 호출 함수
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function isValidEmail(email: string) {
@@ -60,24 +61,25 @@ const SignUpPage = () => {
       return;
     }
 
-    // try {
-    //   await signup({
-    //     username: id,
-    //     password: password, // 비밀번호 추가
-    //     name: username,
-    //     email: email, // 이메일 추가
-    //     phone: phonenumber // 전화번호 추가
-    //   })
-    //   toaster.success({
-    //     title: '회원 가입 성공!'
-    //   })
-    //   router.push('/login')
-    // } catch (error) {
-    //   toaster.error({
-    //     title:
-    //       error instanceof ApiError ? error.message : '알 수 없는 오류가 발생했습니다.'
-    //   })
-    // }
+    try {
+      await signup({
+        id: id,
+        password: password, // 비밀번호 추가
+        name: username,
+        email: email, // 이메일 추가
+        phoneNumber: phonenumber, // 전화번호 추가
+        corpId: corpCode, // 기업 코드 추가
+      });
+      toaster.success({
+        title: "회원 가입 성공!",
+      });
+      router.push("/login");
+    } catch (error) {
+      console.error("회원 가입 실패:", error);
+      toaster.error({
+        title: "회원 가입에 실패했습니다. 다시 시도해주세요.",
+      });
+    }
   };
 
   return (
