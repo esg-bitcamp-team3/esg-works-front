@@ -76,15 +76,15 @@ const Sidebar = () => {
             h="80px"
             w="80px"
           >
-            {/* <Image
+            <Image
               as="img"
               src="/logo-colored.png"
               alt="Logo"
               maxH="30px"
               maxW={isExpanded ? "160px" : "50px"}
-            /> */}
+            />
             {/* <ESGWorksLogo /> */}
-            <OverlappingIcons />
+            {/* <OverlappingIcons /> */}
             {isExpanded && (
               <Heading
                 ml={2}
@@ -100,6 +100,7 @@ const Sidebar = () => {
               </Heading>
             )}
           </Box>
+          <Separator size="md" color="gray" w="full" />
 
           <VStack
             alignItems={isExpanded ? "flex-start" : "center"}
@@ -161,6 +162,7 @@ const Sidebar = () => {
               justifyContent="start"
               cursor="pointer"
               w="100%"
+              h="50px"
               p={1}
               borderRadius="md"
             >
