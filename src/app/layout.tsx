@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Provider } from "@/components/ui/provider";
+import { Box } from "@chakra-ui/react/";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,12 +29,33 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning>
-      <body>
+      <body
+        style={{
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          backgroundColor: "#f472b6",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          margin: 0,
+        }}
+      >
         <link
           href="https://fonts.googleapis.com/icon?family=Material+Icons"
           rel="stylesheet"
         />
-        <Provider>{children}</Provider>
+        <div
+          style={{
+            flexGrow: 1,
+            backgroundColor: "white",
+            width: "100%",
+            maxWidth: "1280px",
+            margin: "0 auto", // ← 이걸 꼭 줘야 가로 중앙 정렬 됨
+          }}
+        >
+          <Provider>{children}</Provider>
+        </div>
       </body>
     </html>
   );
