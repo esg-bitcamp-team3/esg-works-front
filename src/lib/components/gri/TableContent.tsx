@@ -1,15 +1,18 @@
 import { Table } from "@chakra-ui/react";
-const items = [
-  { id: 1, name: "201-1", price: "직접적인 경제가치 발생과 분배" },
-  {
-    id: 2,
-    name: "201-2",
-    price: "기후변화에 따른 재무적 영향 및 기타 리스크와 기회",
-  },
-  { id: 3, name: "201-3", price: "확정급여형 연금 채무 및 기타 퇴직연금안 " },
-  { id: 4, name: "201-4", price: "정부 재정지원" },
-];
-const TableContent = () => {
+import { LuTags } from "react-icons/lu";
+import ContentDetail from "./ContentDetail";
+import subCategory from "@/lib/data/gri";
+import { useState } from "react";
+
+type SubCategoryKey = keyof typeof subCategory;
+
+interface Props {
+  no: string;
+}
+
+const TableContent = ({ no }: Props) => {
+  const category = no as SubCategoryKey;
+  // const [category, setCategory] = useState<SubCategoryKey>("201");
   return (
     <Table.ScrollArea borderWidth="1px" maxH="xl" borderRadius="md">
       <Table.Root minW={"lg"} size="lg" variant="outline" showColumnBorder>
@@ -33,27 +36,32 @@ const TableContent = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {items.map((item) => (
-            <Table.Row key={item.id}>
+          {Object.entries(subCategory[category]).map(([key, value]) => (
+            // <ContentDetail
+            //   Row={
+            <Table.Row key={key}>
               <Table.Cell
                 padding={2}
                 justifyContent="center"
                 textAlign="center"
               >
-                {item.name}
+                {no + "-" + key}
               </Table.Cell>
               <Table.Cell
                 padding={2}
                 justifyContent="center"
                 textAlign="center"
               >
-                {item.price}
+                {value}
               </Table.Cell>
             </Table.Row>
+            //     }
+            //   />
           ))}
         </Table.Body>
       </Table.Root>
     </Table.ScrollArea>
   );
 };
+
 export default TableContent;
