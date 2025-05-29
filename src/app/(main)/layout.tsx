@@ -1,11 +1,12 @@
 import Sidebar from "@/lib/components/Sidebar";
+import { Flex } from "@chakra-ui/react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div>
+    <Flex bg={"gray.100"} minHeight="100vh">
       <Sidebar />
       <main>{children}</main>
-    </div>
+    </Flex>
   );
 };
 
