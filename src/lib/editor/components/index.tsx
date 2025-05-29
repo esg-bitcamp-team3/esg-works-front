@@ -25,6 +25,7 @@ export const Button = React.forwardRef(
   ) => {
     const buttonStyle: React.CSSProperties = {
       cursor: "pointer",
+      padding: "0 5px",
       color: reversed ? (active ? "white" : "#aaa") : active ? "black" : "#ccc",
       ...style,
     };

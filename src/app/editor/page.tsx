@@ -1,10 +1,10 @@
-import RichTextExample from "@/lib/editor/example";
+import TextEditor from "@/lib/editor/TextEditor";
 
 const Page = () => {
   return (
     <div>
       <h1>Editor Page</h1>
-      <RichTextExample />
+      <TextEditor />
     </div>
   );
 };

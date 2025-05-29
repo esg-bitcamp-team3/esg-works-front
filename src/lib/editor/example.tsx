@@ -41,6 +41,7 @@ import {
   ChartOptions,
   registerables,
 } from "chart.js";
+import { Box } from "@chakra-ui/react";
 
 const HOTKEYS: Record<string, CustomTextKey> = {
   "mod+b": "bold",
@@ -98,58 +99,68 @@ const RichTextExample = () => {
   );
 
   return (
-    <Slate editor={editor} initialValue={initialValue}>
-      <Toolbar>
-        <MarkButton format="bold" icon="format_bold" />
-        <MarkButton format="italic" icon="format_italic" />
-        <MarkButton format="underline" icon="format_underlined" />
-        <MarkButton format="code" icon="code" />
-        <InsertImageButton />
-        <BlockButton format="heading-one" icon="looks_one" />
-        <BlockButton format="heading-two" icon="looks_two" />
-        <BlockButton format="block-quote" icon="format_quote" />
-        <BlockButton format="numbered-list" icon="format_list_numbered" />
-        <BlockButton format="bulleted-list" icon="format_list_bulleted" />
-        <BlockButton format="left" icon="format_align_left" />
-        <BlockButton format="center" icon="format_align_center" />
-        <BlockButton format="right" icon="format_align_right" />
-        <BlockButton format="justify" icon="format_align_justify" />
-      </Toolbar>
-      <Editable
-        renderElement={renderElement}
-        renderLeaf={renderLeaf}
-        placeholder="Enter some rich text…"
-        spellCheck
-        autoFocus
-        onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
-          for (const hotkey in HOTKEYS) {
-            if (isKeyHotkey(hotkey, event)) {
-              event.preventDefault();
-              const mark = HOTKEYS[hotkey];
-              toggleMark(editor, mark);
-            }
-          }
-
-          if (event.key === "Enter" && !event.shiftKey) {
-            const { selection } = editor;
-            if (selection) {
-              const [node] = Editor.node(editor, selection.focus.path);
-              const [parent] = Editor.parent(editor, selection.focus.path);
-              const [grandParent, grandParentPath] = Editor.above(editor, {
-                at: selection.focus.path,
-                match: (n) =>
-                  SlateElement.isElement(n) && n.type === "chart-block",
-              }) || [null, null];
-
-              // Check if we're in a chart-text element
-              if (
-                SlateElement.isElement(parent) &&
-                parent.type === "chart-text"
-              ) {
+    <Box
+      justifyContent="center"
+      width="100%"
+      height="100%"
+      direction="column"
+      borderRadius="md"
+      boxShadow={"md"}
+      padding={5}
+    >
+      <Slate editor={editor} initialValue={initialValue}>
+        <Toolbar>
+          <MarkButton format="bold" icon="format_bold" />
+          <MarkButton format="italic" icon="format_italic" />
+          <MarkButton format="underline" icon="format_underlined" />
+          <MarkButton format="code" icon="code" />
+          <InsertImageButton />
+          <BlockButton format="heading-one" icon="looks_one" />
+          <BlockButton format="heading-two" icon="looks_two" />
+          <BlockButton format="block-quote" icon="format_quote" />
+          <BlockButton format="numbered-list" icon="format_list_numbered" />
+          <BlockButton format="bulleted-list" icon="format_list_bulleted" />
+          <BlockButton format="left" icon="format_align_left" />
+          <BlockButton format="center" icon="format_align_center" />
+          <BlockButton format="right" icon="format_align_right" />
+          <BlockButton format="justify" icon="format_align_justify" />
+        </Toolbar>
+        <Editable
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+          placeholder="Enter some rich text…"
+          spellCheck
+          autoFocus
+          onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+            for (const hotkey in HOTKEYS) {
+              if (isKeyHotkey(hotkey, event)) {
                 event.preventDefault();
+                const mark = HOTKEYS[hotkey];
+                toggleMark(editor, mark);
+              }
+            }
 
-                // If we're in a chart-block and user presses Enter, exit the chart-block
-                if (grandParent) {
+            if (event.key === "Enter" && !event.shiftKey) {
+              const { selection } = editor;
+              if (selection) {
+                const [node] = Editor.node(editor, selection.focus.path);
+                const [parent] = Editor.parent(editor, selection.focus.path);
+                const [grandParent, grandParentPath] = Editor.above(editor, {
+                  at: selection.focus.path,
+                  match: (n) =>
+                    SlateElement.isElement(n) && n.type === "chart-block",
+                }) || [null, null];
+
+                // Check if we're in a paragraph inside a chart-block
+                if (
+                  SlateElement.isElement(parent) &&
+                  parent.type === "paragraph" &&
+                  grandParent &&
+                  SlateElement.isElement(grandParent) &&
+                  grandParent.type === "chart-block"
+                ) {
+                  event.preventDefault();
+
                   // Insert a new paragraph after the chart-block
                   const path = [
                     ...grandParentPath.slice(0, -1),
@@ -162,37 +173,37 @@ const RichTextExample = () => {
                   );
                   // Move selection to the new paragraph
                   Transforms.select(editor, path);
-                } else {
-                  // If not in chart-block, insert a paragraph within chart-text (fallback behavior)
-                  Editor.insertNode(editor, {
-                    type: "paragraph",
-                    children: [{ text: "" }],
-                  });
+                  return;
                 }
-                return;
               }
-            }
-          } else if (event.key === "Enter" && event.shiftKey) {
-            const { selection } = editor;
-            if (selection) {
-              const [node] = Editor.node(editor, selection.focus.path);
-              const [parent] = Editor.parent(editor, selection.focus.path);
+            } else if (event.key === "Enter" && event.shiftKey) {
+              const { selection } = editor;
+              if (selection) {
+                const [node] = Editor.node(editor, selection.focus.path);
+                const [parent] = Editor.parent(editor, selection.focus.path);
+                const [grandParent] = Editor.above(editor, {
+                  at: selection.focus.path,
+                  match: (n) =>
+                    SlateElement.isElement(n) && n.type === "chart-block",
+                }) || [null, null];
 
-              // Check if we're in a chart-text element
-              if (
-                SlateElement.isElement(parent) &&
-                parent.type === "chart-text"
-              ) {
-                event.preventDefault();
-                // Insert a newline character within the text
-                Editor.insertText(editor, "\n");
-                return;
+                // Check if we're in a paragraph inside a chart-block
+                if (
+                  SlateElement.isElement(parent) &&
+                  parent.type === "paragraph" &&
+                  grandParent
+                ) {
+                  event.preventDefault();
+                  // Insert a newline character within the text
+                  Editor.insertText(editor, "\n");
+                  return;
+                }
               }
             }
-          }
-        }}
-      />
-    </Slate>
+          }}
+        />
+      </Slate>
+    </Box>
   );
 };
 
@@ -220,7 +231,7 @@ const toggleBlock = (editor: CustomEditor, format: CustomElementFormat) => {
   } else {
     newProperties = {
       type: isActive ? "paragraph" : isList ? "list-item" : format,
-    } as Partial<SlateElement>;
+    };
   }
   Transforms.setNodes<SlateElement>(editor, newProperties);
 
@@ -320,8 +331,6 @@ const Element = (props: RenderElementProps) => {
       return <Chart {...props} />;
     case "chart-block":
       return <ChartBlock {...props} />;
-    case "chart-text":
-      return <ChartText {...props} />;
     default:
       return (
         <p style={style} {...attributes}>
@@ -401,11 +410,11 @@ const withChart = (editor: CustomEditor): CustomEditor => {
 
       // Add normalization logic if needed, but simplified to avoid type errors
       if (children.length === 0) {
-        // Add default structure if empty
+        // Add default structure if empty, using paragraphs instead of chart-text
         Transforms.insertNodes(
           editor,
           [
-            { type: "chart-text", children: [{ text: "" }] },
+            { type: "paragraph", children: [{ text: "" }] },
             {
               type: "chart",
               chartType: "bar",
@@ -413,7 +422,7 @@ const withChart = (editor: CustomEditor): CustomEditor => {
               options: {},
               children: [{ text: "" }],
             },
-            { type: "chart-text", children: [{ text: "" }] },
+            { type: "paragraph", children: [{ text: "" }] },
           ],
           { at: [...path, 0] }
         );
@@ -870,11 +879,7 @@ const initialValue: Descendant[] = [
       },
     ],
   },
-  {
-    type: "image",
-    url: "https://placehold.co/600x400",
-    children: [{ text: "" }],
-  },
+
   {
     type: "block-quote",
     children: [{ text: "A wise quote." }],
@@ -896,7 +901,7 @@ const initialValue: Descendant[] = [
     type: "chart-block",
     children: [
       {
-        type: "chart-text", // Use a special type for text sections
+        type: "paragraph", // Use a special type for text sections
         children: [
           { text: "왼쪽 설명을 입력하세요.\n여러 줄 입력이 가능합니다." },
         ],
@@ -909,10 +914,6 @@ const initialValue: Descendant[] = [
           datasets: [{ label: "Example", data: [10, 20, 30] }],
         },
         options: {},
-        children: [{ text: "" }],
-      },
-      {
-        type: "chart-text", // Use a special type for text sections
         children: [{ text: "" }],
       },
     ],

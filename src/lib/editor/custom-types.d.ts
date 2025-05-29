@@ -79,12 +79,6 @@ export type ChartElement = {
   children: EmptyText[];
 };
 
-export type ChartTextElement = {
-  type: "chart-text";
-  align?: string;
-  children: Descendant[];
-};
-
 export type ChartBlockElement = {
   type: "chart-block";
   children: Descendant[];
@@ -149,8 +143,7 @@ export type CustomElementWithAlign =
   | HeadingFiveElement
   | HeadingSixElement
   | BlockQuoteElement
-  | BulletedListElement
-  | ChartTextElement;
+  | BulletedListElement;
 
 type CustomElement =
   | BlockQuoteElement
@@ -178,7 +171,6 @@ type CustomElement =
   | VideoElement
   | CodeBlockElement
   | CodeLineElement
-  | ChartTextElement
   | ChartBlockElement
   | ChartElement;
 
