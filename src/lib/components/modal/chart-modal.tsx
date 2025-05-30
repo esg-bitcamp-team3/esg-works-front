@@ -18,7 +18,8 @@ import {
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
 import { useState } from "react";
-import ChartContent from "./ChartContent";
+import dynamic from "next/dynamic";
+const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 import TableContent from "./TableContent";
 import {
   Bar,
@@ -27,6 +28,7 @@ import {
   Radar,
   Doughnut,
 } from "react-chartjs-2";
+import { chartData } from "@/lib/components/modal/chartData";
 
 const gristandards = createListCollection({
   items: [
@@ -60,31 +62,25 @@ const chartType: ChartType[] = [
   { type: "PolarArea", label: "폴라 영역 차트", icons: FaTable },
 ];
 
-export const chartData = {
-  labels: ["2020", "2021", "2022", "2023", "2024"],
-  datasets: [
-    {
-      label: "퇴직율",
-      data: [12, 14, 13, 11, 10],
-      backgroundColor: "rgba(255, 99, 132, 0.6)",
-    },
-    {
-      label: "근속연수",
-      data: [5.2, 5.5, 5.8, 6.0, 6.3],
-      backgroundColor: "rgba(54, 162, 235, 0.6)",
-    },
-    {
-      label: "이직율",
-      data: [7, 6.5, 6.8, 6.2, 5.9],
-      backgroundColor: "rgba(255, 206, 86, 0.6)",
-    },
-  ],
-};
+interface ChartContentProps {
+  selected: string[];
+  charts: ChartType[];
+  chartData: {
+    labels: string[];
+    datasets: {
+      label: string;
+      data: number[];
+      backgroundColor: string;
+    }[];
+  };
+}
 
 export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
   const [step, setStep] = useState<1 | 2>(1);
   const [charts, setCharts] = useState<ChartType[]>(chartType);
+  // Uncomment the line below if you want to use chartData as a state
+  // const [chartType, setChartType] = useState<ChartData[] | null>(chartData);
   const [selectedTab, setSelectedTab] = useState<string | null>("chart");
 
   return (
@@ -97,7 +93,7 @@ export default function ChartModal() {
           bg="#2F6EEA"
           color="white"
           position="fixed"
-          bottom="4"
+          top="4"
           right="4"
         >
           <FaPlus />
@@ -115,9 +111,9 @@ export default function ChartModal() {
               base: "90vh",
               sm: "85vh",
               md: "75vh",
-              lg: "65vh",
+              lg: "60vh",
             }}
-            width={{ base: "95%", sm: "85%", md: "75%", lg: "60%" }}
+            width={{ base: "95%", sm: "85%", md: "60vw", lg: "40vw" }}
             maxW="100%"
             display="flex"
             transition="all 0.3s ease-in-out"
@@ -214,8 +210,8 @@ export default function ChartModal() {
                     borderWidth="1px"
                     width="100%"
                     // minHeight={{base: "50vh", md: "40vh", lg: "30vh"}}
-                    minHeight={{ base: "45vh", md: "35vh", lg: "30vh" }}
-                    maxHeight={{ base: "50vh", md: "40vh", lg: "30vh" }}
+                    minHeight={{ base: "45vh", md: "35vh", lg: "28vh" }}
+                    maxHeight={{ base: "50vh", md: "40vh", lg: "28vh" }}
                     padding="4"
                     overflowY="auto"
                   >
@@ -344,7 +340,7 @@ export default function ChartModal() {
 
                     <Tabs.ContentGroup paddingTop="4">
                       <Tabs.Content value="chart">
-                        <ChartContent selected={selected} charts={charts} />
+                        <ChartContent selected={selected} charts={charts} chartData={chartData}/>
                       </Tabs.Content>
                       <Tabs.Content value="table">
                         {/* 2번 탭 콘텐츠 */}

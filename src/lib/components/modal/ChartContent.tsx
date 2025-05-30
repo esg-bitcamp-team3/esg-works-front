@@ -11,12 +11,31 @@ import {
 
 import { useState } from "react";
 import {
-  Bar,
-  Line,
-  Pie,
-  Radar,
-  Doughnut,
-} from "react-chartjs-2";
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  RadialLinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+import { Bar, Line, Pie, Radar, Doughnut, Scatter, Bubble, PolarArea } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  RadialLinearScale,
+  Tooltip,
+  Legend
+);
 
 interface ChartContentProps {
   selected: string[];
@@ -25,10 +44,13 @@ interface ChartContentProps {
     label: string;
     icons: React.ElementType;
   }[];
+  chartData: any; // or import the correct ChartData type if preferred
 }
 
 
-const ChartContent = ({ selected, charts }: ChartContentProps) => {
+const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
+  const [selectedChartType, setSelectedChartType] = useState<string | null>(null);
+
   return (
     <Flex
       direction={{ base: "column", md: "row" }}
@@ -58,6 +80,7 @@ const ChartContent = ({ selected, charts }: ChartContentProps) => {
             key={chart.type}
             onClick={() => {
               console.log("선택된 차트:", chart.type, "데이터:", selected);
+              setSelectedChartType(chart.type);
             }}
             variant="outline"
             colorScheme="blue"
@@ -97,16 +120,10 @@ const ChartContent = ({ selected, charts }: ChartContentProps) => {
         textAlign={{ base: "left", md: "center" }}
         outline={"1px solid #E2E8F0"}
         padding={3}
+        // justifyContent='center'
+        // alignContent='center'
       >
-         {/* {selectedChartType && (
-          <Box width="100%" height="300px" mt={4}>
-            {selectedChartType === "Bar" && <Bar data={filteredChartData} />}
-            {selectedChartType === "Line" && <Line data={filteredChartData} />}
-            {selectedChartType === "Pie" && <Pie data={filteredChartData} />}
-            {selectedChartType === "Radar" && <Radar data={filteredChartData} />}
-            {selectedChartType === "Doughnut" && <Doughnut data={filteredChartData} />}
-          </Box>
-        )} */}
+
     
         <Stack direction='row'>
           <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
@@ -114,15 +131,53 @@ const ChartContent = ({ selected, charts }: ChartContentProps) => {
           </Text>
           <Text>{selected.join(", ")}</Text>
         </Stack>
-        <Text fontSize="sm" color="gray.500">
-          차트를 선택하여 해당 지표의 데이터를 시각화할 수 있습니다.
-        </Text>
-        {/* {selected.length > 0 && (
-          <Box width="100%" height="200px" mt={4} bg="gray.100" borderRadius="md" display="flex" alignItems="center" justifyContent="center">
-            <Text fontSize="md" color="gray.700">차트 예시 영역 (선택된 차트에 따라 변경됨)</Text>
+        {!selectedChartType ? (
+          <Text fontSize="sm" color="gray.500">
+            차트를 선택하여 해당 지표의 데이터를 시각화할 수 있습니다.
+          </Text>
+        ) : (
+          <Box width="100%" height="30vh" justifyContent='center' alignContent='center' mt={4}>
+            {chartData && chartData.labels && chartData.datasets ? (
+              <>
+                {(() => {
+                  const filteredData = {
+                    labels: chartData.labels,
+                    datasets: chartData.datasets.filter((ds: { label: string; }) =>
+                      selected.includes(ds.label)
+                    ),
+                  };
+
+                  if (filteredData.datasets.length === 0) {
+                    return (
+                      <Text fontSize="sm" color="red.500">
+                        선택된 지표에 해당하는 차트 데이터가 없습니다.
+                      </Text>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {selectedChartType === "Bar" && <Bar data={filteredData} />}
+                      {selectedChartType === "Line" && <Line data={filteredData} />}
+                      {selectedChartType === "Pie" && <Pie data={filteredData} />}
+                      {selectedChartType === "Radar" && <Radar data={filteredData} />}
+                      {selectedChartType === "Doughnut" && <Doughnut data={filteredData} />}
+                      {selectedChartType === "Scatter" && <Scatter data={filteredData} />}
+                      {selectedChartType === "Bubble" && <Bubble data={filteredData} />}
+                      {selectedChartType === "PolarArea" && <PolarArea data={filteredData} />}
+                    </>
+                  );
+                })()}
+              </>
+            ) : (
+              <Text fontSize="sm" color="red.500">
+                차트 데이터를 불러올 수 없습니다.
+              </Text>
+            )}
           </Box>
-        )} */}
+        )}
       </VStack>
+
     </Flex>
   );
 };
