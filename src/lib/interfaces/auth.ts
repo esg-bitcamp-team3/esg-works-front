@@ -8,17 +8,19 @@ export interface SignupForm {
 }
 
 export interface LoginForm {
-  username: string;
+  id: string;
   password: string;
+}
+export interface TokenData {
+  token: string;
 }
 
 export interface User {
   id: string;
-  username: string;
   name: string;
   email: string;
-  phone: string;
-  corpCode: string;
+  phoneNumber: string;
+  corpId: string;
 }
 
 export interface UpdateUser {

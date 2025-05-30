@@ -1,5 +1,11 @@
-import { LoginForm, SignupForm, UpdateUser, User } from "@/lib/interfaces/auth";
-import { apiClient } from "./client";
+import {
+  LoginForm,
+  SignupForm,
+  TokenData,
+  UpdateUser,
+  User,
+} from "@/lib/interfaces/auth";
+import { apiClient } from "../client";
 
 export async function signup(data: Partial<SignupForm>) {
   try {
@@ -12,7 +18,23 @@ export async function signup(data: Partial<SignupForm>) {
 
 export async function login(data: Partial<LoginForm>) {
   try {
-    const response = await apiClient.post<string>("/auth/login", data);
+    const response = await apiClient.post<TokenData>("/auth/login", data);
+    return response.data;
+  } catch (error: any) {
+    // if (error.response?.status === 401) {
+    //   handleApiError(error, "이메일 또는 비밀번호가 잘못되었습니다.");
+    // } else {
+    //   handleApiError(error, "로그인에 실패했습니다.");
+    // }
+  }
+}
+
+export async function tokenCheck() {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await apiClient.post<User>("/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data;
   } catch (error: any) {
     // if (error.response?.status === 401) {

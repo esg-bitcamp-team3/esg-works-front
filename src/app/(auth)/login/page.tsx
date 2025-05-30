@@ -14,36 +14,40 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
+import { login } from "@/lib/api/auth/auth";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState("");
+  const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async () => {
-    if (!username || !password) {
+    if (!id || !password) {
       setError("아이디와 비밀번호를 확인해주세요요.");
       return;
     }
 
-    // try {
-    //   await login({
-    //     username: username,
-    //     password: password // 비밀번호 추가
-    //   })
-    //   toaster.success({
-    //     title: '로그인 성공!'
-    //   })
-    //   // setTimeout(() => console.log('로그인 성공!'), 1000)
+    try {
+      const tokenData = await login({
+        id: id,
+        password: password, // 비밀번호 추가
+      });
+      localStorage.setItem("token", tokenData?.token ?? "");
+      toaster.success({
+        title: "로그인 성공!",
+      });
 
-    //   router.push('/dashboard')
-    // } catch (error) {
-    //   toaster.error({
-    //     title:
-    //       error instanceof ApiError ? error.message : '알 수 없는 오류가 발생했습니다.'
-    //   })
-    // }
+      // setTimeout(() => console.log('로그인 성공!'))
+      // console.log(localStorage.getItem("token"));
+
+      router.push("/main");
+    } catch (error) {
+      // toaster.error({
+      //   title:
+      //     error instanceof ApiError ? error.message : '알 수 없는 오류가 발생했습니다.'
+      // })
+    }
   };
 
   return (
@@ -92,8 +96,8 @@ const LoginPage = () => {
                 variant="outline"
                 padding={2}
                 placeholder="아이디를 입력해주세요"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={id}
+                onChange={(e) => setId(e.target.value)}
                 color="black"
                 _placeholder={{ color: "gray.400" }}
                 borderColor="grey.300"
