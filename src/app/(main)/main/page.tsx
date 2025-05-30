@@ -1,5 +1,12 @@
+import Subbar from "@/lib/components/SubBar";
+
 const Page = () => {
-  return <div></div>;
+  return (
+    <div>
+      {" "}
+      <Subbar />
+    </div>
+  );
 };
 
 export default Page;
