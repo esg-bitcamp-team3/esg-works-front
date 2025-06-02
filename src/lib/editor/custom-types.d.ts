@@ -81,6 +81,7 @@ export type ChartElement = {
 
 export type ChartBlockElement = {
   type: "chart-block";
+  layout: ChartLayout;
   children: Descendant[];
 };
 

@@ -57,6 +57,8 @@ type AlignType = (typeof TEXT_ALIGN_TYPES)[number];
 type ListType = (typeof LIST_TYPES)[number];
 type CustomElementFormat = CustomElementType | AlignType | ListType;
 
+type ChartLayout = "full" | "left" | "right" | "center";
+
 // Function to check if a keyboard event matches a hotkey
 const isKeyHotkey = (hotkey: string, event: KeyboardEvent): boolean => {
   const keys = hotkey.split("+");
@@ -101,107 +103,119 @@ const RichTextExample = () => {
   return (
     <Box
       justifyContent="center"
-      width="100%"
+      minW="100%"
       height="100%"
       direction="column"
       borderRadius="md"
       boxShadow={"md"}
-      padding={5}
+      overflow={"auto"}
     >
       <Slate editor={editor} initialValue={initialValue}>
-        <Toolbar>
-          <MarkButton format="bold" icon="format_bold" />
-          <MarkButton format="italic" icon="format_italic" />
-          <MarkButton format="underline" icon="format_underlined" />
-          <MarkButton format="code" icon="code" />
-          <InsertImageButton />
-          <BlockButton format="heading-one" icon="looks_one" />
-          <BlockButton format="heading-two" icon="looks_two" />
-          <BlockButton format="block-quote" icon="format_quote" />
-          <BlockButton format="numbered-list" icon="format_list_numbered" />
-          <BlockButton format="bulleted-list" icon="format_list_bulleted" />
-          <BlockButton format="left" icon="format_align_left" />
-          <BlockButton format="center" icon="format_align_center" />
-          <BlockButton format="right" icon="format_align_right" />
-          <BlockButton format="justify" icon="format_align_justify" />
-        </Toolbar>
-        <Editable
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          placeholder="Enter some rich text…"
-          spellCheck
-          autoFocus
-          onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
-            for (const hotkey in HOTKEYS) {
-              if (isKeyHotkey(hotkey, event)) {
-                event.preventDefault();
-                const mark = HOTKEYS[hotkey];
-                toggleMark(editor, mark);
-              }
-            }
-
-            if (event.key === "Enter" && !event.shiftKey) {
-              const { selection } = editor;
-              if (selection) {
-                const [node] = Editor.node(editor, selection.focus.path);
-                const [parent] = Editor.parent(editor, selection.focus.path);
-                const [grandParent, grandParentPath] = Editor.above(editor, {
-                  at: selection.focus.path,
-                  match: (n) =>
-                    SlateElement.isElement(n) && n.type === "chart-block",
-                }) || [null, null];
-
-                // Check if we're in a paragraph inside a chart-block
-                if (
-                  SlateElement.isElement(parent) &&
-                  parent.type === "paragraph" &&
-                  grandParent &&
-                  SlateElement.isElement(grandParent) &&
-                  grandParent.type === "chart-block"
-                ) {
+        <Box position="sticky" top={0} zIndex={10} bg="white" px={5} pt={5}>
+          <Toolbar>
+            <MarkButton format="bold" icon="format_bold" />
+            <MarkButton format="italic" icon="format_italic" />
+            <MarkButton format="underline" icon="format_underlined" />
+            <MarkButton format="code" icon="code" />
+            <InsertImageButton />
+            <BlockButton format="heading-one" icon="looks_one" />
+            <BlockButton format="heading-two" icon="looks_two" />
+            <BlockButton format="block-quote" icon="format_quote" />
+            <BlockButton format="numbered-list" icon="format_list_numbered" />
+            <BlockButton format="bulleted-list" icon="format_list_bulleted" />
+            <BlockButton format="left" icon="format_align_left" />
+            <BlockButton format="center" icon="format_align_center" />
+            <BlockButton format="right" icon="format_align_right" />
+            <BlockButton format="justify" icon="format_align_justify" />
+            <ChartLayoutButton layout="full" icon="crop_7_5" />
+            <ChartLayoutButton layout="right" icon="vertical_split" />
+            <ChartLayoutButton
+              layout="left"
+              icon="vertical_split"
+              flipped={true}
+            />
+            <ChartLayoutButton layout="center" icon="view_week" />
+          </Toolbar>
+        </Box>
+        <Box p={5}>
+          <Editable
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            placeholder="Enter some rich text…"
+            spellCheck
+            autoFocus
+            onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+              for (const hotkey in HOTKEYS) {
+                if (isKeyHotkey(hotkey, event)) {
                   event.preventDefault();
-
-                  // Insert a new paragraph after the chart-block
-                  const path = [
-                    ...grandParentPath.slice(0, -1),
-                    grandParentPath[grandParentPath.length - 1] + 1,
-                  ];
-                  Transforms.insertNodes(
-                    editor,
-                    { type: "paragraph", children: [{ text: "" }] },
-                    { at: path }
-                  );
-                  // Move selection to the new paragraph
-                  Transforms.select(editor, path);
-                  return;
+                  const mark = HOTKEYS[hotkey];
+                  toggleMark(editor, mark);
                 }
               }
-            } else if (event.key === "Enter" && event.shiftKey) {
-              const { selection } = editor;
-              if (selection) {
-                const [node] = Editor.node(editor, selection.focus.path);
-                const [parent] = Editor.parent(editor, selection.focus.path);
-                const [grandParent] = Editor.above(editor, {
-                  at: selection.focus.path,
-                  match: (n) =>
-                    SlateElement.isElement(n) && n.type === "chart-block",
-                }) || [null, null];
 
-                // Check if we're in a paragraph inside a chart-block
-                if (
-                  SlateElement.isElement(parent) &&
-                  parent.type === "paragraph" &&
-                  grandParent
-                ) {
-                  event.preventDefault();
-                  // Insert a newline character within the text
-                  Editor.insertText(editor, "\n");
-                  return;
+              if (event.key === "Enter" && !event.shiftKey) {
+                const { selection } = editor;
+                if (selection) {
+                  const [node] = Editor.node(editor, selection.focus.path);
+                  const [parent] = Editor.parent(editor, selection.focus.path);
+                  const [grandParent, grandParentPath] = Editor.above(editor, {
+                    at: selection.focus.path,
+                    match: (n) =>
+                      SlateElement.isElement(n) && n.type === "chart-block",
+                  }) || [null, null];
+
+                  // Check if we're in a paragraph inside a chart-block
+                  if (
+                    SlateElement.isElement(parent) &&
+                    parent.type !== "chart" &&
+                    grandParent &&
+                    SlateElement.isElement(grandParent) &&
+                    grandParent.type === "chart-block"
+                  ) {
+                    event.preventDefault();
+
+                    // Insert a new paragraph after the chart-block
+                    const path = [
+                      ...grandParentPath.slice(0, -1),
+                      grandParentPath[grandParentPath.length - 1] + 1,
+                    ];
+                    Transforms.insertNodes(
+                      editor,
+                      { type: "paragraph", children: [{ text: "" }] },
+                      { at: path }
+                    );
+                    // Move selection to the new paragraph
+                    Transforms.select(editor, path);
+                    return;
+                  }
+                }
+              } else if (event.key === "Enter" && event.shiftKey) {
+                const { selection } = editor;
+                if (selection) {
+                  const [node] = Editor.node(editor, selection.focus.path);
+                  const [parent] = Editor.parent(editor, selection.focus.path);
+                  const [grandParent] = Editor.above(editor, {
+                    at: selection.focus.path,
+                    match: (n) =>
+                      SlateElement.isElement(n) && n.type === "chart-block",
+                  }) || [null, null];
+
+                  // Check if we're in a paragraph inside a chart-block
+                  if (
+                    SlateElement.isElement(parent) &&
+                    parent.type !== "chart" &&
+                    grandParent
+                  ) {
+                    event.preventDefault();
+                    // Insert a newline character within the text
+                    Editor.insertText(editor, "\n");
+                    return;
+                  }
                 }
               }
-            }
-          }}
-        />
+            }}
+          />
+        </Box>
       </Slate>
     </Box>
   );
@@ -214,6 +228,65 @@ const toggleBlock = (editor: CustomEditor, format: CustomElementFormat) => {
     isAlignType(format) ? "align" : "type"
   );
   const isList = isListType(format);
+
+  // Check if we're in a chart-block
+  const { selection } = editor;
+  if (!selection) return;
+
+  // Find if we're inside a chart-block
+  const [chartBlockEntry] = Editor.nodes(editor, {
+    at: selection,
+    match: (n) => SlateElement.isElement(n) && n.type === "chart-block",
+  }) || [null, null];
+
+  const isInChartBlock = !!chartBlockEntry;
+
+  // Special handling for chart-block paragraphs
+  if (isInChartBlock) {
+    // Get the current node (paragraph)
+    const [currentNode, currentPath] = Editor.above(editor, {
+      match: (n) =>
+        SlateElement.isElement(n) &&
+        n.type !== "chart-block" &&
+        n.type !== "chart",
+    }) || [null, null];
+
+    if (currentNode && currentPath) {
+      if (isAlignType(format)) {
+        // For alignment, simply set the align property
+        Transforms.setNodes(
+          editor,
+          { align: isActive ? undefined : format },
+          { at: currentPath }
+        );
+      } else if (!isList) {
+        // For non-list block types (headings, quotes, etc.)
+        Transforms.setNodes(
+          editor,
+          { type: isActive ? "paragraph" : format },
+          { at: currentPath }
+        );
+      } else {
+        // For list items, we need special handling
+        // First convert to list-item
+        Transforms.setNodes(
+          editor,
+          { type: isActive ? "paragraph" : "list-item" },
+          { at: currentPath }
+        );
+
+        if (!isActive) {
+          // Wrap in appropriate list type
+          Transforms.wrapNodes(
+            editor,
+            { type: format, children: [] },
+            { at: currentPath }
+          );
+        }
+      }
+      return;
+    }
+  }
 
   Transforms.unwrapNodes(editor, {
     match: (n) =>
@@ -241,6 +314,92 @@ const toggleBlock = (editor: CustomEditor, format: CustomElementFormat) => {
   }
 };
 
+const setChartLayout = (editor: CustomEditor, layout: ChartLayout) => {
+  const { selection } = editor;
+  if (!selection) return;
+
+  // Find the chart-block element (if any) that contains the current selection
+  const [chartBlock, chartBlockPath] = Editor.above(editor, {
+    at: selection,
+    match: (n) => SlateElement.isElement(n) && n.type === "chart-block",
+  }) || [null, null];
+
+  if (!chartBlock || !chartBlockPath) {
+    // No chart block found at the current selection
+    return;
+  }
+
+  // Apply the new layout to the chart-block
+  Transforms.setNodes(editor, { layout }, { at: chartBlockPath });
+
+  // Restructure the chart-block's children based on the new layout
+  const chartBlockElement = chartBlock as any; // Using any temporarily for easier restructuring
+  const currentLayout = chartBlockElement.layout;
+  const chartBlockChildren = Array.from(chartBlockElement.children);
+
+  // Find chart element index
+  const chartIndex = chartBlockChildren.findIndex(
+    (child) => SlateElement.isElement(child) && child.type === "chart"
+  );
+
+  if (chartIndex === -1) return; // No chart found
+
+  const paragraphs = chartBlockChildren.filter(
+    (child, idx) =>
+      idx !== chartIndex &&
+      SlateElement.isElement(child) &&
+      child.type === "paragraph"
+  );
+
+  // Create default paragraph if needed
+  const defaultParagraph = {
+    type: "paragraph",
+    children: [{ text: "Example" }],
+  };
+
+  // Create new children array based on layout
+  let newChildren: any[] = [];
+
+  switch (layout) {
+    case "full":
+      newChildren = [chartBlockChildren[chartIndex]];
+      break;
+    case "left":
+      newChildren = [
+        chartBlockChildren[chartIndex],
+        paragraphs[0] || defaultParagraph,
+      ];
+      break;
+    case "right":
+      newChildren = [
+        paragraphs[0] || defaultParagraph,
+        chartBlockChildren[chartIndex],
+      ];
+      break;
+    case "center":
+      newChildren = [
+        paragraphs[0] || defaultParagraph,
+        chartBlockChildren[chartIndex],
+        paragraphs[1] || defaultParagraph,
+      ];
+      break;
+  }
+
+  // Remove the old chart block
+  Transforms.removeNodes(editor, { at: chartBlockPath });
+
+  // Insert the new chart block with the updated children
+  Transforms.insertNodes(
+    editor,
+    {
+      ...chartBlockElement,
+      layout,
+      children: newChildren,
+    },
+    { at: chartBlockPath }
+  );
+};
+
 const toggleMark = (editor: CustomEditor, format: CustomTextKey) => {
   const isActive = isMarkActive(editor, format);
 
@@ -251,6 +410,20 @@ const toggleMark = (editor: CustomEditor, format: CustomTextKey) => {
   }
 };
 
+const isChartBlockActive = (editor: CustomEditor) => {
+  const { selection } = editor;
+  if (!selection) return false;
+
+  const [match] = Array.from(
+    Editor.nodes(editor, {
+      at: selection,
+      match: (n) => SlateElement.isElement(n) && n.type === "chart-block",
+    })
+  );
+
+  return !!match;
+};
+
 const isBlockActive = (
   editor: CustomEditor,
   format: CustomElementFormat,
@@ -259,20 +432,19 @@ const isBlockActive = (
   const { selection } = editor;
   if (!selection) return false;
 
-  const [match] = Array.from(
-    Editor.nodes(editor, {
-      at: Editor.unhangRange(editor, selection),
-      match: (n) => {
-        if (!Editor.isEditor(n) && SlateElement.isElement(n)) {
-          if (blockType === "align" && isAlignElement(n)) {
-            return n.align === format;
-          }
-          return n.type === format;
+  const [match] = Editor.nodes(editor, {
+    at: selection,
+    match: (n) => {
+      if (!Editor.isEditor(n) && SlateElement.isElement(n)) {
+        if (blockType === "align" && isAlignElement(n)) {
+          return n.align === format;
         }
-        return false;
-      },
-    })
-  );
+        return n.type === format;
+      }
+      return false;
+    },
+    mode: "lowest", // Get the deepest matching node
+  });
 
   return !!match;
 };
@@ -507,6 +679,49 @@ const InsertImageButton = () => {
   );
 };
 
+interface ChartLayoutButtonProps {
+  layout: ChartLayout;
+  icon: string;
+  flipped?: boolean;
+}
+
+const ChartLayoutButton = ({
+  layout,
+  icon,
+  flipped,
+}: ChartLayoutButtonProps) => {
+  const editor = useSlate();
+
+  // Check if the current chart-block has the specified layout
+  const isLayoutActive = () => {
+    const { selection } = editor;
+    if (!selection) return false;
+
+    const [chartBlock] = Array.from(
+      Editor.nodes(editor, {
+        at: selection,
+        match: (n) => SlateElement.isElement(n) && n.type === "chart-block",
+      })
+    );
+
+    if (!chartBlock) return false;
+
+    return (chartBlock[0] as any).layout === layout;
+  };
+
+  return (
+    <Button
+      active={isChartBlockActive(editor) && isLayoutActive()}
+      onMouseDown={(event: MouseEvent<HTMLSpanElement>) => {
+        event.preventDefault();
+        setChartLayout(editor, layout);
+      }}
+    >
+      <Icon flipped={flipped ? "true" : undefined}>{icon}</Icon>
+    </Button>
+  );
+};
+
 const isImageUrl = (url: string): boolean => {
   if (!url) return false;
   // if (!isUrl(url)) return false
@@ -603,6 +818,58 @@ const Chart = ({
   const [startY, setStartY] = React.useState(0);
   const [startWidth, setStartWidth] = React.useState(0);
   const [startHeight, setStartHeight] = React.useState(0);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const chartInstanceRef = React.useRef<ChartJS | null>(null);
+
+  // Create a memoized and safe version of the chart data
+  const safeChartData = React.useMemo(() => {
+    // Create deep clone of data to avoid reference issues
+    return {
+      labels: [...(data?.labels || ["A", "B", "C"])],
+      datasets: (
+        data?.datasets || [{ label: "Example", data: [10, 20, 30] }]
+      ).map((dataset: { label?: string; data?: number[] }) => ({
+        ...dataset,
+        data: [...(dataset.data || [])],
+      })),
+    };
+  }, [data]);
+
+  // Add cleanup for Chart.js instances
+  React.useEffect(() => {
+    if (canvasRef.current) {
+      // Destroy previous instance if it exists
+      if (chartInstanceRef.current) {
+        try {
+          chartInstanceRef.current.destroy();
+        } catch (e) {
+          console.warn("Error destroying chart:", e);
+        }
+        chartInstanceRef.current = null;
+      }
+
+      // Create new chart instance
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) {
+        chartInstanceRef.current = new ChartJS(ctx, {
+          type: chartType,
+          data: safeChartData,
+          options: { ...options, maintainAspectRatio: false, responsive: true },
+        });
+      }
+    }
+
+    return () => {
+      if (chartInstanceRef.current) {
+        try {
+          chartInstanceRef.current.destroy();
+        } catch (e) {
+          console.warn("Error destroying chart during cleanup:", e);
+        }
+        chartInstanceRef.current = null;
+      }
+    };
+  }, [safeChartData, chartType, options]);
 
   const onMouseDown = (e: globalThis.MouseEvent) => {
     console.log("Resize started");
@@ -689,16 +956,16 @@ const Chart = ({
         <div style={{ width: "100%", height: "100%", padding: "8px" }}>
           <ChartJSComponent
             type={chartType}
-            data={
-              data || {
-                labels: ["A", "B", "C"],
-                datasets: [{ label: "Example", data: [10, 20, 30] }],
-              }
-            }
+            data={safeChartData}
             options={{
               ...options,
               maintainAspectRatio: false,
               responsive: true,
+            }}
+            ref={(chartInstance) => {
+              if (chartInstance) {
+                chartInstanceRef.current = chartInstance;
+              }
             }}
           />
         </div>
@@ -755,20 +1022,114 @@ const Chart = ({
 //   );
 // };
 
-const ChartBlock = ({ attributes, children }: RenderElementProps) => {
+const ChartBlock = ({ attributes, children, element }: RenderElementProps) => {
+  const layout = (element as any).layout || "full";
+
+  // Base container styles
+  let containerStyle: React.CSSProperties = {
+    display: "flex",
+    gap: "16px",
+    width: "100%",
+    minHeight: "200px",
+    marginBottom: "24px",
+  };
+
+  // Create styles for different layout types
+  switch (layout) {
+    case "full":
+      containerStyle.flexDirection = "column";
+      containerStyle.alignItems = "center";
+      break;
+
+    case "left":
+      containerStyle.flexDirection = "row";
+      containerStyle.justifyContent = "space-between";
+      containerStyle.alignItems = "flex-start";
+      break;
+
+    case "right":
+      containerStyle.flexDirection = "row";
+      containerStyle.justifyContent = "space-between";
+      containerStyle.alignItems = "flex-start";
+      break;
+
+    case "center":
+      containerStyle.flexDirection = "row";
+      containerStyle.justifyContent = "space-between";
+      containerStyle.alignItems = "center";
+      break;
+  }
+
+  // Wrap children with appropriate styling based on layout
+  const wrappedChildren = React.Children.map(children, (child, index) => {
+    let childStyle: React.CSSProperties = {};
+
+    if (layout === "right") {
+      // First child in right layout (text) - start from center
+      if (index === 0) {
+        childStyle = { flex: 1, maxWidth: "50%" };
+      } else {
+        // Chart in right layout
+        childStyle = {
+          flex: 2,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "50%",
+        };
+      }
+    } else if (layout === "left") {
+      // First child in left layout (text) - start from center
+      if (index === 1) {
+        childStyle = {
+          flex: 1,
+          width: "50%",
+        };
+      } else {
+        // Chart in left layout
+        childStyle = {
+          flex: 2,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "50%",
+          maxWidth: "50%",
+        };
+      }
+    } else if (layout === "center") {
+      if (index === 0) {
+        // Left text
+        childStyle = { flex: 1 };
+      } else if (index === 2) {
+        // Right text - start from center
+        childStyle = {
+          flex: 1,
+        };
+      } else {
+        // Chart in center
+        childStyle = {
+          flex: 2,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "50%",
+        };
+      }
+    } else {
+      // Default flex for other cases
+      childStyle = { flex: 1 };
+    }
+
+    return (
+      <div key={`chart-block-child-${index}`} style={childStyle}>
+        {child}
+      </div>
+    );
+  });
+
   return (
-    <div
-      {...attributes}
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "16px",
-        width: "100%",
-        minHeight: "200px",
-        marginBottom: "24px",
-      }}
-    >
-      {children}
+    <div {...attributes} style={containerStyle}>
+      {wrappedChildren}
     </div>
   );
 };
@@ -899,13 +1260,8 @@ const initialValue: Descendant[] = [
   },
   {
     type: "chart-block",
+    layout: "center", // Set default layout
     children: [
-      {
-        type: "paragraph", // Use a special type for text sections
-        children: [
-          { text: "왼쪽 설명을 입력하세요.\n여러 줄 입력이 가능합니다." },
-        ],
-      },
       {
         type: "chart",
         chartType: "bar",

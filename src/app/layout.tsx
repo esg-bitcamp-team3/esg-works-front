@@ -34,7 +34,7 @@ export default function RootLayout({
           width: "100vw",
           height: "100vh",
           display: "flex",
-          backgroundColor: "#f472b6",
+          backgroundColor: "white",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
@@ -45,15 +45,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/icon?family=Material+Icons"
           rel="stylesheet"
         />
-        <div
-          style={{
-            flexGrow: 1,
-            backgroundColor: "white",
-            width: "100%",
-            maxWidth: "1280px",
-            margin: "0 auto", // ← 이걸 꼭 줘야 가로 중앙 정렬 됨
-          }}
-        >
+        <div>
           <Provider>{children}</Provider>
         </div>
       </body>

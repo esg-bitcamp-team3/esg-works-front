@@ -38,12 +38,17 @@ export const Button = React.forwardRef(
 
 export const Icon = React.forwardRef(
   (
-    { className, style, ...props }: PropsWithChildren<BaseProps>,
+    {
+      className,
+      style,
+      ...props
+    }: PropsWithChildren<BaseProps> & { flipped?: boolean },
     ref: Ref<HTMLSpanElement>
   ) => {
     const iconStyle: React.CSSProperties = {
       fontSize: "24px",
       verticalAlign: "text-bottom",
+      ...(props.flipped ? { transform: "scaleX(-1)" } : {}),
       ...style,
     };
 
