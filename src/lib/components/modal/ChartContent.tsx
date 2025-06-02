@@ -51,8 +51,6 @@ ChartJS.register(
 import { getEsgData } from "@/lib/api/get";
 import { ChartContentProps } from "@/lib/api/interfaces/chart";
 
-
-
 const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   const [chartData, setChartData] = useState<any>(null); // or import the correct ChartData type if preferred
   const [selectedChartType, setSelectedChartType] = useState<string | null>(
@@ -167,7 +165,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         // alignContent='center'
       >
         <Stack direction="row">
-          <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
+          <Text fontSize="lg" fontWeight="bold" color="#2F6EEA" >
             선택된 지표:
           </Text>
           <Text>{selected.join(", ")}</Text>
