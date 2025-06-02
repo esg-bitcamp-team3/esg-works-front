@@ -29,22 +29,22 @@ const items = [
   {
     icon: <TfiPieChart />,
     titleIcon: <TfiPieChart size={30} color="#2F6EEA" />,
-    title: "파이차트",
+    title: "원그래프",
   },
   {
     icon: <BsBarChartLine />,
     titleIcon: <BsBarChartLine size={30} color="#2F6EEA" />,
-    title: "바차트",
+    title: "막대그래프",
   },
   {
     icon: <RiLineChartLine />,
     titleIcon: <RiLineChartLine size={30} color="#2F6EEA" />,
-    title: "라인차트",
+    title: "꺾은선그래프",
   },
   {
     icon: <CiViewTable />,
     titleIcon: <CiViewTable size={30} color="#2F6EEA" />,
-    title: "테이블",
+    title: "표",
   },
 ];
 
@@ -54,11 +54,11 @@ const Subbar = () => {
   const canvasEl = useRef(null);
   const canvasEl1 = useRef(null);
   const canvasEl2 = useRef(null);
-
+  const [sidebarWidth, setSidebarWidth] = useState(350); // 👈 수정: 사이드바 너비 상태 추가
   const pieChartRef = useRef<Chart | null>(null);
   const barChartRef = useRef<Chart | null>(null);
   const lineChartRef = useRef<Chart | null>(null);
-
+  const DEFAULT_SIDEBAR_WIDTH = 350;
   useEffect(() => {
     if (canvasEl2.current) {
       const existing = Chart.getChart(canvasEl2.current);
@@ -140,7 +140,7 @@ const Subbar = () => {
     <>
       <Box
         position="fixed"
-        right={activeIndex !== null ? "260px" : "0px"}
+        right={activeIndex !== null ? `${sidebarWidth}px` : "0px"} // ❗사이드바 너비에 따라 이동
         top="10"
       >
         <Box
@@ -169,11 +169,20 @@ const Subbar = () => {
 
       {activeIndex !== null && (
         <Resizable
-          defaultSize={{ width: 260, height: window.innerHeight }}
-          minWidth={200}
-          maxWidth={500}
+          defaultSize={{ width: 350, height: window.innerHeight }}
+          minWidth={350}
+          maxWidth={900}
           enable={{ left: true }}
-          style={{ position: "fixed", right: 0, top: 0, zIndex: 99 }}
+          onResize={(e, dir, ref) => {
+            setSidebarWidth(ref.offsetWidth); // 실시간 반영
+          }}
+          style={{
+            position: "fixed",
+            right: 0,
+            top: 0,
+            zIndex: 99,
+            backgroundColor: "white",
+          }}
         >
           <Box
             height="100vh"
@@ -185,78 +194,128 @@ const Subbar = () => {
           >
             <HStack mb={4} justifyContent="space-between">
               <HStack>
-                {items[activeIndex].titleIcon}
-                <Text fontSize="30px" color="#2F6EEA">
-                  {items[activeIndex].title}
-                </Text>
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  gap={2}
+                >
+                  {items[activeIndex].titleIcon}
+                  <Text
+                    mb={0}
+                    fontSize="md"
+                    fontWeight="bold"
+                    color="#2F6EEA"
+                    position="relative"
+                    style={{ verticalAlign: "bottom" }}
+                  >
+                    {items[activeIndex].title}
+                  </Text>
+                </Box>
               </HStack>
-              <CloseButton onClick={() => setActiveIndex(null)} />
+              <CloseButton
+                onClick={() => {
+                  setActiveIndex(null);
+                  setSidebarWidth(DEFAULT_SIDEBAR_WIDTH); // 👈 유지보수성 굿
+                }}
+              />
             </HStack>
 
             <HStack flexDirection="column" w="100%">
               <Box
                 display="flex"
                 justifyContent="space-between"
-                alignItems="center"
                 width="100%"
                 bg="white"
                 borderRadius="md"
-                padding="3"
+                padding="0"
               >
+                {/* 전체 버튼 */}
                 <Button
                   bg="white"
-                  color="black"
-                  variant="ghost"
-                  _hover={{ bg: "gray.100" }}
+                  _hover={{ bg: "gray.100", pr: "46px" }}
                   onClick={() => setSelectedTab("all")}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  pl={12}
                 >
-                  <RxLayout /> <Text ml={2}>전체</Text>
+                  <RxLayout
+                    color={selectedTab === "all" ? "#2F6EEA" : "gray"}
+                    size="12px" // 👈 작은 화면용으로 크기 제한
+                  />
+                  <Text
+                    fontSize={{ base: "xs", md: "sm", lg: "md" }}
+                    color={selectedTab === "all" ? "#2F6EEA" : "gray"}
+                    fontWeight={selectedTab === "all" ? "bold" : "normal"}
+                  >
+                    전체
+                  </Text>
                 </Button>
+
+                {/* 즐겨찾기 버튼 */}
                 <Button
                   bg="white"
-                  color="black"
-                  variant="ghost"
-                  _hover={{ bg: "gray.100" }}
+                  _hover={{ bg: "gray.100", pl: "30px" }}
+                  gap={1} // 👈 아이콘과 텍스트 사이 간격
                   onClick={() => setSelectedTab("star")}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  pr={8}
                 >
-                  <FaRegStar /> <Text ml={2}>즐겨찾기</Text>
+                  <FaRegStar
+                    color={selectedTab === "star" ? "#2F6EEA" : "gray"}
+                    size="12px" // 👈 작은 화면용으로 크기 제한
+                  />
+                  <Text
+                    ml={2}
+                    fontSize={{ base: "xs", md: "sm", lg: "md" }}
+                    color={selectedTab === "star" ? "#2F6EEA" : "gray"}
+                    fontWeight={selectedTab === "star" ? "bold" : "normal"}
+                  >
+                    즐겨찾기
+                  </Text>
                 </Button>
-              </Box>
-              <Box width="100%" height="4px" display="flex" mt="1">
-                <Box
-                  flex="1"
-                  bg={selectedTab === "all" ? "#2F6EEA" : "gray.200"}
-                  borderBottomLeftRadius="md"
-                />
-                <Box
-                  flex="1"
-                  bg={selectedTab === "star" ? "#2F6EEA" : "gray.200"}
-                  borderBottomRightRadius="md"
-                />
               </Box>
             </HStack>
 
-            <Separator borderWidth="1px" color="black" />
+            <Box
+              width="100%"
+              height="4px"
+              display="flex"
+              mt="2"
+              borderRadius="md"
+              overflow="hidden"
+            >
+              <Box
+                flex="1"
+                bg={selectedTab === "all" ? "#2F6EEA" : "gray.200"}
+                transition="background-color 0.3s ease"
+              />
+              <Box
+                flex="1"
+                bg={selectedTab === "star" ? "#2F6EEA" : "gray.200"}
+                transition="background-color 0.3s ease"
+              />
+            </Box>
 
             <Box mt={6} flex="1" overflowY="auto">
               {activeIndex === 0 && (
                 <Flex flexDirection="column" gap={4}>
                   <Box p={4}>
-                    <Text mb={2}>파이차트</Text>
                     <canvas
                       ref={canvasEl2}
                       style={{ width: "100%", height: "100%" }}
                     />
                   </Box>
                   <Box p={4}>
-                    <Text mb={2}>바차트</Text>
                     <canvas
                       ref={canvasEl1}
                       style={{ width: "100%", height: "100%" }}
                     />
                   </Box>
                   <Box p={4}>
-                    <Text mb={2}>라인차트</Text>
                     <canvas
                       ref={canvasEl}
                       style={{ width: "100%", height: "100%" }}
@@ -266,7 +325,6 @@ const Subbar = () => {
               )}
               {activeIndex === 1 && (
                 <Box p={4}>
-                  <Text mb={2}>파이차트</Text>
                   <canvas
                     ref={canvasEl2}
                     style={{ width: "100%", height: "100%" }}
@@ -275,7 +333,6 @@ const Subbar = () => {
               )}
               {activeIndex === 2 && (
                 <Box p={4}>
-                  <Text mb={2}>바차트</Text>
                   <canvas
                     ref={canvasEl1}
                     style={{ width: "100%", height: "100%" }}
@@ -284,7 +341,6 @@ const Subbar = () => {
               )}
               {activeIndex === 3 && (
                 <Box p={4}>
-                  <Text mb={2}>라인차트</Text>
                   <canvas
                     ref={canvasEl}
                     style={{ width: "100%", height: "100%" }}
