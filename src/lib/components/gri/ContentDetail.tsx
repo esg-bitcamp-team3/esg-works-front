@@ -1,33 +1,30 @@
-import { Accordion, Flex, Heading, Icon, Stack } from "@chakra-ui/react";
+import { Accordion, Flex } from "@chakra-ui/react";
 import React from "react";
+import DynamicInputForm from "./InputForm";
+import { Category } from "@/lib/interface";
 
 interface Prop {
-  Row: React.ReactNode;
+  row: string;
+  categoriesList: Category[];
+  year: string;
 }
-const ContentDetail = ({ Row }: Prop) => {
+const ContentDetail = ({ row, categoriesList, year }: Prop) => {
   return (
     <Flex w="100%">
-      <Accordion.Root collapsible>
-        {ite.map((i) => (
-          <Accordion.Item key={i.value} value={i.value}>
-            <Accordion.ItemTrigger>{Row}</Accordion.ItemTrigger>
-            <Accordion.ItemContent>
-              <Accordion.ItemBody>{i.content}</Accordion.ItemBody>
-            </Accordion.ItemContent>
-          </Accordion.Item>
-        ))}
+      <Accordion.Root collapsible variant={"plain"}>
+        <Accordion.Item value={"content"}>
+          <Accordion.ItemTrigger p={2}>{row}</Accordion.ItemTrigger>
+          <Accordion.ItemContent>
+            <Accordion.ItemBody p={2}>
+              {categoriesList.map((category) => (
+                <DynamicInputForm category={category} year={year} />
+              ))}
+            </Accordion.ItemBody>
+          </Accordion.ItemContent>
+        </Accordion.Item>
       </Accordion.Root>
     </Flex>
   );
 };
 
 export default ContentDetail;
-
-const ite = [
-  {
-    value: "info",
-    title: "Product Info",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec odio vel dui euismod fermentum.",
-  },
-];

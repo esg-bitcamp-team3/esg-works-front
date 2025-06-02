@@ -7,10 +7,9 @@ import {
   HStack,
   InputGroup,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Selector from "./Selector";
 import { FaSearch } from "react-icons/fa";
-import TableContent from "./TableContent";
 import Gri from "./Gris";
 
 const CARD_STYLES = {
@@ -24,24 +23,13 @@ const CARD_STYLES = {
   overflow: "hidden",
 };
 
+const sectionList = ["200", "300", "400"];
+const yearList = ["2020", "2021", "2022", "2023", "2024"];
+
 const GriPage = () => {
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [year, setYear] = useState("");
-
-  const frameworks = [
-    { label: "React.js", value: "react" },
-    { label: "Vue.js", value: "vue" },
-    { label: "Angular", value: "angular" },
-    { label: "Svelte", value: "svelte" },
-  ];
-  const items = [
-    { id: 1, name: "Laptop", category: "Electronics", price: 999.99 },
-    { id: 2, name: "Coffee Maker", category: "Home Appliances", price: 49.99 },
-    { id: 3, name: "Desk Chair", category: "Furniture", price: 150.0 },
-    { id: 4, name: "Smartphone", category: "Electronics", price: 799.99 },
-    { id: 5, name: "Headphones", category: "Accessories", price: 199.99 },
-  ];
+  const [category, setCategory] = useState("300");
+  const [year, setYear] = useState("2020");
 
   return (
     <Box {...CARD_STYLES} p={2} w={{ base: "100%", md: "100%" }}>
@@ -67,13 +55,17 @@ const GriPage = () => {
             </HStack>
 
             <HStack>
-              <Selector items={frameworks} text="GRI Standards" />
-              <Selector items={frameworks} text="연도" />
+              <Selector
+                items={sectionList}
+                text="GRI Standards"
+                selected={setCategory}
+              />
+              <Selector items={yearList} text="연도" selected={setYear} />
             </HStack>
           </HStack>
 
           <Box minW="80%">
-            <Gri />
+            <Gri section={category} year={year} />
           </Box>
         </VStack>
       </Container>

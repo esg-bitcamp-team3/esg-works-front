@@ -1,62 +1,52 @@
 import { Table } from "@chakra-ui/react";
-import { LuTags } from "react-icons/lu";
 import ContentDetail from "./ContentDetail";
 import subCategory from "@/lib/data/gri";
-import { useState } from "react";
+import { Category } from "@/lib/interface";
+import { useEffect, useState } from "react";
+import { getCategoryList } from "@/lib/api/get";
 
 type SubCategoryKey = keyof typeof subCategory;
 
 interface Props {
   no: string;
+  year: string;
 }
 
-const TableContent = ({ no }: Props) => {
-  const category = no as SubCategoryKey;
-  // const [category, setCategory] = useState<SubCategoryKey>("201");
+const TableContent = ({ no, year }: Props) => {
+  const categoryNo = no as SubCategoryKey;
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dataList = await getCategoryList(no);
+        setCategoryList(dataList || []);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, [no]);
+
   return (
     <Table.ScrollArea borderWidth="1px" maxH="xl" borderRadius="md">
       <Table.Root minW={"lg"} size="lg" variant="outline" showColumnBorder>
-        <Table.Header>
-          <Table.Row bg="rgba(47, 110, 234, 0.1)">
-            <Table.ColumnHeader
-              padding={2}
-              justifyContent="center"
-              textAlign="center"
-            >
-              No.
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              padding={2}
-              justifyContent="center"
-              textAlign="center"
-              width={"70%"}
-            >
-              내용
-            </Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
         <Table.Body>
-          {Object.entries(subCategory[category]).map(([key, value]) => (
-            // <ContentDetail
-            //   Row={
+          {Object.entries(subCategory[categoryNo] || {}).map(([key, value]) => (
             <Table.Row key={key}>
               <Table.Cell
                 padding={2}
                 justifyContent="center"
                 textAlign="center"
               >
-                {no + "-" + key}
-              </Table.Cell>
-              <Table.Cell
-                padding={2}
-                justifyContent="center"
-                textAlign="center"
-              >
-                {value}
+                <ContentDetail
+                  row={value}
+                  categoriesList={categoryList.filter((category) =>
+                    category.categoryId.startsWith(no + key)
+                  )}
+                  year={year}
+                />
               </Table.Cell>
             </Table.Row>
-            //     }
-            //   />
           ))}
         </Table.Body>
       </Table.Root>

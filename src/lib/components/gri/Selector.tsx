@@ -1,22 +1,24 @@
 import { createListCollection, Flex, Portal, Select } from "@chakra-ui/react";
 
-interface Framework {
-  label: string;
-  value: string;
-}
-
 interface Props {
-  items: Framework[];
+  items: string[];
   text: string;
+  selected: (value: string) => void;
 }
 
-const Selector = ({ items, text }: Props) => {
+const Selector = ({ items, text, selected }: Props) => {
   const collection = createListCollection({ items });
   return (
     <Select.Root
       collection={collection}
       size="lg"
       defaultHighlightedValue={text}
+      onValueChange={(details) => {
+        const value = Array.isArray(details.value)
+          ? details.value[0]
+          : details.value;
+        selected(value);
+      }}
     >
       <Select.HiddenSelect />
 
@@ -43,8 +45,8 @@ const Selector = ({ items, text }: Props) => {
         <Select.Positioner>
           <Select.Content>
             {collection.items.map((framework) => (
-              <Select.Item item={framework} key={framework.value}>
-                {framework.label}
+              <Select.Item item={framework} key={framework}>
+                {framework}
               </Select.Item>
             ))}
           </Select.Content>

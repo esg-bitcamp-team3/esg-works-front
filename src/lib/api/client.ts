@@ -9,3 +9,12 @@ export const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// Add JWT token to headers if available
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token"); // or sessionStorage, as appropriate
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});

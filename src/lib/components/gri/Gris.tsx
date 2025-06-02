@@ -1,23 +1,37 @@
 import { Accordion, Box, Span, Icon } from "@chakra-ui/react";
 import { FaChevronDown } from "react-icons/fa";
 import TableContent from "./TableContent";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Section, SectionList } from "@/lib/interface";
+import { getSearchSectionId } from "@/lib/api/get";
 
-const lst: Section[] = [
-  { sectionId: "201", sectionName: "경제성과" },
-  { sectionId: "202", sectionName: "시장지위" },
-];
+interface GriProps {
+  section: string;
+  year: string;
+}
 
-const Gri = () => {
-  const [sectionList, setSectionList] = useState<SectionList>({
-    sectionNum: "200",
-    sectionList: lst,
-  });
+const Gri = ({ section, year }: GriProps) => {
+  const [sectionList, setSectionList] = useState<Section[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const searchSection = await getSearchSectionId(section);
+        setSectionList(searchSection || []);
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+    fetchData();
+  }, [section]);
+
+  useEffect(() => {
+    console.log("sectionList updated:", sectionList);
+  }, [sectionList]);
 
   return (
     <Accordion.Root collapsible width="100%">
-      {sectionList.sectionList.map((item, index) => (
+      {sectionList.map((item, index) => (
         <Accordion.Item
           key={index}
           value={item.sectionId}
@@ -52,7 +66,7 @@ const Gri = () => {
           </Accordion.ItemTrigger>
           <Accordion.ItemContent>
             <Box p={6} bg="white" borderTop="none">
-              {<TableContent no={item.sectionId} />}
+              {<TableContent no={item.sectionId} year={year} />}
             </Box>
           </Accordion.ItemContent>
         </Accordion.Item>
