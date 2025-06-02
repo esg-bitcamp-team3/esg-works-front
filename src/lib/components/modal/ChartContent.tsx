@@ -6,10 +6,12 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  useEditable,
   VStack,
 } from "@chakra-ui/react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -23,7 +25,16 @@ import {
   Legend,
 } from "chart.js";
 
-import { Bar, Line, Pie, Radar, Doughnut, Scatter, Bubble, PolarArea } from "react-chartjs-2";
+import { 
+  Bar,
+  Line,
+  Pie,
+  Radar,
+  Doughnut,
+  Scatter,
+  Bubble,
+  PolarArea,
+} from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -37,19 +48,51 @@ ChartJS.register(
   Legend
 );
 
-interface ChartContentProps {
-  selected: string[];
-  charts: {
-    type: string;
-    label: string;
-    icons: React.ElementType;
-  }[];
-  chartData: any; // or import the correct ChartData type if preferred
-}
+import { getEsgData } from "@/lib/api/get";
+import { ChartContentProps } from "@/lib/api/interfaces/chart";
 
 
-const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
-  const [selectedChartType, setSelectedChartType] = useState<string | null>(null);
+
+const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
+  const [chartData, setChartData] = useState<any>(null); // or import the correct ChartData type if preferred
+  const [selectedChartType, setSelectedChartType] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (!categoryId) return;
+
+    getEsgData(categoryId, selected)
+      .then((res) => {
+        if (!res || res.length === 0) {
+          setChartData(null);
+          return;
+        }
+
+        // year 기준으로 정렬
+        const sorted = res.sort((a: any, b: any) => a.year.localeCompare(b.year));
+        const labels = Array.from(new Set(sorted.map((d: any) => d.year)));
+
+        // categoryName별로 그룹화
+        const grouped = sorted.reduce((acc: any, cur: any) => {
+          if (!acc[cur.categoryName]) acc[cur.categoryName] = {};
+          acc[cur.categoryName][cur.year] = Number(cur.value);
+          return acc;
+        }, {});
+
+        const datasets = Object.entries(grouped).map(([label, yearMap]: [string, any]) => ({
+          label,
+          data: labels.map((year) => yearMap[year] || 0),
+          backgroundColor: "#2F6EEA",
+        }));
+
+        setChartData({ labels, datasets });
+      })
+      .catch((error) => {
+        console.error("차트 데이터 가져오기 실패:", error);
+        setChartData(null);
+      });
+  }, [categoryId, selected]);
 
   return (
     <Flex
@@ -123,9 +166,7 @@ const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
         // justifyContent='center'
         // alignContent='center'
       >
-
-    
-        <Stack direction='row'>
+        <Stack direction="row">
           <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
           </Text>
@@ -136,14 +177,20 @@ const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
             차트를 선택하여 해당 지표의 데이터를 시각화할 수 있습니다.
           </Text>
         ) : (
-          <Box width="100%" height="30vh" justifyContent='center' alignContent='center' mt={4}>
+          <Box
+            width="100%"
+            height="30vh"
+            justifyContent="center"
+            alignContent="center"
+            mt={4}
+          >
             {chartData && chartData.labels && chartData.datasets ? (
               <>
                 {(() => {
                   const filteredData = {
                     labels: chartData.labels,
-                    datasets: chartData.datasets.filter((ds: { label: string; }) =>
-                      selected.includes(ds.label)
+                    datasets: chartData.datasets.filter(
+                      (ds: { label: string }) => selected.includes(ds.label)
                     ),
                   };
 
@@ -157,14 +204,30 @@ const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
 
                   return (
                     <>
-                      {selectedChartType === "Bar" && <Bar data={filteredData} />}
-                      {selectedChartType === "Line" && <Line data={filteredData} />}
-                      {selectedChartType === "Pie" && <Pie data={filteredData} />}
-                      {selectedChartType === "Radar" && <Radar data={filteredData} />}
-                      {selectedChartType === "Doughnut" && <Doughnut data={filteredData} />}
-                      {selectedChartType === "Scatter" && <Scatter data={filteredData} />}
-                      {selectedChartType === "Bubble" && <Bubble data={filteredData} />}
-                      {selectedChartType === "PolarArea" && <PolarArea data={filteredData} />}
+                      {selectedChartType === "Bar" && (
+                        <Bar data={filteredData} />
+                      )}
+                      {selectedChartType === "Line" && (
+                        <Line data={filteredData} />
+                      )}
+                      {selectedChartType === "Pie" && (
+                        <Pie data={filteredData} />
+                      )}
+                      {selectedChartType === "Radar" && (
+                        <Radar data={filteredData} />
+                      )}
+                      {selectedChartType === "Doughnut" && (
+                        <Doughnut data={filteredData} />
+                      )}
+                      {selectedChartType === "Scatter" && (
+                        <Scatter data={filteredData} />
+                      )}
+                      {selectedChartType === "Bubble" && (
+                        <Bubble data={filteredData} />
+                      )}
+                      {selectedChartType === "PolarArea" && (
+                        <PolarArea data={filteredData} />
+                      )}
                     </>
                   );
                 })()}
@@ -177,7 +240,6 @@ const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
           </Box>
         )}
       </VStack>
-
     </Flex>
   );
 };

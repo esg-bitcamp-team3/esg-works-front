@@ -1,14 +1,26 @@
 import { Accordion, Box, Span, Icon } from "@chakra-ui/react";
 import { FaChevronDown } from "react-icons/fa";
 import TableContent from "./TableContent";
+import { useState } from "react";
+import { Section, SectionList } from "@/lib/interface";
+
+const lst: Section[] = [
+  { sectionId: "201", sectionName: "경제성과" },
+  { sectionId: "202", sectionName: "시장지위" },
+];
 
 const Gri = () => {
+  const [sectionList, setSectionList] = useState<SectionList>({
+    sectionNum: "200",
+    sectionList: lst,
+  });
+
   return (
     <Accordion.Root collapsible width="100%">
-      {items.map((item, index) => (
+      {sectionList.sectionList.map((item, index) => (
         <Accordion.Item
           key={index}
-          value={item.value}
+          value={item.sectionId}
           borderWidth="1px"
           borderColor="gray.200"
           borderRadius="lg"
@@ -28,7 +40,7 @@ const Gri = () => {
             }}
           >
             <Span flex="1" fontSize="lg" fontWeight="semibold" color="gray.700">
-              {item.title}
+              {item.sectionId + " : " + item.sectionName}
             </Span>
             <Icon
               as={FaChevronDown}
@@ -40,7 +52,7 @@ const Gri = () => {
           </Accordion.ItemTrigger>
           <Accordion.ItemContent>
             <Box p={6} bg="white" borderTop="none">
-              {item.content}
+              {<TableContent no={item.sectionId} />}
             </Box>
           </Accordion.ItemContent>
         </Accordion.Item>
@@ -48,21 +60,5 @@ const Gri = () => {
     </Accordion.Root>
   );
 };
-const items = [
-  {
-    value: "economic",
-    title: "GRI 201: 경제성과",
-    content: <TableContent />,
-  },
-  {
-    value: "environmental",
-    title: "GRI 202",
-    content: <TableContent />,
-  },
-  {
-    value: "social",
-    title: "GRI 203",
-    content: <TableContent />,
-  },
-];
+
 export default Gri;
