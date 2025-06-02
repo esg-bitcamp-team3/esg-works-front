@@ -18,3 +18,12 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  console.log("Request Interceptor: Token:", token);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});

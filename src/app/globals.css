@@ -1,42 +1,227 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+input,
+textarea {
+  font-family: "Roboto", sans-serif;
+  line-height: 1.4;
+  background: #eee;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
   margin: 0;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+p {
+  margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+pre {
+  padding: 10px;
+  background-color: #eee;
+  white-space: pre-wrap;
+}
+
+:not(pre) > code {
+  font-family: monospace;
+  background-color: #eee;
+  padding: 3px;
+}
+
+img {
+  max-width: 100%;
+  max-height: 20em;
+}
+
+blockquote {
+  border-left: 2px solid #ddd;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 10px;
+  color: #aaa;
+  font-style: italic;
+}
+
+blockquote[dir="rtl"] {
+  border-left: none;
+  padding-left: 0;
+  padding-right: 10px;
+  border-right: 2px solid #ddd;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td {
+  padding: 10px;
+  border: 2px solid #ddd;
+}
+
+input {
+  box-sizing: border-box;
+  font-size: 0.85em;
+  width: 100%;
+  padding: 0.5em;
+  border: 2px solid #ddd;
+  background: #fafafa;
+}
+
+input:focus {
+  outline: 0;
+  border-color: blue;
+}
+
+iframe {
+  width: 100%;
+  border: 1px solid #eee;
+}
+
+[data-slate-editor] > * + * {
+  margin-top: 1em;
+}
+
+.fancy {
+  background-color: rgb(218, 225, 255);
+  padding: 40px;
+  font-size: 20px;
+  min-height: 150px;
+  outline: 3px dashed rgb(0, 94, 128);
+  border-radius: 20px;
+  outline-offset: -20px;
+  white-space: pre-wrap;
+}
+
+/* Add these styles to your existing CSS file */
+
+/* Heading styles */
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+  color: #111827;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+  color: #1f2937;
+}
+
+/* Text formatting styles */
+em {
+  font-style: italic;
+  color: inherit;
+}
+
+strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+u {
+  text-decoration: underline;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+/* List styles */
+ol {
+  padding-left: 2em;
+  margin: 0.5em 0;
+  list-style-type: decimal;
+}
+
+ul {
+  padding-left: 2em;
+  margin: 0.5em 0;
+  list-style-type: disc;
+}
+
+li {
+  padding: 0.25em 0;
+  line-height: 1.5;
+}
+
+/* Nested lists */
+li > ol,
+li > ul {
+  margin: 0.25em 0;
+}
+
+/* Chart block list styling */
+[data-layout] li {
+  margin-bottom: 0.25em;
+}
+
+/* Numbered list specific styles */
+ol {
+  counter-reset: item;
+}
+
+ol li {
+  position: relative;
+  display: list-item; /* Change from 'block' to 'list-item' to show numbers */
+  list-style-position: outside; /* Ensure numbers are visible */
+}
+
+/* Remove the ::before pseudo-element that might be hiding numbers */
+ol li::before {
+  content: none; /* Remove any custom content that might override numbers */
+}
+
+/* Bulleted list specific styles */
+ul li {
+  position: relative;
+}
+
+ul li::marker {
+  color: #111827; /* Change bullet color */
+}
+
+/* Fix list item spacing inside chart blocks */
+[data-layout] ol,
+[data-layout] ul {
+  margin-top: 0;
+}
+
+/* Improve spacing in editor */
+[data-slate-editor] > * {
+  margin-bottom: 0.5em;
+}
+
+/* Style for active buttons in toolbar */
+button[data-active="true"] {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #3b82f6;
+}
+
+/* Optional toolbar enhancements */
+.slate-toolbar {
+  padding: 8px 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.slate-toolbar button {
+  margin: 0 2px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.slate-toolbar button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }

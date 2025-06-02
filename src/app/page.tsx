@@ -1,95 +1,108 @@
+import { Box, Flex } from "@chakra-ui/react";
+import Link from "next/link";
 import Image from "next/image";
-import styles from "./page.module.css";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <Flex
+      direction="column"
+      align="center"
+      height="100vh"
+      width="full"
+      padding={4}
+      spaceY={4}
+    >
+      <Flex direction="row" width="full" flexGrow={1}>
+        <Box
+          flex="1"
+          padding={4}
+          backgroundImage="linear-gradient(to right, #2196F3,rgb(0, 191, 255))"
+          alignItems="center"
+          justifyContent="center"
+          display="flex"
+          fontWeight="bold"
+          fontSize="4xl"
+          roundedLeft="lg"
+          color="white"
+        >
+          ESG Works
+        </Box>
+        <Box
+          flex="1"
+          padding={4}
+          fontSize="4xl"
+          height="100%"
+          roundedRight="lg"
+          position="relative" // 필수: next/image의 fill 사용을 위해
+        >
+          <Image
+            src="/images/swim.jpg"
+            alt="Swimming"
+            fill // 부모 Box 크기에 꽉 채움
+            style={{ objectFit: "cover", borderRadius: "0 8px 8px 0" }} // roundedRight 적용
+          />
+        </Box>
+      </Flex>
+      <Flex direction="row" width="100vw" spaceX={4} flexGrow={1}>
+        <Link href="/main">
+          <Box
+            flex="1"
+            padding={4}
+            bg="#f472b6"
+            fontSize="4xl"
+            height="100%"
+            rounded="lg"
+            width="20vw"
+            textAlign={"center"}
           >
+            MAIN
             <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              src="/images/main.png"
+              alt="Main Image"
+              width={50}
+              height={50}
             />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
+          </Box>
+        </Link>
+        <Link href="/data">
+          <Box
+            flex="1"
+            padding={4}
+            bg="#f472b6"
+            fontSize="4xl"
+            height="100%"
+            width="20vw"
+            rounded="lg"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            DATA
+            <Image
+              src="/images/data.png"
+              alt="Data Image"
+              width={50}
+              height={50}
+            />
+          </Box>
+        </Link>
+        <Link href="/report">
+          <Box
+            flex="1"
+            padding={4}
+            bg="#f472b6"
+            fontSize="4xl"
+            height="100%"
+            width="20vw"
+            rounded="lg"
+          >
+            REPORT
+            <Image
+              src="/images/paper.png"
+              alt="Report Image"
+              width={50}
+              height={50}
+            />
+          </Box>
+        </Link>
+      </Flex>
+    </Flex>
   );
 }

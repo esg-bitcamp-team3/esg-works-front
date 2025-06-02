@@ -3,7 +3,7 @@ import ContentDetail from "./ContentDetail";
 import subCategory from "@/lib/data/gri";
 import { Category } from "@/lib/interface";
 import { useEffect, useState } from "react";
-import { getCategoryList } from "@/lib/api/get";
+import { getCategories } from "@/lib/api/get";
 
 type SubCategoryKey = keyof typeof subCategory;
 
@@ -18,7 +18,7 @@ const TableContent = ({ no, year }: Props) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const dataList = await getCategoryList(no);
+        const dataList = await getCategories(no);
         setCategoryList(dataList || []);
       } catch (error) {
         console.log(error);
