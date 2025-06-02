@@ -61,10 +61,12 @@ const Sidebar = () => {
         transition="width 0.1s ease-out"
         overflow="hidden"
         boxShadow="md"
-        position="relative"
         display="flex"
         flexDirection="column"
         justifyContent="space-between"
+        position="fixed"
+        left="0"
+        top="0"
       >
         <Box>
           <Box
