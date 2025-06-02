@@ -26,7 +26,7 @@ import { chartData } from "@/lib/components/modal/chartData";
 import { it } from "node:test";
 import { Category } from "@/lib/api/interfaces/category";
 import { Section } from "@/lib/api/interfaces/section";
-import { ChartType } from "@/lib/api/interfaces/chartType";
+import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories } from "@/lib/api/get";
 
 interface Item {
@@ -133,13 +133,11 @@ export default function ChartModal() {
         <Dialog.Backdrop />
         <Dialog.Positioner>
           <Dialog.Content
-            padding={{ base: 4, md: 6 }}
-            gap={{ base: 4, md: 6 }}
             height={{
               base: "90vh",
               sm: "85vh",
               md: "75vh",
-              lg: "60vh",
+              lg: "65vh",
             }}
             width={{ base: "95%", sm: "85%", md: "60vw", lg: "40vw" }}
             maxW="100%"
