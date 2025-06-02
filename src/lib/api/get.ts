@@ -3,10 +3,11 @@ import axios from "axios";
 import { Section } from "./interfaces/section";
 import { Category } from "./interfaces/category";
 import { ESGData } from "./interfaces/esgData";
+import { apiClient } from "./client";
 
 export const getSections = async () => {
     try {
-        const res = await axios.get<Section[]>("http://localhost:8080/api/sections");
+        const res = await apiClient.get<Section[]>("/sections");
         return res.data;
     } catch (error) {
         console.error("섹션 가져오기 실패:", error);
@@ -16,7 +17,7 @@ export const getSections = async () => {
 
 export const getCategories = async (sectionId: string) => {
     try {
-        const res = await axios.get<Category[]>(`http://localhost:8080/api/categories/by-section/${sectionId}`);
+        const res = await apiClient.get<Category[]>(`/categories/by-section/${sectionId}`);
         return res.data;
     } catch (error) {
         console.error("카테고리 가져오기 실패:", error);
@@ -24,9 +25,9 @@ export const getCategories = async (sectionId: string) => {
     }
 }
 
-export const getEsgData = async (sectionId: string, categoryId: string) => {
+export const getEsgData = async (categoryId: string, selected: string[]) => {
     try {
-        const res = await axios.get<ESGData[]>(`http://localhost:8080/api/esg-data`);
+        const res = await apiClient.get<ESGData[]>(`/esg-data/category/${categoryId}`);
         return res.data;
     } catch (error) {
         console.error("ESG 데이터 가져오기 실패:", error);

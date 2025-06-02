@@ -253,7 +253,7 @@ export default function ChartModal() {
                     padding="4"
                     overflowY="auto"
                   >
-                    {categories.map((category) => (
+                    {categories.filter(category => category.categoryName !== "비고").map((category) => (
                       <Box key={category.categoryId}>
                         <Checkbox.Root
                           checked={selected.includes(category.categoryName)}
@@ -351,7 +351,7 @@ export default function ChartModal() {
                     size="lg"
                     defaultValue={selectedTab}
                     onValueChange={(e) => setSelectedTab(e.value)}
-                    height="100%"
+                    height="100%" 
                     display="flex"
                     flexDirection="column"
                   >
@@ -379,11 +379,11 @@ export default function ChartModal() {
                     </Tabs.List>
 
                     <Tabs.ContentGroup paddingTop="4">
-                      <Tabs.Content value="chart">
+                     <Tabs.Content value="chart">
                         <ChartContent
                           selected={selected}
                           charts={charts}
-                          chartData={chartData}
+                          categoryId={selectedSectionId || ''}
                         />
                       </Tabs.Content>
                       <Tabs.Content value="table">
