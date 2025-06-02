@@ -23,7 +23,16 @@ import {
   Legend,
 } from "chart.js";
 
-import { Bar, Line, Pie, Radar, Doughnut, Scatter, Bubble, PolarArea } from "react-chartjs-2";
+import {
+  Bar,
+  Line,
+  Pie,
+  Radar,
+  Doughnut,
+  Scatter,
+  Bubble,
+  PolarArea,
+} from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -47,9 +56,10 @@ interface ChartContentProps {
   chartData: any; // or import the correct ChartData type if preferred
 }
 
-
 const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
-  const [selectedChartType, setSelectedChartType] = useState<string | null>(null);
+  const [selectedChartType, setSelectedChartType] = useState<string | null>(
+    null
+  );
 
   return (
     <Flex
@@ -123,9 +133,7 @@ const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
         // justifyContent='center'
         // alignContent='center'
       >
-
-    
-        <Stack direction='row'>
+        <Stack direction="row">
           <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
           </Text>
@@ -136,14 +144,20 @@ const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
             차트를 선택하여 해당 지표의 데이터를 시각화할 수 있습니다.
           </Text>
         ) : (
-          <Box width="100%" height="30vh" justifyContent='center' alignContent='center' mt={4}>
+          <Box
+            width="100%"
+            height="30vh"
+            justifyContent="center"
+            alignContent="center"
+            mt={4}
+          >
             {chartData && chartData.labels && chartData.datasets ? (
               <>
                 {(() => {
                   const filteredData = {
                     labels: chartData.labels,
-                    datasets: chartData.datasets.filter((ds: { label: string; }) =>
-                      selected.includes(ds.label)
+                    datasets: chartData.datasets.filter(
+                      (ds: { label: string }) => selected.includes(ds.label)
                     ),
                   };
 
@@ -157,14 +171,30 @@ const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
 
                   return (
                     <>
-                      {selectedChartType === "Bar" && <Bar data={filteredData} />}
-                      {selectedChartType === "Line" && <Line data={filteredData} />}
-                      {selectedChartType === "Pie" && <Pie data={filteredData} />}
-                      {selectedChartType === "Radar" && <Radar data={filteredData} />}
-                      {selectedChartType === "Doughnut" && <Doughnut data={filteredData} />}
-                      {selectedChartType === "Scatter" && <Scatter data={filteredData} />}
-                      {selectedChartType === "Bubble" && <Bubble data={filteredData} />}
-                      {selectedChartType === "PolarArea" && <PolarArea data={filteredData} />}
+                      {selectedChartType === "Bar" && (
+                        <Bar data={filteredData} />
+                      )}
+                      {selectedChartType === "Line" && (
+                        <Line data={filteredData} />
+                      )}
+                      {selectedChartType === "Pie" && (
+                        <Pie data={filteredData} />
+                      )}
+                      {selectedChartType === "Radar" && (
+                        <Radar data={filteredData} />
+                      )}
+                      {selectedChartType === "Doughnut" && (
+                        <Doughnut data={filteredData} />
+                      )}
+                      {selectedChartType === "Scatter" && (
+                        <Scatter data={filteredData} />
+                      )}
+                      {selectedChartType === "Bubble" && (
+                        <Bubble data={filteredData} />
+                      )}
+                      {selectedChartType === "PolarArea" && (
+                        <PolarArea data={filteredData} />
+                      )}
                     </>
                   );
                 })()}
@@ -177,7 +207,6 @@ const ChartContent = ({ selected, charts, chartData }: ChartContentProps) => {
           </Box>
         )}
       </VStack>
-
     </Flex>
   );
 };

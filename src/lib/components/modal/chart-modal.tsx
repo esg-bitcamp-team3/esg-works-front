@@ -17,38 +17,23 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 import TableContent from "./TableContent";
-import {
-  Bar,
-  Line,
-  Pie,
-  Radar,
-  Doughnut,
-} from "react-chartjs-2";
+import { Bar, Line, Pie, Radar, Doughnut } from "react-chartjs-2";
 import { chartData } from "@/lib/components/modal/chartData";
-
-const gristandards = createListCollection({
-  items: [
-    { label: "Environment", value: "environment" },
-    { label: "Social", value: "social" },
-    { label: "Governance", value: "governance" },
-  ],
-});
+import { it } from "node:test";
+import { Category } from "@/lib/api/interfaces/category";
+import { Section } from "@/lib/api/interfaces/section";
+import { ChartType } from "@/lib/api/interfaces/chartType";
+import { getSections, getCategories } from "@/lib/api/get";
 
 interface Item {
   id: string;
   title: string;
   icons: React.ComponentType<any>;
   content: React.ReactNode;
-}
-
-interface ChartType {
-  type: string;
-  label: string;
-  icons: React.ComponentType<any>;
 }
 
 const chartType: ChartType[] = [
@@ -82,6 +67,49 @@ export default function ChartModal() {
   // Uncomment the line below if you want to use chartData as a state
   // const [chartType, setChartType] = useState<ChartData[] | null>(chartData);
   const [selectedTab, setSelectedTab] = useState<string | null>("chart");
+  const [sections, setSections] = useState<Section[]>([]);
+  // New states for categories and selectedSectionId
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
+    null
+  );
+
+  // Fetch sections on component mount
+  // This will run once when the component mounts
+  // and fetch the sections from the API
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        const sections = await getSections();
+        console.log("Fetched sections:", sections);
+        setSections(sections);
+      } catch (error) {
+        console.error("섹션 가져오기 실패:", error);
+        setSections([]); // Set to empty array on error
+      }
+    };
+    fetchSections();
+  }, []);
+
+  // Fetch categories when selectedSectionId changes
+  useEffect(() => {
+    if (!selectedSectionId) return;
+    const fetchCategories = async () => {
+      const data = await getCategories(selectedSectionId);
+      console.log("카테고리 응답 데이터:", data);
+      setCategories(data);
+    };
+    fetchCategories();
+  }, [selectedSectionId]);
+
+  const gristandards = createListCollection({
+    items: sections
+      .filter((sections) => sections.sectionId && sections.sectionName)
+      .map((section) => ({
+        label: section.sectionName,
+        value: section.sectionId,
+      })),
+  });
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
@@ -148,6 +176,11 @@ export default function ChartModal() {
                     {/* GRI Standards Select ============================================== */}
                     <Select.Root
                       collection={gristandards}
+                      // value={selectedSectionId ? [selectedSectionId] : undefined}
+                      // onValueChange={(detailes) => {
+                      //   console.log("선택된 섹션 ID:", detailes.value);
+                      //   setSelectedSectionId(detailes.value[0] || null);
+                      // }}
                       h="100%"
                       w="100%"
                       flex={{ base: "1", md: "1", lg: "1" }}
@@ -172,6 +205,10 @@ export default function ChartModal() {
                             <Select.Item
                               item={gristandard}
                               key={gristandard.value}
+                              onClick={() => {
+                                console.log("📌 선택된 섹션 ID:", gristandard.value);
+                                setSelectedSectionId(gristandard.value);
+                              }}
                               paddingLeft="2"
                               paddingRight="2"
                               paddingY={2}
@@ -200,6 +237,7 @@ export default function ChartModal() {
                       <Input placeholder="검색" />
                     </InputGroup>
                   </Flex>
+
                   {/* 체크박스 목록 영역 */}
                   <Box
                     flex="1"
@@ -215,36 +253,38 @@ export default function ChartModal() {
                     padding="4"
                     overflowY="auto"
                   >
-                    {[
-                      "퇴직율",
-                      "근속연수",
-                      "이직율",
-                    ].map((item, index) => (
-                      <Checkbox.Root
-                        key={index}
-                        checked={selected.includes(item)}
-                        onCheckedChange={() => {
-                          const isChecked = selected.includes(item);
-                          if (isChecked) {
-                            // Uncheck: remove tag and update state
-                            setSelected((prev) =>
-                              prev.filter((i) => i !== item)
+                    {categories.map((category) => (
+                      <Box key={category.categoryId}>
+                        <Checkbox.Root
+                          checked={selected.includes(category.categoryName)}
+                          onCheckedChange={() => {
+                            const isChecked = selected.includes(
+                              category.categoryName
                             );
-                          } else {
-                            // Check: add tag only if it's not already present
-                            setSelected((prev) => [...prev, item]);
-                          }
-                        }}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control
-                          _checked={{
-                            bg: "#2F6EEA",
-                            borderColor: "#2F6EEA",
+                            if (isChecked) {
+                              setSelected((prev) =>
+                                prev.filter((i) => i !== category.categoryName)
+                              );
+                            } else {
+                              setSelected((prev) => [
+                                ...prev,
+                                category.categoryName,
+                              ]);
+                            }
                           }}
-                        />
-                        <Checkbox.Label>{item}</Checkbox.Label>
-                      </Checkbox.Root>
+                        >
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control
+                            _checked={{
+                              bg: "#2F6EEA",
+                              borderColor: "#2F6EEA",
+                            }}
+                          />
+                          <Checkbox.Label>
+                            {category.categoryName}
+                          </Checkbox.Label>
+                        </Checkbox.Root>
+                      </Box>
                     ))}
                   </Box>
                   {/* 태그 영역 */}
@@ -255,7 +295,7 @@ export default function ChartModal() {
                     minHeight={{ base: "50px", md: "45px", lg: "30px" }}
                     maxHeight={{ base: "55px", md: "50px", lg: "65px" }}
                     gapX="2"
-                    paddingX='2'
+                    paddingX="2"
                     wrap="wrap"
                     overflowY="auto"
                   >
@@ -340,7 +380,11 @@ export default function ChartModal() {
 
                     <Tabs.ContentGroup paddingTop="4">
                       <Tabs.Content value="chart">
-                        <ChartContent selected={selected} charts={charts} chartData={chartData}/>
+                        <ChartContent
+                          selected={selected}
+                          charts={charts}
+                          chartData={chartData}
+                        />
                       </Tabs.Content>
                       <Tabs.Content value="table">
                         {/* 2번 탭 콘텐츠 */}
