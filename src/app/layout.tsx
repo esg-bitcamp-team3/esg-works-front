@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Provider } from "@/components/ui/provider";
 import ReportModal from "@/lib/components/modal/document-modal";
+import { Box } from "@chakra-ui/react/";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,11 +30,25 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning>
-      <body>
-        <Provider>
-          {children}
-          <ReportModal />
-        </Provider>
+      <body
+        style={{
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          backgroundColor: "white",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          margin: 0,
+        }}
+      >
+        <link
+          href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet"
+        />
+        <div>
+          <Provider>{children}</Provider>
+        </div>
       </body>
     </html>
   );
