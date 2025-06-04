@@ -14,9 +14,10 @@ export interface DatasetType {
   label: string;  // 카테고리 이름
   data: number[];
 }
+
 export interface ChartContentProps {
   categoryId: string[];
-  selected: string;
+  selected: string[];
   charts: {
     type: string;
     label: string;
