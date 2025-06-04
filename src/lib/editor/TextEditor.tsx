@@ -7,10 +7,11 @@ const TextEditor = () => {
       justify={"center"}
       direction="column"
       align="center"
+      width="800px"
       height="100vh"
       padding={12}
     >
-      <RichTextExample />
+      <RichTextExample documentId="683d5922e4002e992e8c754b" />
     </Flex>
   );
 };
