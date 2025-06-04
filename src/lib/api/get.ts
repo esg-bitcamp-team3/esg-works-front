@@ -24,9 +24,9 @@ export const getCategories = async (sectionId: string) => {
   }
 };
 
-export const getEsgData = async (categoryId: string, selected: string[]) => {
+export const getEsgData = async (categoryId: string) => {
   try {
-    const res = await apiClient.get<CategorizedESGDataList[]>(
+    const res = await apiClient.get<CategorizedESGDataList>(
       `/esg-data/category/${categoryId}`
     );
     console.log("보내는 categoryId:", categoryId);
