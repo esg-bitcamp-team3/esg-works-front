@@ -33,9 +33,9 @@ const GriPage = () => {
 
   return (
     <Box {...CARD_STYLES} p={2} w={{ base: "100%", md: "100%" }}>
-      <Container maxW="100%" py={5}>
+      <Container py={4}>
         <VStack gap={8}>
-          <HStack w="80%" gap={4} justifyContent="space-between">
+          <HStack w="100%" gap={4} justifyContent="space-between">
             <HStack>
               <InputGroup
                 startElement={

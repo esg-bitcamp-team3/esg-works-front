@@ -70,7 +70,7 @@ export const DynamicInputForm = ({ category, year }: Props) => {
     >
       <HStack gap={4} align="stretch" justifyContent={"space-between"}>
         <HStack>
-          <Text fontSize={"xl"} fontWeight={"bold"}>
+          <Text fontSize={"md"} fontWeight={"bold"}>
             {category.categoryName}
           </Text>
           <ToggleTip

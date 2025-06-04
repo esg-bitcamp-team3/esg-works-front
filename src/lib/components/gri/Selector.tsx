@@ -11,7 +11,7 @@ const Selector = ({ items, text, selected }: Props) => {
   return (
     <Select.Root
       collection={collection}
-      size="lg"
+      size="md"
       defaultHighlightedValue={text}
       onValueChange={(details) => {
         const value = Array.isArray(details.value)
