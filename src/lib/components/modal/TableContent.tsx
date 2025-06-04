@@ -1,139 +1,262 @@
 "use client";
 
 import {
-  ActionBar,
-  Button,
-  Checkbox,
-  Kbd,
-  Portal,
   Table,
+  Checkbox,
   IconButton,
+  ActionBar,
+  Portal,
+  Button,
+  Kbd,
+  Box,
 } from "@chakra-ui/react";
-import { ESGData } from "@/lib/api/interfaces/esgData";
-import { getEsgData } from "@/lib/api/get";
-import React from "react";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { FaPlusCircle } from "react-icons/fa";
+import { getEsgData } from "@/lib/api/get";
+import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
-const TableContent = () => {
+interface TableContentProps {
+  categoryIds: string[];
+}
+
+const TableContent = ({ categoryIds }: TableContentProps) => {
   const [selection, setSelection] = useState<string[]>([]);
-  const [tableItems, setTableItems] = useState(items);
-  const [extraColumns, setExtraColumns] = useState<string[]>([]);
-  const [editableData, setEditableData] = useState(tableItems);
+  const [editableData, setEditableData] = useState<CategorizedESGDataList[]>(
+    []
+  );
+  useEffect(() => {
+    Promise.all(categoryIds.map((id) => getEsgData(id)))
+      .then((results) => {
+        const valid = results.filter(Boolean) as CategorizedESGDataList[];
+        setCategorizedEsgData(valid);
+        setEditableData(valid); // ← 수정용 상태에도 저장
+      })
+      .catch((err) => console.error("ESG data fetch error:", err));
+  }, [categoryIds]);
+  const [categorizedEsgData, setCategorizedEsgData] = useState<
+    CategorizedESGDataList[]
+  >([]);
 
-  const hasSelection = selection.length > 0;
-  const indeterminate = hasSelection && selection.length < tableItems.length;
+  // 작년 기준으로 현재 연도 설정
+  const currentYear = new Date().getFullYear() - 1;
+  const [years, setYears] = useState<string[]>(
+    Array.from({ length: 5 }, (_, i) => String(currentYear - i))
+  );
+  const handleAddColumn = () => {
+    const nextYear = (Math.min(...years.map(Number)) - 1).toString(); // 가장 작은 연도보다 하나 더 이전
+    if (years.includes(nextYear)) return; // 중복 방지
 
-  const handleAddRow = () => {
-    const newColumn = `Column ${extraColumns.length + 1}`;
-    setExtraColumns([...extraColumns, newColumn]);
+    // 모든 row의 데이터에도 해당 연도 추가
+    const updatedData = editableData.map((item) => {
+      const alreadyExists = item.esgNumberDTOList.some(
+        (e) => e.year === nextYear
+      );
+      if (!alreadyExists) {
+        item.esgNumberDTOList.push({
+          categoryId: item.categoryDetailDTO.categoryId,
+          corpId: "", // 필요하면 수정
+          year: nextYear,
+          value: 0,
+        });
+      }
+      return item;
+    });
+
+    setYears([...years, nextYear]); // 연도 추가
+    setEditableData([...updatedData]); // 데이터 업데이트
   };
+  const handleRemoveColumn = (yearToRemove: string) => {
+    const updatedYears = years.filter((y) => y !== yearToRemove);
+    const updatedData = editableData.map((item) => {
+      const newList = item.esgNumberDTOList.filter(
+        (e) => e.year !== yearToRemove
+      );
+      return {
+        ...item,
+        esgNumberDTOList: newList,
+      };
+    });
 
-  const rows = editableData.map((item, index) => (
-    <Table.Row
-      key={item.name}
-      data-selected={selection.includes(item.name) ? "" : undefined}
-    >
-      <Table.Cell>
-        <Checkbox.Root
-          size="sm"
-          top="0.5"
-          aria-label="Select row"
-          checked={selection.includes(item.name)}
-          onCheckedChange={(changes) => {
-            setSelection((prev) =>
-              changes.checked
-                ? [...prev, item.name]
-                : selection.filter((name) => name !== item.name)
-            );
-          }}
-        >
-          <Checkbox.HiddenInput />
-          <Checkbox.Control />
-        </Checkbox.Root>
-      </Table.Cell>
-      <Table.Cell>
-        <input
-          type="text"
-          value={item.name}
-          onChange={(e) => {
-            const newData = [...editableData];
-            newData[index].name = e.target.value;
-            setEditableData(newData);
-          }}
-        />
-      </Table.Cell>
-      <Table.Cell>
-        <input
-          type="text"
-          value={item.category}
-          onChange={(e) => {
-            const newData = [...editableData];
-            newData[index].category = e.target.value;
-            setEditableData(newData);
-          }}
-        />
-      </Table.Cell>
-      <Table.Cell>
-        <input
-          type="number"
-          value={item.price}
-          onChange={(e) => {
-            const newData = [...editableData];
-            newData[index].price = parseFloat(e.target.value);
-            setEditableData(newData);
-          }}
-        />
-      </Table.Cell>
-      {extraColumns.map((_, idx) => (
-        <Table.Cell key={`extra-cell-${item.id}-${idx}`}></Table.Cell>
-      ))}
-    </Table.Row>
-  ));
+    setYears(updatedYears);
+    setEditableData(updatedData);
+  };
+  useEffect(() => {
+    Promise.all(categoryIds.map((id) => getEsgData(id)))
+      .then((results) => {
+        const valid = results.filter(Boolean) as CategorizedESGDataList[];
+        setCategorizedEsgData(valid);
+      })
+      .catch((err) => console.error("ESG data fetch error:", err));
+  }, [categoryIds]);
+
+  const rows = editableData.map((item, i) => {
+    const categoryId = item.categoryDetailDTO.categoryId;
+    const categoryName = item.categoryDetailDTO.categoryName;
+    const unitName = item.categoryDetailDTO.unit?.unitName ?? "-";
+
+    // year → value 맵
+    const valueMap: Record<string, number> = {};
+    item.esgNumberDTOList.forEach((entry) => {
+      valueMap[entry.year] = entry.value;
+    });
+
+    return (
+      <Table.Row key={categoryId}>
+        <Table.Cell>
+          <Checkbox.Root
+            size="sm"
+            aria-label="Select row"
+            checked={selection.includes(categoryId)}
+            onCheckedChange={(changes) => {
+              setSelection((prev) =>
+                changes.checked
+                  ? [...prev, categoryId]
+                  : prev.filter((id) => id !== categoryId)
+              );
+            }}
+          >
+            <Checkbox.HiddenInput />
+            <Checkbox.Control />
+          </Checkbox.Root>
+        </Table.Cell>
+        <Table.Cell>{categoryName}</Table.Cell>
+        <Table.Cell>{unitName}</Table.Cell>
+        {years.map((year) => {
+          const yearIndex = item.esgNumberDTOList.findIndex(
+            (e) => e.year === year
+          );
+          const value = item.esgNumberDTOList[yearIndex]?.value ?? "";
+
+          return (
+            <Table.Cell key={`${categoryId}-${year}`}>
+              <input
+                type="number"
+                value={value}
+                onChange={(e) => {
+                  const newData = [...editableData];
+                  if (yearIndex !== -1) {
+                    newData[i].esgNumberDTOList[yearIndex].value = parseFloat(
+                      e.target.value
+                    );
+                  } else {
+                    newData[i].esgNumberDTOList.push({
+                      categoryId,
+                      corpId: "",
+                      year,
+                      value: parseFloat(e.target.value),
+                    });
+                  }
+                  setEditableData(newData);
+                }}
+                className="esg-input"
+              />
+            </Table.Cell>
+          );
+        })}
+        <Table.Cell>
+          <IconButton
+            aria-label="Add row"
+            size="sm"
+            onClick={() => {}}
+            variant="ghost"
+          >
+            <FaPlusCircle />
+          </IconButton>
+        </Table.Cell>
+      </Table.Row>
+    );
+  });
 
   return (
     <>
-      <Table.Root size="md" variant="outline" showColumnBorder h={"20vh"}>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader w="6">
-              <Checkbox.Root
-                size="sm"
-                top="0.5"
-                aria-label="Select all rows"
-                checked={indeterminate ? "indeterminate" : selection.length > 0}
-                onCheckedChange={(changes) => {
-                  setSelection(
-                    changes.checked ? tableItems.map((item) => item.name) : []
-                  );
-                }}
-              >
-                <Checkbox.HiddenInput />
-                <Checkbox.Control />
-              </Checkbox.Root>
-            </Table.ColumnHeader>
-            <Table.ColumnHeader>Product</Table.ColumnHeader>
-            <Table.ColumnHeader>Category</Table.ColumnHeader>
-            <Table.ColumnHeader>Price</Table.ColumnHeader>
-            {extraColumns.map((col, index) => (
-              <Table.ColumnHeader key={`extra-header-${index}`}>{col}</Table.ColumnHeader>
-            ))}
-            <Table.ColumnHeader>
-              <IconButton aria-label="Add row" size="sm" onClick={handleAddRow} variant='ghost'>
-                <FaPlusCircle />
-              </IconButton>
-            </Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>{rows}</Table.Body>
-      </Table.Root>
+      <Box
+        overflowY="auto"
+        overflowX="auto"
+        maxH="345"
+        w="100%"
+        boxShadow="md"
+        border="1px solid"
+        borderColor="gray.200"
+        borderRadius="lg"
+      >
+        <Box minW="1200px">
+          {" "}
+          {/* 필요에 따라 minW 조정 */}
+          <Table.Root size="md" variant="outline" showColumnBorder>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader w="6">
+                  <Checkbox.Root
+                    size="sm"
+                    aria-label="Select all rows"
+                    checked={
+                      selection.length === categorizedEsgData.length
+                        ? true
+                        : selection.length > 0
+                        ? "indeterminate"
+                        : false
+                    }
+                    onCheckedChange={(changes) => {
+                      setSelection(
+                        changes.checked
+                          ? categorizedEsgData.map(
+                              (item) => item.categoryDetailDTO.categoryId
+                            )
+                          : []
+                      );
+                    }}
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control />
+                  </Checkbox.Root>
+                </Table.ColumnHeader>
 
-      <ActionBar.Root open={hasSelection}>
+                <Table.ColumnHeader>지표</Table.ColumnHeader>
+                <Table.ColumnHeader>단위</Table.ColumnHeader>
+                {years.map((year) => (
+                  <Table.ColumnHeader key={year}>
+                    <Box display="flex" alignItems="center" gap="1">
+                      {year}
+                      <IconButton
+                        aria-label={`Delete year ${year}`}
+                        size="xs"
+                        variant="ghost"
+                        onClick={() => handleRemoveColumn(year)}
+                        _hover={{
+                          backgroundColor: "red.100",
+                          color: "red.600",
+                        }}
+                      >
+                        ✕
+                      </IconButton>
+                    </Box>
+                  </Table.ColumnHeader>
+                ))}
+                <Table.ColumnHeader>
+                  {" "}
+                  <IconButton
+                    aria-label="Add column"
+                    size="sm"
+                    onClick={handleAddColumn}
+                    variant="ghost"
+                  >
+                    <FaPlusCircle />
+                  </IconButton>
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>{rows}</Table.Body>
+          </Table.Root>
+        </Box>
+      </Box>
+
+      <ActionBar.Root open={selection.length > 0}>
         <Portal>
           <ActionBar.Positioner>
             <ActionBar.Content>
               <ActionBar.SelectionTrigger>
-                {selection.length} selected
+                {selection.length}개 선택됨
               </ActionBar.SelectionTrigger>
               <ActionBar.Separator />
               <Button variant="outline" size="sm">
@@ -150,46 +273,4 @@ const TableContent = () => {
   );
 };
 
-const items = [
-  { id: 1, name: "Laptop", category: "Electronics", price: 999.99 },
-  { id: 2, name: "Coffee Maker", category: "Home Appliances", price: 49.99 },
-  { id: 3, name: "Desk Chair", category: "Furniture", price: 150.0 },
-  { id: 4, name: "Smartphone", category: "Electronics", price: 799.99 },
-  { id: 5, name: "Headphones", category: "Accessories", price: 199.99 },
-];
-
-// const [selection, setSelection] = useState<string[]>([])
-
-// return (
-//   <Table.Root size="md" variant='outline' showColumnBorder>
-//     <Table.Header>
-//       <Table.Row>
-//         <Table.ColumnHeader>Category ID</Table.ColumnHeader>
-//         <Table.ColumnHeader>Year</Table.ColumnHeader>
-//       </Table.Row>
-//     </Table.Header>
-//     <Table.Body>
-//       {/* {getEsgData.map((data) => (
-//         <Table.Row key={data._id}>
-//           <Table.Cell>{data.categoryId}</Table.Cell>
-//           <Table.Cell>{data.year}</Table.Cell>
-//           <Table.Cell>{data.value}</Table.Cell>
-//         </Table.Row>
-//       ))} */}
-//     </Table.Body>
-//   </Table.Root>
-// );
-// };
-
 export default TableContent;
-
-// {
-//   /* {esgData.map((data) => (
-//         <Tr key={data._id}>
-//           <Td>{data.categoryId}</Td>
-//           <Td>{data.corpId}</Td>0
-//           <Td>{data.year}</Td>
-//           <Td>{data.value}</Td>
-//         </Tr>
-//       ))} */
-// }

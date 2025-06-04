@@ -45,7 +45,7 @@ export const getSections = async () => {
 
 export const getCategories = async (sectionId: string) => {
   try {
-    const res = await apiClient.get<Category[]>(
+    const res = await apiClient.get<CategoryDetail[]>(
       `/categories/by-section/${sectionId}`
     );
     return res.data;
@@ -55,11 +55,12 @@ export const getCategories = async (sectionId: string) => {
   }
 };
 
-export const getEsgData = async (categoryId: string, selected: string[]) => {
+export const getEsgData = async (categoryId: string) => {
   try {
-    const res = await apiClient.get<ESGData[]>(
+    const res = await apiClient.get<CategorizedESGDataList>(
       `/esg-data/category/${categoryId}`
     );
+    console.log("보내는 categoryId:", categoryId);
     return res.data;
   } catch (error) {
     console.error("ESG 데이터 가져오기 실패:", error);

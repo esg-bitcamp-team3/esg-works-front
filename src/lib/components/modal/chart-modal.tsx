@@ -19,15 +19,12 @@ import {
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
 import { use, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 import TableContent from "./TableContent";
-import { Bar, Line, Pie, Radar, Doughnut } from "react-chartjs-2";
-import { chartData } from "@/lib/components/modal/chartData";
-import { it } from "node:test";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories } from "@/lib/api/get";
+import ChartContent from "./ChartContent";
 
 interface Item {
   id: string;
@@ -112,8 +109,8 @@ export default function ChartModal() {
   });
 
   const selectedCategoryId = categories
-  .filter((category) => selected.includes(category.categoryName))
-  .map((category) => category.categoryId);
+    .filter((category) => selected.includes(category.categoryName))
+    .map((category) => category.categoryId);
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
@@ -208,7 +205,10 @@ export default function ChartModal() {
                               item={gristandard}
                               key={gristandard.value}
                               onClick={() => {
-                                console.log("📌 선택된 섹션 ID:", gristandard.value);
+                                console.log(
+                                  "📌 선택된 섹션 ID:",
+                                  gristandard.value
+                                );
                                 setSelectedSectionId(gristandard.value);
                               }}
                               paddingLeft="2"
@@ -255,47 +255,54 @@ export default function ChartModal() {
                     padding="4"
                     overflowY="auto"
                   >
-                    {categories.filter(category => category.categoryName !== "비고").map((category) => (
-                      <Box key={category.categoryId}>
-                        <Checkbox.Root
-                          checked={selected.includes(category.categoryName)}
-                          onCheckedChange={() => {
-                            console.log("📌 선택된 카테고리 Name:", category.categoryName);
-                            const isChecked = selected.includes(
-                              category.categoryName
-                            );
-                            if (isChecked) {
-                              setSelected((prev) =>
-                                prev.filter((i) => i !== category.categoryName)
+                    {categories
+                      .filter((category) => category.categoryName !== "비고")
+                      .map((category) => (
+                        <Box key={category.categoryId}>
+                          <Checkbox.Root
+                            checked={selected.includes(category.categoryName)}
+                            onCheckedChange={() => {
+                              console.log(
+                                "📌 선택된 카테고리 Name:",
+                                category.categoryName
                               );
-                            } else {
-                              setSelected((prev) => [
-                                ...prev,
-                                category.categoryName,
-                              ]);
-                            }
-                          }}
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control
-                            _checked={{
-                              bg: "#2F6EEA",
-                              borderColor: "#2F6EEA",
+                              const isChecked = selected.includes(
+                                category.categoryName
+                              );
+                              if (isChecked) {
+                                setSelected((prev) =>
+                                  prev.filter(
+                                    (i) => i !== category.categoryName
+                                  )
+                                );
+                              } else {
+                                setSelected((prev) => [
+                                  ...prev,
+                                  category.categoryName,
+                                ]);
+                              }
                             }}
-                          />
-                          <Checkbox.Label>
-                            {category.categoryName}
-                          </Checkbox.Label>
-                        </Checkbox.Root>
-                      </Box>
-                    ))}
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control
+                              _checked={{
+                                bg: "#2F6EEA",
+                                borderColor: "#2F6EEA",
+                              }}
+                            />
+                            <Checkbox.Label>
+                              {category.categoryName}
+                            </Checkbox.Label>
+                          </Checkbox.Root>
+                        </Box>
+                      ))}
                   </Box>
                   {/* 태그 영역 */}
                   <Flex
                     direction="row"
                     width="full"
                     alignItems="start"
-                    minHeight={{ base: "50px", md: "45px", lg: "30px" }}
+                    minHeight={{ base: "50px", md: "25px", lg: "30px" }}
                     maxHeight={{ base: "55px", md: "50px", lg: "65px" }}
                     gapX="2"
                     paddingX="2"
@@ -354,7 +361,7 @@ export default function ChartModal() {
                     size="lg"
                     defaultValue={selectedTab}
                     onValueChange={(e) => setSelectedTab(e.value)}
-                    height="100%" 
+                    height="100%"
                     display="flex"
                     flexDirection="column"
                   >
@@ -382,7 +389,7 @@ export default function ChartModal() {
                     </Tabs.List>
 
                     <Tabs.ContentGroup paddingTop="4">
-                     <Tabs.Content value="chart">
+                      <Tabs.Content value="chart">
                         <ChartContent
                           selected={selected}
                           charts={charts}
@@ -391,7 +398,7 @@ export default function ChartModal() {
                       </Tabs.Content>
                       <Tabs.Content value="table">
                         {/* 2번 탭 콘텐츠 */}
-                        <TableContent />
+                        <TableContent categoryIds={selectedCategoryId} />
                       </Tabs.Content>
                     </Tabs.ContentGroup>
                   </Tabs.Root>
