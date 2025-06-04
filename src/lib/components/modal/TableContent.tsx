@@ -8,12 +8,16 @@ import {
   Portal,
   Table,
   IconButton,
+  CloseButton,
+  Text,
+  Flex,
 } from "@chakra-ui/react";
 import { ESGData } from "@/lib/api/interfaces/esgData";
 import { getEsgData } from "@/lib/api/get";
 import React from "react";
 import { useState } from "react";
 import { FaPlusCircle } from "react-icons/fa";
+import { IoCloseCircleOutline } from "react-icons/io5";
 
 const TableContent = () => {
   const [selection, setSelection] = useState<string[]>([]);
@@ -28,11 +32,38 @@ const TableContent = () => {
     const newColumn = `Column ${extraColumns.length + 1}`;
     setExtraColumns([...extraColumns, newColumn]);
   };
+  interface Section {
+    sectionId: string;
+    sectionName: string;
+  }
+  interface Unit {
+    unitId: string;
+    unitName: string;
+    type: string; // e.g., "number", "percentage", "currency"
+  }
+  interface Category {
+    categoryId: string;
+    section: Section;
+    unit: Unit;
+    categoryName: string;
+    description: string;
+  }
+
+  interface ESGData {
+    categoryId: string;
+    corpId: string;
+    year: string;
+    value: string;
+    updatedAt: string;
+    updatedBy: string;
+    createdAt: string;
+    createdBy: string;
+  }
 
   const rows = editableData.map((item, index) => (
     <Table.Row
-      key={item.name}
-      data-selected={selection.includes(item.name) ? "" : undefined}
+    // key={data.categoryId}
+    // data-selected={selection.includes(item.name) ? "" : undefined}
     >
       <Table.Cell>
         <Checkbox.Root
@@ -112,17 +143,26 @@ const TableContent = () => {
                 <Checkbox.Control />
               </Checkbox.Root>
             </Table.ColumnHeader>
-            <Table.ColumnHeader>Product</Table.ColumnHeader>
-            <Table.ColumnHeader>Category</Table.ColumnHeader>
-            <Table.ColumnHeader>Price</Table.ColumnHeader>
-            {extraColumns.map((col, index) => (
-              <Table.ColumnHeader key={`extra-header-${index}`}>{col}</Table.ColumnHeader>
-            ))}
             <Table.ColumnHeader>
-              <IconButton aria-label="Add row" size="sm" onClick={handleAddRow} variant='ghost'>
-                <FaPlusCircle />
-              </IconButton>
+              <Table.ColumnHeader
+                textAlign="center"
+                display={"flex"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                borderBottom={"0"}
+                padding="0"
+              >
+                지표
+              </Table.ColumnHeader>
             </Table.ColumnHeader>
+            {[...Array(5)].map((_, idx) => {
+              const year = new Date().getFullYear() - idx;
+              return (
+                <Table.ColumnHeader key={year} textAlign="center">
+                  {year}
+                </Table.ColumnHeader>
+              );
+            })}
           </Table.Row>
         </Table.Header>
         <Table.Body>{rows}</Table.Body>
