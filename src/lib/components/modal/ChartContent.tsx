@@ -25,7 +25,7 @@ import {
   Legend,
 } from "chart.js";
 
-import { 
+import {
   Bar,
   Line,
   Pie,
@@ -49,48 +49,68 @@ ChartJS.register(
 );
 
 import { getEsgData } from "@/lib/api/get";
-import { ChartContentProps } from "@/lib/api/interfaces/chart";
+import { ChartContentProps, DataType } from "@/lib/api/interfaces/chart";
+import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
 const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
-  const [chartData, setChartData] = useState<any>(null); // or import the correct ChartData type if preferred
+  const [chartData, setChartData] = useState<DataType>(); // or import the correct ChartData type if preferred
   const [selectedChartType, setSelectedChartType] = useState<string | null>(
     null
   );
+  const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
+    CategorizedESGDataList[]
+  >([]);
 
+
+  // ESG 데이터 가져오기
   useEffect(() => {
-    if (!categoryId) return;
-
-    getEsgData(categoryId, selected)
-      .then((res) => {
-        if (!res || res.length === 0) {
-          setChartData(null);
-          return;
-        }
-
-        // year 기준으로 정렬
-        const sorted = res.sort((a: any, b: any) => a.year.localeCompare(b.year));
-        const labels = Array.from(new Set(sorted.map((d: any) => d.year)));
-
-        // categoryName별로 그룹화
-        const grouped = sorted.reduce((acc: any, cur: any) => {
-          if (!acc[cur.categoryName]) acc[cur.categoryName] = {};
-          acc[cur.categoryName][cur.year] = Number(cur.value);
-          return acc;
-        }, {});
-
-        const datasets = Object.entries(grouped).map(([label, yearMap]: [string, any]) => ({
-          label,
-          data: labels.map((year) => yearMap[year] || 0),
-          backgroundColor: "#2F6EEA",
-        }));
-
-        setChartData({ labels, datasets });
+    Promise.all(categoryId.map((id) => getEsgData(id)))
+      .then((results) => {
+        const validResults = results.filter(
+          (result): result is CategorizedESGDataList => result !== null
+        );
+        setCategorizedEsgDataList(validResults);
+        console.log(validResults);
       })
       .catch((error) => {
-        console.error("차트 데이터 가져오기 실패:", error);
-        setChartData(null);
+        console.error("Error fetching ESG data:", error);
       });
   }, [categoryId, selected]);
+
+  // 차트용 데이터 구성 (Setting chartData)
+  useEffect(() => {
+    if (categorizedEsgDataList.length > 0) {
+      // 연도(year) 추출해서 labels로 사용
+      const years = Array.from(
+        new Set(
+          categorizedEsgDataList.flatMap((category) =>
+            category.esgNumberDTOList.map((data) => data.year)
+          )
+        )
+      ).sort();
+
+      // 각각 카테고리에 대한 dataset 구성
+      const datasets = categorizedEsgDataList.map((category) => ({
+        type: "line",
+        label: category.categoryDetailDTO.categoryName,
+        data: years.map((year) => {
+          const yearData = category.esgNumberDTOList.find(
+            (data) => data.year === year
+          );
+          return yearData ? yearData.value : 0;
+        }),
+        borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+        backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(
+          16
+        )}`,
+      }));
+
+      setChartData({
+        labels: years.map((year) => year.toString()),
+        datasets: datasets,
+      });
+    }
+  }, [categorizedEsgDataList]);
 
   return (
     <Flex
@@ -165,10 +185,9 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         // alignContent='center'
       >
         <Stack direction="row">
-          <Text fontSize="lg" fontWeight="bold" color="#2F6EEA" >
+          <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
           </Text>
-          <Text>{selected.join(", ")}</Text>
         </Stack>
         {!selectedChartType ? (
           <Text fontSize="sm" color="gray.500">

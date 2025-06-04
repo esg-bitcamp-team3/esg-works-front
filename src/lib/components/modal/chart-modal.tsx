@@ -21,9 +21,6 @@ import { use, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 import TableContent from "./TableContent";
-import { Bar, Line, Pie, Radar, Doughnut } from "react-chartjs-2";
-import { chartData } from "@/lib/components/modal/chartData";
-import { it } from "node:test";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
@@ -295,7 +292,7 @@ export default function ChartModal() {
                     direction="row"
                     width="full"
                     alignItems="start"
-                    minHeight={{ base: "50px", md: "45px", lg: "30px" }}
+                    minHeight={{ base: "50px", md: "25px", lg: "30px" }}
                     maxHeight={{ base: "55px", md: "50px", lg: "65px" }}
                     gapX="2"
                     paddingX="2"
