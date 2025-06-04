@@ -50,7 +50,7 @@ const Sidebar = () => {
   }, [profileMenuOpen]);
 
   return (
-    <Box position="relative">
+    <Box position="relative" zIndex={1000}>
       <Box
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
