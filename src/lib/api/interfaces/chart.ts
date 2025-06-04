@@ -1,3 +1,5 @@
+import { ESGData } from "./esgData";
+
 export interface ChartType {
   type: string;
   label: string;
@@ -5,7 +7,7 @@ export interface ChartType {
 }
 
 export interface ChartContentProps {
-  categoryId: string;
+  categoryId: string[];
   selected: string[];
   charts: {
     type: string;
@@ -13,4 +15,44 @@ export interface ChartContentProps {
     icons: React.ElementType;
   }[];
   // chartData: any; // or import the correct ChartData type if preferred
+}
+
+export interface Chart {
+  chartId: string;
+  corporationId: string;
+  chartName: string;
+  options: string;
+  updatedAt: Date;
+  updatedBy: string;
+  createdAt: Date;
+  createBy: string;
+}
+
+export interface DataSet {
+  dataSetId: string;
+  chartId: string;
+  type: string;
+  label: string;
+  esgDataList: ESGData[];
+  backgroundColor: string;
+  borderColor: string;
+  borderWidth: string;
+  fill: string;
+}
+
+export interface IChart {
+  chart: Chart;
+  dataSet: DataSet;
+}
+
+export interface ChartDetail {
+  chartId: string;
+  corporationId: string;
+  chartName: string;
+  dataSets: DataSet[];
+  options: string;
+  updatedAt: Date;
+  updatedBy: string;
+  createdAt: Date;
+  createBy: string;
 }
