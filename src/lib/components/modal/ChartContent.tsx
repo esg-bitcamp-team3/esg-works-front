@@ -25,7 +25,7 @@ import {
   Legend,
 } from "chart.js";
 
-import { 
+import {
   Bar,
   Line,
   Pie,
@@ -58,7 +58,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   );
 
   useEffect(() => {
-    if (!categoryId) return;
+    if (categoryId) return;
 
     getEsgData(categoryId, selected)
       .then((res) => {
@@ -68,7 +68,9 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         }
 
         // year 기준으로 정렬
-        const sorted = res.sort((a: any, b: any) => a.year.localeCompare(b.year));
+        const sorted = res.sort((a: any, b: any) =>
+          a.year.localeCompare(b.year)
+        );
         const labels = Array.from(new Set(sorted.map((d: any) => d.year)));
 
         // categoryName별로 그룹화
@@ -78,11 +80,13 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
           return acc;
         }, {});
 
-        const datasets = Object.entries(grouped).map(([label, yearMap]: [string, any]) => ({
-          label,
-          data: labels.map((year) => yearMap[year] || 0),
-          backgroundColor: "#2F6EEA",
-        }));
+        const datasets = Object.entries(grouped).map(
+          ([label, yearMap]: [string, any]) => ({
+            label,
+            data: labels.map((year) => yearMap[year] || 0),
+            backgroundColor: "#2F6EEA",
+          })
+        );
 
         setChartData({ labels, datasets });
       })
@@ -165,7 +169,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         // alignContent='center'
       >
         <Stack direction="row">
-          <Text fontSize="lg" fontWeight="bold" color="#2F6EEA" >
+          <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
           </Text>
           <Text>{selected.join(", ")}</Text>

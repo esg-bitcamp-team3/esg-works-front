@@ -142,10 +142,11 @@ const Subbar = () => {
         position="fixed"
         right={activeIndex !== null ? `${sidebarWidth}px` : "0px"} // ❗사이드바 너비에 따라 이동
         top="10"
+        zIndex={1000}
       >
         <Box
           w="40px"
-          h="24vh"
+          h="30vh"
           bg="white"
           borderTopLeftRadius="xl"
           borderBottomLeftRadius="xl"
@@ -160,6 +161,7 @@ const Subbar = () => {
               variant="ghost"
               color="#2F6EEA"
               onClick={() => setActiveIndex(idx)}
+              w={"100%"}
             >
               {item.icon}
             </Button>
@@ -180,7 +182,7 @@ const Subbar = () => {
             position: "fixed",
             right: 0,
             top: 0,
-            zIndex: 99,
+            zIndex: 1000,
             backgroundColor: "white",
           }}
         >

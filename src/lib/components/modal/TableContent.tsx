@@ -9,22 +9,22 @@ import {
   Table,
   IconButton,
   CloseButton,
-  Text,
-  Flex,
 } from "@chakra-ui/react";
 import { ESGData } from "@/lib/api/interfaces/esgData";
-import { getEsgData } from "@/lib/api/get";
-import React from "react";
+
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { FaPlusCircle } from "react-icons/fa";
 import { IoCloseCircleOutline } from "react-icons/io5";
+import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
+import { getEsgData } from "@/lib/api/get";
 
 const TableContent = () => {
   const [selection, setSelection] = useState<string[]>([]);
   const [tableItems, setTableItems] = useState(items);
   const [extraColumns, setExtraColumns] = useState<string[]>([]);
   const [editableData, setEditableData] = useState(tableItems);
-
+  const [esgData, setEsgData] = useState<ESGData[]>([]);
   const hasSelection = selection.length > 0;
   const indeterminate = hasSelection && selection.length < tableItems.length;
 
@@ -32,38 +32,29 @@ const TableContent = () => {
     const newColumn = `Column ${extraColumns.length + 1}`;
     setExtraColumns([...extraColumns, newColumn]);
   };
-  interface Section {
-    sectionId: string;
-    sectionName: string;
-  }
-  interface Unit {
-    unitId: string;
-    unitName: string;
-    type: string; // e.g., "number", "percentage", "currency"
-  }
-  interface Category {
-    categoryId: string;
-    section: Section;
-    unit: Unit;
-    categoryName: string;
-    description: string;
-  }
 
-  interface ESGData {
-    categoryId: string;
-    corpId: string;
-    year: string;
-    value: string;
-    updatedAt: string;
-    updatedBy: string;
-    createdAt: string;
-    createdBy: string;
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getEsgData(
+          "categoryId",
+          ["selected"],
+          ["value"],
+          ["year"]
+        );
+        console.log("Fetched ESG Data:", data);
+        setEsgData(esgData);
+      } catch (error) {
+        console.error("Error fetching ESG data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const rows = editableData.map((item, index) => (
     <Table.Row
-    // key={data.categoryId}
-    // data-selected={selection.includes(item.name) ? "" : undefined}
+      key={item.name}
+      data-selected={selection.includes(item.name) ? "" : undefined}
     >
       <Table.Cell>
         <Checkbox.Root
@@ -143,26 +134,22 @@ const TableContent = () => {
                 <Checkbox.Control />
               </Checkbox.Root>
             </Table.ColumnHeader>
+            <Table.ColumnHeader>2019</Table.ColumnHeader>
+            <Table.ColumnHeader>2020</Table.ColumnHeader>
+            <Table.ColumnHeader>2021</Table.ColumnHeader>
+            <Table.ColumnHeader>2022</Table.ColumnHeader>
+            <Table.ColumnHeader>2023</Table.ColumnHeader>
+
             <Table.ColumnHeader>
-              <Table.ColumnHeader
-                textAlign="center"
-                display={"flex"}
-                justifyContent={"center"}
-                alignItems={"center"}
-                borderBottom={"0"}
-                padding="0"
+              <IconButton
+                aria-label="Add row"
+                size="sm"
+                onClick={handleAddRow}
+                variant="ghost"
               >
-                지표
-              </Table.ColumnHeader>
+                <FaPlusCircle />
+              </IconButton>
             </Table.ColumnHeader>
-            {[...Array(5)].map((_, idx) => {
-              const year = new Date().getFullYear() - idx;
-              return (
-                <Table.ColumnHeader key={year} textAlign="center">
-                  {year}
-                </Table.ColumnHeader>
-              );
-            })}
           </Table.Row>
         </Table.Header>
         <Table.Body>{rows}</Table.Body>

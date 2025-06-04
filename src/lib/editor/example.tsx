@@ -24,6 +24,7 @@ import {
 } from "slate-react";
 import { Button, Icon, Toolbar } from "@/lib/editor/components";
 import {
+  ChartBlockElement,
   ChartElement,
   CustomEditor,
   CustomElement,
@@ -118,6 +119,7 @@ const RichTextExample = () => {
             <MarkButton format="underline" icon="format_underlined" />
             <MarkButton format="code" icon="code" />
             <InsertImageButton />
+            <InsertChartButton />
             <BlockButton format="heading-one" icon="looks_one" />
             <BlockButton format="heading-two" icon="looks_two" />
             <BlockButton format="block-quote" icon="format_quote" />
@@ -165,28 +167,59 @@ const RichTextExample = () => {
                   }) || [null, null];
 
                   // Check if we're in a paragraph inside a chart-block
-                  if (
-                    SlateElement.isElement(parent) &&
-                    parent.type !== "chart" &&
-                    grandParent &&
-                    SlateElement.isElement(grandParent) &&
-                    grandParent.type === "chart-block"
-                  ) {
-                    event.preventDefault();
+                  if (grandParent && grandParent.type === "chart-block") {
+                    if (SlateElement.isElement(node) && node.type === "chart") {
+                      event.preventDefault();
 
-                    // Insert a new paragraph after the chart-block
-                    const path = [
-                      ...grandParentPath.slice(0, -1),
-                      grandParentPath[grandParentPath.length - 1] + 1,
-                    ];
-                    Transforms.insertNodes(
-                      editor,
-                      { type: "paragraph", children: [{ text: "" }] },
-                      { at: path }
-                    );
-                    // Move selection to the new paragraph
-                    Transforms.select(editor, path);
-                    return;
+                      // Find the chart-block parent
+                      const [chartBlock, chartBlockPath] = Editor.above(
+                        editor,
+                        {
+                          at: selection.focus.path,
+                          match: (n) =>
+                            SlateElement.isElement(n) &&
+                            n.type === "chart-block",
+                        }
+                      ) || [null, null];
+
+                      if (chartBlock && chartBlockPath) {
+                        // Insert a new paragraph after the chart-block
+                        const path = [
+                          ...chartBlockPath.slice(0, -1),
+                          chartBlockPath[chartBlockPath.length - 1] + 1,
+                        ];
+
+                        // Create a new paragraph element
+                        const paragraph: ParagraphElement = {
+                          type: "paragraph",
+                          children: [{ text: "" }],
+                        };
+
+                        // Insert the new paragraph after the chart-block
+                        Transforms.insertNodes(editor, paragraph, { at: path });
+
+                        // Move the selection to the new paragraph
+                        Transforms.select(editor, Editor.start(editor, path));
+                      }
+
+                      return;
+                    } else {
+                      event.preventDefault();
+
+                      // Insert a new paragraph after the chart-block
+                      const path = [
+                        ...grandParentPath.slice(0, -1),
+                        grandParentPath[grandParentPath.length - 1] + 1,
+                      ];
+                      Transforms.insertNodes(
+                        editor,
+                        { type: "paragraph", children: [{ text: "" }] },
+                        { at: path }
+                      );
+                      // Move selection to the new paragraph
+                      Transforms.select(editor, path);
+                      return;
+                    }
                   }
                 }
               } else if (event.key === "Enter" && event.shiftKey) {
@@ -354,7 +387,7 @@ const setChartLayout = (editor: CustomEditor, layout: ChartLayout) => {
   // Create default paragraph if needed
   const defaultParagraph = {
     type: "paragraph",
-    children: [{ text: "Example" }],
+    children: [{ text: "" }],
   };
 
   // Create new children array based on layout
@@ -679,6 +712,20 @@ const InsertImageButton = () => {
   );
 };
 
+const InsertChartButton = () => {
+  const editor = useSlateStatic();
+  return (
+    <Button
+      onMouseDown={(event: MouseEvent) => {
+        event.preventDefault();
+        insertChart(editor);
+      }}
+    >
+      <Icon>bar_chart</Icon>
+    </Button>
+  );
+};
+
 interface ChartLayoutButtonProps {
   layout: ChartLayout;
   icon: string;
@@ -737,30 +784,41 @@ interface BlockButtonProps {
 {
   /* Custom Element Format Types */
 }
-const insertChart = (editor: CustomEditor, url: string) => {
-  const text = { text: "" };
-  const chart: ChartElement = {
+const insertChart = (editor: CustomEditor) => {
+  // Create chart element with sample data
+  const chartElement: ChartElement = {
     type: "chart",
     chartType: "bar",
-    data: {},
+    data: {
+      labels: ["A", "B", "C"],
+      datasets: [{ label: "Example", data: [10, 20, 30] }],
+    },
     options: {},
-    children: [text],
+    children: [{ text: "" }],
   };
-  Transforms.insertNodes(editor, chart);
+
+  // Create chart-block wrapper with appropriate layout
+  const chartBlock: ChartBlockElement = {
+    type: "chart-block",
+    layout: "full", // Default to full layout
+    children: [chartElement],
+  };
+
+  // Insert the chart block at the current selection
+  Transforms.insertNodes(editor, chartBlock);
+
+  // Add a paragraph after the chart block
   const paragraph: ParagraphElement = {
     type: "paragraph",
     children: [{ text: "" }],
   };
+
+  // Insert the paragraph after the chart block
   Transforms.insertNodes(editor, paragraph);
 
-  //   const chartNode = {
-  //     type: 'chart',
-  //     chartType,
-  //     data,
-  //     options,
-  //     children: [{ text: '' }],
-  //   };
-  //   Transforms.insertNodes(editor, chartNode);
+  // Move selection to the new paragraph
+  const point = Editor.end(editor, []);
+  Transforms.select(editor, point);
 };
 
 ChartJS.register(...registerables);
@@ -1056,7 +1114,7 @@ const ChartBlock = ({ attributes, children, element }: RenderElementProps) => {
     case "center":
       containerStyle.flexDirection = "row";
       containerStyle.justifyContent = "space-between";
-      containerStyle.alignItems = "center";
+      containerStyle.alignItems = "flex-start";
       break;
   }
 
@@ -1099,11 +1157,17 @@ const ChartBlock = ({ attributes, children, element }: RenderElementProps) => {
     } else if (layout === "center") {
       if (index === 0) {
         // Left text
-        childStyle = { flex: 1 };
-      } else if (index === 2) {
-        // Right text - start from center
         childStyle = {
           flex: 1,
+          display: "flex",
+          alignItems: "flex-start", // Center vertically
+        };
+      } else if (index === 2) {
+        // Right text
+        childStyle = {
+          flex: 1,
+          display: "flex",
+          alignItems: "flex-start", // Center vertically
         };
       } else {
         // Chart in center
