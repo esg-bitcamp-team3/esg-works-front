@@ -1,4 +1,5 @@
 export interface ESGData {
+  esgDataId: string;
   categoryId: string;
   corpId: string;
   year: string;
