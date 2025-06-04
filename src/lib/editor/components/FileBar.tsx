@@ -152,7 +152,7 @@ const FileMenu = ({ id, title, content }: FileBarProps) => {
     <>
       <Menu.Root>
         <Menu.Trigger asChild>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" p={2}>
             <Text color="gray.600">파일</Text>
           </Button>
         </Menu.Trigger>
@@ -224,7 +224,7 @@ const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
   return (
     <Menu.Root>
       <Menu.Trigger asChild>
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" p={2}>
           <Text color="gray.600">삽입</Text>
         </Button>
       </Menu.Trigger>
@@ -278,7 +278,7 @@ const DesignMenu = ({ editor }: { editor: CustomEditor }) => {
   return (
     <Menu.Root>
       <Menu.Trigger asChild>
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" p={2}>
           <Text color="gray.600">서식</Text>
         </Button>
       </Menu.Trigger>

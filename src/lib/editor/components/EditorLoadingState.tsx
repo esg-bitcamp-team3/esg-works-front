@@ -11,6 +11,7 @@ const EditorLoadingState = () => {
       boxShadow={"md"}
       overflow={"auto"}
       p={10}
+      bg="white"
     >
       <Flex direction="column" align="center" justify="center" minH="300px">
         <Spinner borderWidth="4px" color="blue.500" size="xl" mb={4} />
