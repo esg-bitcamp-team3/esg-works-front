@@ -49,6 +49,7 @@ import {
   ChartOptions,
   registerables,
 } from "chart.js";
+import { useDrop } from "react-dnd";
 import { Box, Flex, HStack, Separator, Text } from "@chakra-ui/react";
 import SaveButton from "./components/SaveButton";
 import { apiClient } from "../api/client";
@@ -118,6 +119,31 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
     () => withChart(withImages(withHistory(withReact(createEditor())))),
     []
   );
+  //Drag & Drop
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: "CHART_ICON",
+    drop: (item: { chartType: string }) => {
+      const chartElement: ChartElement = {
+        type: "chart",
+        chartType: item.chartType,
+        data: {
+          labels: ["A", "B", "C"],
+          datasets: [{ label: "Example", data: [10, 20, 30] }],
+        },
+        options: {},
+        children: [{ text: "" }],
+      };
+      const chartBlock: ChartBlockElement = {
+        type: "chart-block",
+        layout: "full", // Default to full layout
+        children: [chartElement],
+      };
+      Transforms.insertNodes(editor, chartBlock);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  }));
   const [title, setTitle] = useState<string>("제목 없는 문서");
   const [value, setValue] = useState<Descendant[]>(initialValue);
   const [isLoading, setIsLoading] = useState(documentId ? true : false);
@@ -163,6 +189,7 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
   return (
     <Flex direction="column" height="100vh" width="100%">
       <Box
+        ref={drop}
         justifyContent="center"
         minW="100%"
         height="100%"
@@ -171,6 +198,7 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
         boxShadow={"md"}
         overflow={"auto"}
         bg="white"
+        style={{ background: isOver ? "#E3F2FD" : "white" }}
       >
         <Slate
           editor={editor}
