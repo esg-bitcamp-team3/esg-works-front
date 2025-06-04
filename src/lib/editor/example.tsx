@@ -43,6 +43,7 @@ import {
   registerables,
 } from "chart.js";
 import { Box } from "@chakra-ui/react";
+import { useDrop } from "react-dnd";
 
 const HOTKEYS: Record<string, CustomTextKey> = {
   "mod+b": "bold",
@@ -87,7 +88,11 @@ const isKeyHotkey = (hotkey: string, event: KeyboardEvent): boolean => {
   return modifiersPressed && keyPressed;
 };
 
+
+
 const RichTextExample = () => {
+  
+
   const renderElement = useCallback(
     (props: RenderElementProps) => <Element {...props} />,
     []
@@ -100,9 +105,34 @@ const RichTextExample = () => {
     () => withChart(withImages(withHistory(withReact(createEditor())))),
     []
   );
-
+  //Drag & Drop
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: "CHART_ICON",
+    drop: (item: { chartType: string }) => {
+      const chartElement: ChartElement = {
+        type: "chart",
+        chartType: item.chartType,
+        data: {
+          labels: ["A", "B", "C"],
+          datasets: [{ label: "Example", data: [10, 20, 30] }],
+        },
+        options: {},
+        children: [{ text: "" }],
+      };
+      const chartBlock: ChartBlockElement = {
+        type: "chart-block",
+        layout: "full", // Default to full layout
+        children: [chartElement],
+      };
+      Transforms.insertNodes(editor, chartBlock);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  }));
   return (
     <Box
+      ref={drop}
       justifyContent="center"
       minW="100%"
       height="100%"
@@ -110,6 +140,7 @@ const RichTextExample = () => {
       borderRadius="md"
       boxShadow={"md"}
       overflow={"auto"}
+      style={{ background: isOver ? "#E3F2FD" : "white" }}
     >
       <Slate editor={editor} initialValue={initialValue}>
         <Box position="sticky" top={0} zIndex={10} bg="white" px={5} pt={5}>
