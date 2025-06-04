@@ -24,8 +24,8 @@ import TableContent from "./TableContent";
 import { Bar, Line, Pie, Radar, Doughnut } from "react-chartjs-2";
 import { chartData } from "@/lib/components/modal/chartData";
 import { it } from "node:test";
-import { Category } from "@/lib/api/interfaces/category";
-import { Section } from "@/lib/api/interfaces/section";
+import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
+
 import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories } from "@/lib/api/get";
 
@@ -69,7 +69,7 @@ export default function ChartModal() {
   const [selectedTab, setSelectedTab] = useState<string | null>("chart");
   const [sections, setSections] = useState<Section[]>([]);
   // New states for categories and selectedSectionId
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryDetail[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
@@ -110,6 +110,10 @@ export default function ChartModal() {
         value: section.sectionId,
       })),
   });
+
+  const selectedCategoryId = categories
+  .filter((category) => selected.includes(category.categoryName))
+  .map((category) => category.categoryId);
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
@@ -256,6 +260,7 @@ export default function ChartModal() {
                         <Checkbox.Root
                           checked={selected.includes(category.categoryName)}
                           onCheckedChange={() => {
+                            console.log("📌 선택된 카테고리 Name:", category.categoryName);
                             const isChecked = selected.includes(
                               category.categoryName
                             );
@@ -381,7 +386,7 @@ export default function ChartModal() {
                         <ChartContent
                           selected={selected}
                           charts={charts}
-                          categoryId={selectedSectionId || ''}
+                          categoryId={selectedCategoryId}
                         />
                       </Tabs.Content>
                       <Tabs.Content value="table">

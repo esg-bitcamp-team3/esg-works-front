@@ -5,7 +5,7 @@ export interface ChartType {
 }
 
 export interface ChartContentProps {
-  categoryId: string;
+  categoryId: string[];
   selected: string[];
   charts: {
     type: string;
