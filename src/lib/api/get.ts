@@ -67,3 +67,14 @@ export const getEsgData = async (categoryId: string) => {
     return null;
   }
 };
+
+export const getChart = async () => {
+  try {
+    const res = await apiClient.get<ChartDetail[]>(`/charts/my`);
+    console.log("Chart data:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("ESG 데이터 가져오기 실패:", error);
+    return null;
+  }
+};
