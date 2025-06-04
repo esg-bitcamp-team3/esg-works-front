@@ -1,11 +1,10 @@
-import { Category, ESGData } from "@/lib/interface";
+import { Category, PartialESGData } from "@/lib/interface";
 import {
   Box,
   Input,
   Text,
   Textarea,
   Checkbox,
-  Heading,
   HStack,
   Button,
 } from "@chakra-ui/react";
@@ -19,6 +18,11 @@ import { getDataByCorpYear } from "@/lib/api/get";
 interface Props {
   category: Category;
   year: string;
+  onFieldChange?: (
+    categoryId: string,
+    value: string,
+    isExisting: boolean
+  ) => void;
 }
 
 const unitTypes: Record<string, "money" | "number" | "boolean" | "string"> = {
@@ -38,27 +42,41 @@ const unitTypes: Record<string, "money" | "number" | "boolean" | "string"> = {
   "u-14": "string",
 };
 
-export const DynamicInputForm = ({ category, year }: Props) => {
-  const { control, handleSubmit } = useForm();
+export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
+  const { control } = useForm();
   const [field, setField] = useState("");
+  const [inputData, setInputData] = useState<PartialESGData>();
 
-  const onSubmit = (data: any) => {
-    console.log("Submitted:", data);
+  const fieldCheck = async () => {
+    try {
+      const data = await getDataByCorpYear({
+        categoryId: category.categoryId,
+        year: year,
+      });
+      if (data) {
+        setInputData(data);
+        setField(data.value ?? "");
+        // 데이터가 존재하므로 상위에 전달
+        onFieldChange?.(category.categoryId, data.value ?? "", true);
+      } else {
+        // 데이터 없음: 새로운 값 입력 준비
+        setInputData(undefined);
+        setField("");
+        onFieldChange?.(category.categoryId, "", false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const inputType = unitTypes[category.unit.unitId];
 
-  // useEffect(() => {
-  //   const fetch = async () => {
-  //     const data = getDataByCorpYear(year, category.categoryId);
-  //     setField(data.value)
-  //   };
-  // });
+  useEffect(() => {
+    fieldCheck();
+  }, [year]);
 
   return (
     <Box
-      as="form"
-      onSubmit={handleSubmit(onSubmit)}
       p={6}
       borderWidth="1px"
       borderRadius="xl"
@@ -88,12 +106,23 @@ export const DynamicInputForm = ({ category, year }: Props) => {
         <Controller
           name={category.categoryId}
           control={control}
-          render={({ field }) => {
+          render={({ field: controllerField }) => {
+            const commonProps = {
+              ...controllerField,
+              value: field,
+              onChange: (e: any) => {
+                const val = e.target.value;
+                controllerField.onChange(val);
+                setField(val);
+                onFieldChange?.(category.categoryId, val, !!inputData);
+              },
+            };
+
             if (inputType === "money") {
               return (
                 <HStack justifyContent={"end"} padding={2}>
                   <Input
-                    {...field}
+                    {...commonProps}
                     type="number"
                     borderRadius="md"
                     borderColor="gray.300"
@@ -109,7 +138,7 @@ export const DynamicInputForm = ({ category, year }: Props) => {
               return (
                 <HStack justifyContent={"end"} padding={2}>
                   <Input
-                    {...field}
+                    {...commonProps}
                     type="number"
                     borderRadius="md"
                     borderColor="gray.300"
@@ -135,7 +164,7 @@ export const DynamicInputForm = ({ category, year }: Props) => {
             if (inputType === "string") {
               return (
                 <Textarea
-                  {...field}
+                  {...commonProps}
                   placeholder={category.unit.unitName}
                   borderRadius="md"
                   borderColor="gray.300"
@@ -146,7 +175,7 @@ export const DynamicInputForm = ({ category, year }: Props) => {
               );
             }
 
-            return <Input {...field} />;
+            return <Input {...commonProps} />;
           }}
         />
       </HStack>

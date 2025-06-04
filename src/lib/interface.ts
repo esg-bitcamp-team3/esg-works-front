@@ -24,12 +24,14 @@ export interface CategoryList {
   categoryList: Category[];
 }
 
-export interface ESGData {
+export interface PartialESGData {
   categoryId: string;
   corpId: string;
   year: string;
-  updatedAt: string; // ISO 문자열 (예: "2024-06-01")
-  updatedBy: string;
-  createdAt: string;
-  createdBy: string;
+  value: string;
+}
+
+export interface DataFilter {
+  categoryId: string;
+  year: string;
 }

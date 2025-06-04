@@ -1,5 +1,12 @@
-import { Category, CategoryList, ESGData, Section } from "../interface";
+import {
+  Category,
+  CategoryList,
+  DataFilter,
+  PartialESGData,
+  Section,
+} from "../interface";
 import { apiClient } from "./client";
+import { ESGData } from "./interfaces/esgData";
 export async function getSearchSectionId(sectionId: string) {
   try {
     const response = await apiClient.get<Section[]>(
@@ -9,10 +16,13 @@ export async function getSearchSectionId(sectionId: string) {
   } catch (error) {}
 }
 
-export async function getDataByCorpYear(year: string, categoryId: string) {
+export async function getDataByCorpYear(data: DataFilter) {
   try {
-    const response = await apiClient.get<ESGData>(
-      `/year/${year}/category/${categoryId}`
+    const response = await apiClient.get<PartialESGData>(
+      `/esg-data/data-value`,
+      {
+        params: data,
+      }
     );
     return response.data;
   } catch (error) {}

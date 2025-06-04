@@ -31,7 +31,6 @@ export async function login(data: Partial<LoginForm>) {
 
 export async function tokenCheck() {
   try {
-    const token = localStorage.getItem("token");
     const response = await apiClient.get<User>("/profile");
     return response.data;
   } catch (error: any) {
