@@ -6,11 +6,12 @@ import {
   VStack,
   HStack,
   InputGroup,
+  Skeleton,
+  Spinner,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Selector from "./Selector";
 import { FaSearch } from "react-icons/fa";
-import TableContent from "./TableContent";
 import Gri from "./Gris";
 
 const CARD_STYLES = {
@@ -24,30 +25,31 @@ const CARD_STYLES = {
   overflow: "hidden",
 };
 
+const sectionList = ["200", "300", "400"];
+const yearList = ["2020", "2021", "2022", "2023", "2024", "2025"];
+
 const GriPage = () => {
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [year, setYear] = useState("");
+  const [category, setCategory] = useState("200");
+  const [year, setYear] = useState("2020");
 
-  const frameworks = [
-    { label: "React.js", value: "react" },
-    { label: "Vue.js", value: "vue" },
-    { label: "Angular", value: "angular" },
-    { label: "Svelte", value: "svelte" },
-  ];
-  const items = [
-    { id: 1, name: "Laptop", category: "Electronics", price: 999.99 },
-    { id: 2, name: "Coffee Maker", category: "Home Appliances", price: 49.99 },
-    { id: 3, name: "Desk Chair", category: "Furniture", price: 150.0 },
-    { id: 4, name: "Smartphone", category: "Electronics", price: 799.99 },
-    { id: 5, name: "Headphones", category: "Accessories", price: 199.99 },
-  ];
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 로딩 시뮬레이션 (데이터 fetch)
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 700); // 1초 후 로딩 종료 (예: fetch 완료)
+
+    return () => clearTimeout(timer);
+  }, [category, year]);
 
   return (
-    <Box {...CARD_STYLES} p={2} w={{ base: "100%", md: "100%" }}>
-      <Container maxW="100%" py={5}>
+    <Box {...CARD_STYLES} p={2} w={"100%"}>
+      <Container py={4}>
         <VStack gap={8}>
-          <HStack w="80%" gap={4} justifyContent="space-between">
+          <HStack w="100%" gap={4} justifyContent="space-between">
             <HStack>
               <InputGroup
                 startElement={
@@ -67,13 +69,32 @@ const GriPage = () => {
             </HStack>
 
             <HStack>
-              <Selector items={frameworks} text="GRI Standards" />
-              <Selector items={frameworks} text="연도" />
+              <Selector
+                items={sectionList}
+                // text="GRI Standards"
+                text={category}
+                selected={setCategory}
+              />
+              <Selector
+                items={yearList}
+                // text="연도"
+                text={year}
+                selected={setYear}
+              />
             </HStack>
           </HStack>
 
-          <Box minW="80%">
-            <Gri />
+          <Box minW="80%" maxHeight="80vh" overflowY="auto">
+            {isLoading ? (
+              <VStack w="100%" gap={4}>
+                <Skeleton height="40px" w="100%" />
+                <Skeleton height="40px" w="100%" />
+                <Skeleton height="40px" w="100%" />
+                <Spinner size="lg" color="blue.500" />
+              </VStack>
+            ) : (
+              <Gri section={category} year={year} />
+            )}
           </Box>
         </VStack>
       </Container>
