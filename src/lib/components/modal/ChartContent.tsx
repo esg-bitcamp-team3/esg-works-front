@@ -58,6 +58,28 @@ import {
 } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
+// Add this import at the top with other imports
+import { ChartOptions } from "chart.js";
+
+// Inside the ChartContent component, add this options configuration
+const chartOptions: ChartOptions = {
+  responsive: true,
+  scales: {
+    y: {
+      beginAtZero: true,
+    },
+  },
+  plugins: {
+    legend: {
+      position: "top" as const,
+    },
+    title: {
+      display: true,
+      text: "데이터 시각화",
+    },
+  },
+};
+
 const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   const [chartData, setChartData] = useState<DataType>(); // or import the correct ChartData type if preferred
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
@@ -83,17 +105,21 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
     useState<DatasetType["type"]>("bar");
 
   // 차트용 데이터 구성 (Setting chartData)
-  useEffect(() => {
-    if (categorizedEsgDataList.length > 0) {
-      const years = Array.from(
-        new Set(
-          categorizedEsgDataList.flatMap((category) =>
-            category.esgNumberDTOList.map((data) => data.year)
-          )
+ // Inside the useEffect that sets chartData
+useEffect(() => {
+  if (categorizedEsgDataList.length > 0) {
+    const years = Array.from(
+      new Set(
+        categorizedEsgDataList.flatMap((category) =>
+          category.esgNumberDTOList.map((data) => data.year)
         )
-      ).sort();
+      )
+    ).sort();
 
-      const datasets = categorizedEsgDataList.map((category) => ({
+    const datasets = categorizedEsgDataList.map((category) => {
+      const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+      
+      return {
         type: selectedChartType,
         label: category.categoryDetailDTO.categoryName,
         data: years.map((year) => {
@@ -102,18 +128,20 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
           );
           return yearData ? yearData.value : 0;
         }),
-        borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-        backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(
-          16
-        )}`,
-      }));
+        borderColor: selectedChartType === 'line' ? color : undefined,
+        backgroundColor: selectedChartType === 'line' 
+          ? 'rgba(255, 255, 255, 0.1)' 
+          : color,
+        fill: true,
+      };
+    });
 
-      setChartData({
-        labels: years.map((year) => year.toString()),
-        datasets: datasets,
-      });
-    }
-  }, [categorizedEsgDataList, selectedChartType]);
+    setChartData({
+      labels: years.map((year) => year.toString()),
+      datasets: datasets,
+    });
+  }
+}, [categorizedEsgDataList, selectedChartType]);
 
   return (
     <Flex
@@ -194,7 +222,11 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             alignContent="center"
             mt={4}
           >
-            <Chart type={selectedChartType} data={chartData} />
+            <Chart
+              type={selectedChartType}
+              data={chartData}
+              // options={chartOptions}
+            />
           </Box>
         )}
       </VStack>
