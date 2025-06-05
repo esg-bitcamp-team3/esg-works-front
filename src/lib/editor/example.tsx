@@ -69,6 +69,7 @@ import { apiClient } from "../api/client";
 import EditorLoadingState from "./components/EditorLoadingState";
 import EditableTitle from "./components/EditableTitle";
 import FileBar from "./components/FileBar";
+import { ChartDetail } from "../api/interfaces/chart";
 import { LuStar } from "react-icons/lu";
 import isUrl from "is-url";
 
@@ -142,13 +143,20 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
   //Drag & Drop
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CHART_ICON",
-    drop: (item: { chartType: string }) => {
+    drop: (item: { chartType: string; data: ChartDetail }) => {
       const chartElement: ChartElement = {
         type: "chart",
         chartType: item.chartType,
         data: {
-          labels: ["A", "B", "C"],
-          datasets: [{ label: "Example", data: [10, 20, 30] }],
+          labels: ["2020", "2021", "2022", "2023", "2024"],
+          datasets: item.data.dataSets.map((dataset) => ({
+            label: dataset.label,
+            data: dataset.esgDataList.map((item) => parseFloat(item.value)),
+            backgroundColor: dataset.backgroundColor,
+          borderColor: dataset.borderColor,
+          borderWidth: parseFloat(dataset.borderWidth),
+          fill: dataset.fill === "true",
+          })),
         },
         options: {},
         children: [{ text: "" }],
