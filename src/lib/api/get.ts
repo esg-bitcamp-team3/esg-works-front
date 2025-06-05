@@ -1,10 +1,4 @@
-import {
-  Category,
-  CategoryList,
-  DataFilter,
-  PartialESGData,
-  Section,
-} from "../interface";
+import { Category, DataFilter, PartialESGData, Section } from "../interface";
 import { apiClient } from "./client";
 import { ESGData } from "./interfaces/esgData";
 export async function getSearchSectionId(sectionId: string) {
@@ -112,6 +106,16 @@ export const getInterestChartByType = async (type: string) => {
     return res.data;
   } catch (error) {
     console.error(`${type}인 관심 차트 가져오기 실패:`, error);
+    return null;
+  }
+};
+
+export const getCategory = async () => {
+  try {
+    const res = await apiClient.get<Category[]>("/categories");
+    return res.data;
+  } catch (error) {
+    console.error("카테고리 리스트를 가져오지 못했습니다.");
     return null;
   }
 };

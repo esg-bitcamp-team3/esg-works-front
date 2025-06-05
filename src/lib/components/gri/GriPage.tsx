@@ -13,6 +13,9 @@ import { useEffect, useState } from "react";
 import Selector from "./Selector";
 import { FaSearch } from "react-icons/fa";
 import Gri from "./Gris";
+import { Category } from "@/lib/interface";
+import { getCategory } from "@/lib/api/get";
+import SearchBar from "./SearchBar";
 
 const CARD_STYLES = {
   bg: "white",
@@ -25,8 +28,19 @@ const CARD_STYLES = {
   overflow: "hidden",
 };
 
-const sectionList = ["200", "300", "400"];
-const yearList = ["2020", "2021", "2022", "2023", "2024", "2025"];
+const yearList = [
+  { label: "2020년", value: "2020" },
+  { label: "2021년", value: "2021" },
+  { label: "2022년", value: "2022" },
+  { label: "2023년", value: "2023" },
+  { label: "2024년", value: "2024" },
+  { label: "2025년", value: "2025" },
+];
+const sectionList = [
+  { label: "GRI 200: 경제", value: "200" },
+  { label: "GRI 300: 환경", value: "300" },
+  { label: "GRI 400: 사회", value: "400" },
+];
 
 const GriPage = () => {
   const [search, setSearch] = useState("");
@@ -46,45 +60,47 @@ const GriPage = () => {
   }, [category, year]);
 
   return (
-    <Box {...CARD_STYLES} p={2} w={"100%"}>
+    <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
       <Container py={4}>
         <VStack gap={8}>
           <HStack w="100%" gap={4} justifyContent="space-between">
+            <Selector
+              items={sectionList}
+              text="GRI Standards"
+              selected={setCategory}
+            />
             <HStack>
-              <InputGroup
+              {/* <InputGroup
                 startElement={
-                  <Box pl="3" display="flex" alignItems="center">
+                  <Box pl="4" display="flex" alignItems="center">
                     <FaSearch color="#2F6EEA" />
                   </Box>
                 }
                 alignItems="start"
-                w="lg"
+                w="md"
               >
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   flex={1}
+                  bg={"white"}
+                  borderWidth="1px" // 테두리 두께를 1px로 설정
+                  marginX={4}
                 />
-              </InputGroup>
+              </InputGroup> */}
+              <SearchBar searching={setSearch} />
             </HStack>
 
             <HStack>
               <Selector
-                items={sectionList}
-                // text="GRI Standards"
-                text={category}
-                selected={setCategory}
-              />
-              <Selector
                 items={yearList}
-                // text="연도"
-                text={year}
+                text="연도"
                 selected={setYear}
+                width="100px"
               />
             </HStack>
           </HStack>
-
-          <Box minW="80%" maxHeight="80vh" overflowY="auto">
+          <Box minW="100%" maxH="60vh" overflowY="auto" scrollbarWidth={"none"}>
             {isLoading ? (
               <VStack w="100%" gap={4}>
                 <Skeleton height="40px" w="100%" />
