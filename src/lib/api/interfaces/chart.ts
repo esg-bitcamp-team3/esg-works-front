@@ -90,3 +90,11 @@ export interface ChartDetail {
   }>;
   
 }
+
+export interface InteresrtChartDetail {
+  interestChartId: string;
+  chartId: string;
+  chartDetail: ChartDetail;
+  userId: string;
+  checkTime: Date;
+}
