@@ -122,14 +122,11 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
   //Drag & Drop
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CHART_ICON",
-    drop: (item: { chartType: string }) => {
+    drop: (item: { chartType: string; data: any }) => {
       const chartElement: ChartElement = {
         type: "chart",
         chartType: item.chartType,
-        data: {
-          labels: ["A", "B", "C"],
-          datasets: [{ label: "Example", data: [10, 20, 30] }],
-        },
+        data: item.data,
         options: {},
         children: [{ text: "" }],
       };

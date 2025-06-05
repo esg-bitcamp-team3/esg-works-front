@@ -14,7 +14,7 @@ import { TfiPieChart } from "react-icons/tfi";
 import { BsBarChartLine } from "react-icons/bs";
 import { RiLineChartLine } from "react-icons/ri";
 import { CiViewTable } from "react-icons/ci";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { RxLayout } from "react-icons/rx";
 import { FaRegStar } from "react-icons/fa";
 import Chart from "chart.js/auto";
@@ -52,6 +52,24 @@ const items = [
 ];
 
 const Subbar = () => {
+  const pieChartData = useMemo(
+    () => ({
+      labels: ["Red", "Blue", "Yellow"],
+      datasets: [
+        {
+          label: "My First Dataset",
+          data: [300, 50, 100],
+          backgroundColor: [
+            "rgb(255, 99, 132)",
+            "rgb(54, 162, 235)",
+            "rgb(255, 205, 86)",
+          ],
+          hoverOffset: 4,
+        },
+      ],
+    }),
+    []
+  );
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [selectedTab, setSelectedTab] = useState<"all" | "star">("all");
   const canvasEl = useRef(null);
@@ -62,30 +80,17 @@ const Subbar = () => {
   const barChartRef = useRef<Chart | null>(null);
   const lineChartRef = useRef<Chart | null>(null);
   const DEFAULT_SIDEBAR_WIDTH = 350;
+
   useEffect(() => {
     if (canvasEl2.current) {
       const existing = Chart.getChart(canvasEl2.current);
       if (existing) existing.destroy();
       pieChartRef.current = new Chart(canvasEl2.current, {
-        type: "doughnut",
-        data: {
-          labels: ["Red", "Blue", "Yellow"],
-          datasets: [
-            {
-              label: "My First Dataset",
-              data: [300, 50, 100],
-              backgroundColor: [
-                "rgb(255, 99, 132)",
-                "rgb(54, 162, 235)",
-                "rgb(255, 205, 86)",
-              ],
-              hoverOffset: 4,
-            },
-          ],
-        },
+        type: "pie",
+        data: pieChartData,
       });
     }
-  }, [activeIndex]);
+  }, [activeIndex, pieChartData]);
 
   useEffect(() => {
     if (canvasEl1.current) {
@@ -330,7 +335,7 @@ const Subbar = () => {
               )}
               {activeIndex === 1 && (
                 <Box p={4}>
-                  <DraggableChartIcon chartType="pie">
+                  <DraggableChartIcon chartType="pie" data={pieChartData}>
                     <canvas
                       ref={canvasEl2}
                       style={{ width: "100%", height: "100%" }}

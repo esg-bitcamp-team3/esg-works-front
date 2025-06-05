@@ -1,14 +1,20 @@
+import { ChartData, ChartType } from "chart.js";
 import { useDrag } from "react-dnd";
 
 interface Props {
   chartType: string;
   children: React.ReactNode;
+  data?: ChartData<"pie" | "bar" | "line" | "doughnut", number[], string>;
 }
 
-export default function DraggableChartIcon({ chartType, children }: Props) {
+export default function DraggableChartIcon({
+  chartType,
+  children,
+  data,
+}: Props) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "CHART_ICON",
-    item: { chartType },
+    item: { chartType, data },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
