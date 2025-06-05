@@ -15,6 +15,7 @@ import {
   Checkbox,
   Tabs,
   Icon,
+  Drawer,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
 import { use, useEffect, useState } from "react";
@@ -24,7 +25,6 @@ import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories } from "@/lib/api/get";
-import ChartContent from "./ChartContent";
 
 const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
@@ -343,7 +343,7 @@ export default function ChartModal() {
                     size="lg"
                     defaultValue={selectedTab}
                     onValueChange={(e) => setSelectedTab(e.value)}
-                    // height="100%" 
+                    // height="100%"
 
                     display="flex"
                     flexDirection="column"
@@ -372,14 +372,14 @@ export default function ChartModal() {
                     </Tabs.List>
 
                     <Tabs.ContentGroup>
-                     <Tabs.Content value="chart">
-
+                      <Tabs.Content value="chart">
                         <ChartContent
                           selected={selected}
                           charts={charts}
                           categoryId={selectedCategoryId}
                         />
                       </Tabs.Content>
+
                       <Tabs.Content value="table">
                         {/* 2번 탭 콘텐츠 */}
                         <TableContent categoryIds={selectedCategoryId} />

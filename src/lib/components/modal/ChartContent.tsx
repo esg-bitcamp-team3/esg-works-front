@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Flex,
+  HStack,
   Icon,
   SimpleGrid,
   Stack,
@@ -27,17 +28,6 @@ import {
   Legend,
 } from "chart.js";
 
-import {
-  Bar,
-  Line,
-  Pie,
-  Radar,
-  Doughnut,
-  Scatter,
-  Bubble,
-  PolarArea,
-} from "react-chartjs-2";
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -60,6 +50,7 @@ import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataL
 
 // Add this import at the top with other imports
 import { ChartOptions } from "chart.js";
+import ChartColor from "./chartColor";
 
 // Inside the ChartContent component, add this options configuration
 const chartOptions: ChartOptions = {
@@ -86,6 +77,10 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
     CategorizedESGDataList[]
   >([]);
 
+  // Add state for selectedColors and backgroundColor
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [backgroundColor, setBackgroundColor] = useState<string>("#ffffff");
+
   // ESG 데이터 가져오기
   useEffect(() => {
     Promise.all(categoryId.map((id) => getEsgData(id)))
@@ -105,43 +100,42 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
     useState<DatasetType["type"]>("bar");
 
   // 차트용 데이터 구성 (Setting chartData)
- // Inside the useEffect that sets chartData
-useEffect(() => {
-  if (categorizedEsgDataList.length > 0) {
-    const years = Array.from(
-      new Set(
-        categorizedEsgDataList.flatMap((category) =>
-          category.esgNumberDTOList.map((data) => data.year)
+  // Inside the useEffect that sets chartData
+  useEffect(() => {
+    if (categorizedEsgDataList.length > 0) {
+      const years = Array.from(
+        new Set(
+          categorizedEsgDataList.flatMap((category) =>
+            category.esgNumberDTOList.map((data) => data.year)
+          )
         )
-      )
-    ).sort();
+      ).sort();
 
-    const datasets = categorizedEsgDataList.map((category) => {
-      const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-      
-      return {
-        type: selectedChartType,
-        label: category.categoryDetailDTO.categoryName,
-        data: years.map((year) => {
-          const yearData = category.esgNumberDTOList.find(
-            (data) => data.year === year
-          );
-          return yearData ? yearData.value : 0;
-        }),
-        borderColor: selectedChartType === 'line' ? color : undefined,
-        backgroundColor: selectedChartType === 'line' 
-          ? 'rgba(255, 255, 255, 0.1)' 
-          : color,
-        fill: true,
-      };
-    });
+      const datasets = categorizedEsgDataList.map((category) => {
+        const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
-    setChartData({
-      labels: years.map((year) => year.toString()),
-      datasets: datasets,
-    });
-  }
-}, [categorizedEsgDataList, selectedChartType]);
+        return {
+          type: selectedChartType,
+          label: category.categoryDetailDTO.categoryName,
+          data: years.map((year) => {
+            const yearData = category.esgNumberDTOList.find(
+              (data) => data.year === year
+            );
+            return yearData ? yearData.value : 0;
+          }),
+          borderColor: selectedChartType === "line" ? color : undefined,
+          backgroundColor:
+            selectedChartType === "line" ? "rgba(255, 255, 255, 0.1)" : color,
+          fill: true,
+        };
+      });
+
+      setChartData({
+        labels: years.map((year) => year.toString()),
+        datasets: datasets,
+      });
+    }
+  }, [categorizedEsgDataList, selectedChartType]);
 
   return (
     <Flex
@@ -205,11 +199,24 @@ useEffect(() => {
         outline={"1px solid #E2E8F0"}
         padding={3}
       >
-        <Stack direction="row">
+        <HStack
+          width="100%"
+          display="flex"
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
           </Text>
-        </Stack>
+          <ChartColor
+            categorizedEsgDataList={categorizedEsgDataList}
+            selectedColors={selectedColors}
+            setSelectedColors={setSelectedColors}
+            backgroundColor={backgroundColor}
+            setBackgroundColor={setBackgroundColor}
+          />
+        </HStack>
         {!chartData || !chartData.labels || !chartData.datasets ? (
           <Text fontSize="sm" color="gray.500">
             차트를 불러올 수 없습니다.
