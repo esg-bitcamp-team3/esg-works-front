@@ -26,12 +26,7 @@ import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories } from "@/lib/api/get";
 import ChartContent from "./ChartContent";
 
-interface Item {
-  id: string;
-  title: string;
-  icons: React.ComponentType<any>;
-  content: React.ReactNode;
-}
+const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
 const chartType: ChartType[] = [
   { type: "Bar", label: "막대 차트", icons: FaChartPie },
@@ -43,19 +38,6 @@ const chartType: ChartType[] = [
   { type: "Bubble", label: "버블 차트", icons: FaPen },
   { type: "PolarArea", label: "폴라 영역 차트", icons: FaTable },
 ];
-
-interface ChartContentProps {
-  selected: string[];
-  charts: ChartType[];
-  chartData: {
-    labels: string[];
-    datasets: {
-      label: string;
-      data: number[];
-      backgroundColor: string;
-    }[];
-  };
-}
 
 export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
@@ -361,7 +343,8 @@ export default function ChartModal() {
                     size="lg"
                     defaultValue={selectedTab}
                     onValueChange={(e) => setSelectedTab(e.value)}
-                    height="100%"
+                    // height="100%" 
+
                     display="flex"
                     flexDirection="column"
                   >
@@ -388,8 +371,9 @@ export default function ChartModal() {
                       </Tabs.Trigger>
                     </Tabs.List>
 
-                    <Tabs.ContentGroup paddingTop="4">
-                      <Tabs.Content value="chart">
+                    <Tabs.ContentGroup>
+                     <Tabs.Content value="chart">
+
                         <ChartContent
                           selected={selected}
                           charts={charts}
