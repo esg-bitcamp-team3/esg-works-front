@@ -6,16 +6,37 @@ export interface ChartType {
   icons: React.ComponentType<any>;
 }
 
+// export type ChartDataset =
+//   | {
+//       type: "bar" | "line" | "pie" | "radar" | "doughnut" | "polarArea";
+//       label: string;
+//       data: number[];
+//     }
+//   | {
+//       type: "scatter";
+//       label: string;
+//       data: { x: number; y: number }[];
+//     }
+//   | {
+//       type: "bubble";
+//       label: string;
+//       data: { x: number; y: number; r: number }[];
+//     };
+
+export interface DatasetType {
+  type: "bar" | "line" | "pie" | "radar" | "doughnut" | "scatter" | "bubble" | "polarArea";
+  label: string;
+
+  data: number[];
+  backgroundColor?: string | string[];
+  borderColor?: string;
+}
+
 export interface DataType {
-  labels: string[]; // year
+  labels?: string[];  // year
   datasets: DatasetType[];
 }
 
-export interface DatasetType {
-  type: string;
-  label: string; // 카테고리 이름
-  data: number[];
-}
 export interface ChartContentProps {
   categoryId: string[];
   selected: string[];
