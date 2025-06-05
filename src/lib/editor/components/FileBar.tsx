@@ -1,8 +1,10 @@
 import {
+  Box,
   Button,
   CloseButton,
   Dialog,
   Field,
+  Flex,
   HStack,
   Input,
   Menu,
@@ -14,13 +16,15 @@ import {
 import SaveButton from "./SaveButton";
 import { apiClient } from "@/lib/api/client";
 import { Descendant } from "slate";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   LuAlignCenter,
   LuAlignJustify,
   LuAlignLeft,
   LuAlignRight,
   LuBold,
+  LuChartColumnBig,
+  LuChartLine,
   LuChevronRight,
   LuDownload,
   LuFile,
@@ -34,7 +38,71 @@ import {
   LuUnderline,
 } from "react-icons/lu";
 import { CustomEditor } from "../custom-types";
-import { toggleBlock, toggleMark } from "../example";
+import {
+  insertChart,
+  insertImage,
+  insertLink,
+  insertTable,
+  toggleBlock,
+  toggleMark,
+} from "../example";
+import TableSizeSelector from "./TableSizeSelector";
+import UrlDialog from "./UrlDialog";
+
+const MenuButton = ({ label }: { label: string }) => (
+  <Button
+    variant="ghost"
+    size="sm"
+    p={2}
+    _hover={{ bg: "gray.100" }}
+    _active={{ bg: "gray.200" }}
+    height="auto"
+    minW="auto"
+    fontWeight="medium"
+  >
+    <Text color="gray.700">{label}</Text>
+  </Button>
+);
+
+const MenuItem = ({
+  icon,
+  value,
+  label,
+  shortcut,
+  onClick,
+  closeOnSelect = true,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  shortcut?: string;
+  onClick: () => void;
+  closeOnSelect?: boolean;
+}) => (
+  <Menu.Item
+    closeOnSelect={closeOnSelect}
+    value={value}
+    onClick={onClick}
+    py={2}
+    px={3}
+    borderRadius="md"
+    _hover={{ bg: "gray.100" }}
+    _focus={{ bg: "gray.100" }}
+    width={"100%"}
+  >
+    <Flex justify="space-between" align="center" width="100%">
+      <Flex align="center" gap={2}>
+        {icon}
+        <Text>{label}</Text>
+      </Flex>
+      {shortcut && (
+        <Menu.ItemCommand fontSize="xs" color="gray.500" ml={4}>
+          {shortcut}
+        </Menu.ItemCommand>
+      )}
+    </Flex>
+  </Menu.Item>
+);
 
 interface FileBarProps {
   id?: string;
@@ -106,6 +174,8 @@ const FileMenu = ({ id, title, content }: FileBarProps) => {
       title: title,
     };
 
+    console.log("Saving document with payload:", payload);
+
     try {
       if (id) {
         await apiClient.put(`/reports/${id}`, payload);
@@ -152,43 +222,82 @@ const FileMenu = ({ id, title, content }: FileBarProps) => {
     <>
       <Menu.Root>
         <Menu.Trigger asChild>
-          <Button variant="ghost" size="sm" p={2}>
-            <Text color="gray.600">파일</Text>
+          <Button
+            variant="ghost"
+            size="sm"
+            p={2}
+            _hover={{ bg: "gray.100" }}
+            _active={{ bg: "gray.200" }}
+            height="auto"
+            minW="auto"
+            fontWeight="medium"
+          >
+            <Text color="gray.700">파일</Text>
           </Button>
         </Menu.Trigger>
         <Portal>
           <Menu.Positioner>
-            <Menu.Content>
+            <Menu.Content
+              minW="220px"
+              p={1}
+              borderRadius="md"
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+            >
               <Menu.ItemGroup>
-                <Menu.Item value="new" onClick={handleNew}>
-                  <LuFile /> 새 문서
-                </Menu.Item>
-                <Menu.Item value="save" onClick={handleSave}>
-                  <LuSave /> 저장
-                </Menu.Item>
-                <Menu.Item
+                <MenuItem
+                  icon={<LuFile />}
+                  label="새 문서"
+                  value="new_document"
+                  shortcut="Ctrl+N"
+                  onClick={handleNew}
+                />
+                <MenuItem
+                  icon={<LuSave />}
+                  label="저장"
+                  value="save"
+                  shortcut="Ctrl+S"
+                  onClick={handleSave}
+                />
+                <MenuItem
+                  icon={<LuFiles />}
+                  label="복제"
                   value="duplicate"
                   onClick={() => {
                     setNewTitle(`${title} (복사본)`);
                     setOpen(true);
                   }}
-                >
-                  <LuFiles />
-                  복제
-                </Menu.Item>
-                <Menu.Separator />
+                />
+                <Menu.Separator my={1} />
                 <Menu.Root
                   positioning={{ placement: "right-start", gutter: 2 }}
                 >
                   <Menu.TriggerItem>
-                    <LuDownload /> 내보내기 <LuChevronRight />
+                    <Flex justify="space-between" align="center" width="100%">
+                      <Flex align="center" gap={2}>
+                        <LuDownload />
+                        <Text>내보내기</Text>
+                      </Flex>
+                      <LuChevronRight />
+                    </Flex>
                   </Menu.TriggerItem>
                   <Portal>
                     <Menu.Positioner>
-                      <Menu.Content>
-                        <Menu.Item value="pdf" onClick={handleExportPDF}>
-                          PDF 문서
-                        </Menu.Item>
+                      <Menu.Content
+                        minW="180px"
+                        p={1}
+                        borderRadius="md"
+                        boxShadow="lg"
+                        border="1px solid"
+                        borderColor="gray.200"
+                      >
+                        <MenuItem
+                          icon={<Box boxSize={4} />}
+                          label="PDF 문서"
+                          value="export_pdf"
+                          onClick={handleExportPDF}
+                        />
                       </Menu.Content>
                     </Menu.Positioner>
                   </Portal>
@@ -209,44 +318,126 @@ const FileMenu = ({ id, title, content }: FileBarProps) => {
 };
 
 const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
-  const handleImageInsert = () => {
-    return;
+  const dialog = useDialog();
+  const [mode, setMode] = useState<"image" | "link">("image");
+
+  const handleClickImageInsert = () => {
+    dialog.setOpen(true);
+    setMode("image");
   };
-  const handleTableInsert = () => {
-    return;
+
+  const handleClickLinkInsert = () => {
+    dialog.setOpen(true);
+    setMode("link");
   };
-  const handleLinkInsert = () => {
-    return;
+
+  const handleImageInsert = (url: string) => {
+    try {
+      new URL(url);
+      insertImage(editor, url);
+    } catch (e) {
+      alert("유효한 URL을 입력해주세요.");
+    }
+  };
+
+  const handleTableSizeSelect = (rows: number, cols: number) => {
+    // Use the insertTable function from example.tsx
+    insertTable(editor, rows, cols);
+  };
+
+  const handleLinkInsert = (url: string) => {
+    try {
+      new URL(url);
+      insertLink(editor, url);
+    } catch (e) {
+      alert("유효한 URL을 입력해주세요.");
+    }
   };
   const handleChartInsert = () => {
-    return;
+    insertChart(editor);
   };
   return (
-    <Menu.Root>
-      <Menu.Trigger asChild>
-        <Button variant="ghost" size="sm" p={2}>
-          <Text color="gray.600">삽입</Text>
-        </Button>
-      </Menu.Trigger>
-      <Portal>
-        <Menu.Positioner>
-          <Menu.Content>
-            <Menu.ItemGroup>
-              <Menu.Item value="image" onClick={handleImageInsert}>
-                <LuImage /> 이미지
-              </Menu.Item>
-              <Menu.Item value="table" onClick={handleTableInsert}>
-                <LuTable2 /> 표
-              </Menu.Item>
-              <Menu.Item value="link" onClick={handleLinkInsert}>
-                <LuLink2 />
-                링크
-              </Menu.Item>
-            </Menu.ItemGroup>
-          </Menu.Content>
-        </Menu.Positioner>
-      </Portal>
-    </Menu.Root>
+    <>
+      <UrlDialog
+        dialog={dialog}
+        onSave={(url) => {
+          if (mode === "image") {
+            handleImageInsert(url);
+          } else if (mode === "link") {
+            handleLinkInsert(url);
+          }
+          dialog.setOpen(false);
+        }}
+        onCancel={() => dialog.setOpen(false)}
+        mode={mode}
+      />
+      <Menu.Root>
+        <Menu.Trigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            p={2}
+            _hover={{ bg: "gray.100" }}
+            _active={{ bg: "gray.200" }}
+            height="auto"
+            minW="auto"
+            fontWeight="medium"
+          >
+            <Text color="gray.700">삽입</Text>
+          </Button>
+        </Menu.Trigger>
+        <Portal>
+          <Menu.Positioner>
+            <Menu.Content
+              minW="220px"
+              p={1}
+              borderRadius="md"
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+            >
+              <Menu.ItemGroup>
+                <MenuItem
+                  icon={<LuImage />}
+                  label="이미지"
+                  value="insert_image"
+                  shortcut="Ctrl+I"
+                  onClick={handleClickImageInsert}
+                />
+                <TableSizeSelector
+                  onSelect={handleTableSizeSelect}
+                  trigger={
+                    <MenuItem
+                      icon={<LuTable2 />}
+                      label="표"
+                      value="insert_table"
+                      shortcut="Ctrl+T"
+                      onClick={() => {}}
+                      closeOnSelect={false}
+                    />
+                  }
+                />
+                <MenuItem
+                  icon={<LuChartColumnBig />}
+                  label="차트"
+                  value="insert_chart"
+                  shortcut="Ctrl+G"
+                  onClick={handleChartInsert}
+                />
+
+                <MenuItem
+                  icon={<LuLink2 />}
+                  label="링크"
+                  value="insert_link"
+                  shortcut="Ctrl+K"
+                  onClick={handleClickLinkInsert}
+                />
+              </Menu.ItemGroup>
+            </Menu.Content>
+          </Menu.Positioner>
+        </Portal>
+      </Menu.Root>
+    </>
   );
 };
 
@@ -278,8 +469,17 @@ const DesignMenu = ({ editor }: { editor: CustomEditor }) => {
   return (
     <Menu.Root>
       <Menu.Trigger asChild>
-        <Button variant="ghost" size="sm" p={2}>
-          <Text color="gray.600">서식</Text>
+        <Button
+          variant="ghost"
+          size="sm"
+          p={2}
+          _hover={{ bg: "gray.100" }}
+          _active={{ bg: "gray.200" }}
+          height="auto"
+          minW="auto"
+          fontWeight="medium"
+        >
+          <Text color="gray.700">서식</Text>
         </Button>
       </Menu.Trigger>
       <Portal>
@@ -288,64 +488,104 @@ const DesignMenu = ({ editor }: { editor: CustomEditor }) => {
             <Menu.ItemGroup>
               <Menu.Root positioning={{ placement: "right-start", gutter: 2 }}>
                 <Menu.TriggerItem>
-                  <LuBold /> 텍스트 <LuChevronRight />
+                  <Flex justify="space-between" align="center" width="100%">
+                    <Flex align="center" gap={2}>
+                      <LuBold />
+                      <Text>텍스트</Text>
+                    </Flex>
+                    <LuChevronRight />
+                  </Flex>
                 </Menu.TriggerItem>
                 <Portal>
                   <Menu.Positioner>
-                    <Menu.Content>
-                      <Menu.Item value="bold" onClick={handleTextBold}>
-                        <LuBold /> 굵게
-                      </Menu.Item>
-                      <Menu.Item value="italic" onClick={handleTextItalic}>
-                        <LuItalic /> 기울임
-                      </Menu.Item>
-                      <Menu.Item
+                    <Menu.Content
+                      minW="200px"
+                      p={1}
+                      borderRadius="md"
+                      boxShadow="lg"
+                      border="1px solid"
+                      borderColor="gray.200"
+                    >
+                      <MenuItem
+                        icon={<LuBold />}
+                        label="굵게"
+                        value="bold"
+                        shortcut="Ctrl+B"
+                        onClick={handleTextBold}
+                      />
+                      <MenuItem
+                        icon={<LuItalic />}
+                        label="기울임"
+                        value="italic"
+                        shortcut="Ctrl+I"
+                        onClick={handleTextItalic}
+                      />
+                      <MenuItem
+                        icon={<LuUnderline />}
+                        label="밑줄"
                         value="underline"
+                        shortcut="Ctrl+U"
                         onClick={handleTextUnderline}
-                      >
-                        <LuUnderline /> 밑줄
-                      </Menu.Item>
-                      <Menu.Item
+                      />
+                      <MenuItem
+                        icon={<LuStrikethrough />}
+                        label="취소선"
                         value="strikethrough"
+                        shortcut="Ctrl+Shift+X"
                         onClick={handleTextStrikethrough}
-                      >
-                        <LuStrikethrough /> 취소선
-                      </Menu.Item>
+                      />
                     </Menu.Content>
                   </Menu.Positioner>
                 </Portal>
               </Menu.Root>
               <Menu.Root positioning={{ placement: "right-start", gutter: 2 }}>
                 <Menu.TriggerItem>
-                  <LuAlignJustify /> 정렬 <LuChevronRight />
+                  <Flex justify="space-between" align="center" width="100%">
+                    <Flex align="center" gap={2}>
+                      <LuAlignJustify />
+                      <Text>정렬</Text>
+                    </Flex>
+                    <LuChevronRight />
+                  </Flex>
                 </Menu.TriggerItem>
                 <Portal>
                   <Menu.Positioner>
-                    <Menu.Content>
-                      <Menu.Item
-                        value="alignLeft"
+                    <Menu.Content
+                      minW="200px"
+                      p={1}
+                      borderRadius="md"
+                      boxShadow="lg"
+                      border="1px solid"
+                      borderColor="gray.200"
+                    >
+                      <MenuItem
+                        icon={<LuAlignLeft />}
+                        label="왼쪽 정렬"
+                        value="align_left"
+                        shortcut="Ctrl+L"
                         onClick={handleTextAlignLeft}
-                      >
-                        <LuAlignLeft /> 왼쪽 정렬
-                      </Menu.Item>
-                      <Menu.Item
-                        value="alignCenter"
+                      />
+                      <MenuItem
+                        icon={<LuAlignCenter />}
+                        label="중앙 정렬"
+                        value="align_center"
+                        shortcut="Ctrl+E"
                         onClick={handleTextAlignCenter}
-                      >
-                        <LuAlignCenter /> 중앙 정렬
-                      </Menu.Item>
-                      <Menu.Item
-                        value="alignRight"
+                      />
+                      <MenuItem
+                        icon={<LuAlignRight />}
+                        label="오른쪽 정렬"
+                        value="align_right"
+                        shortcut="Ctrl+R"
                         onClick={handleTextAlignRight}
-                      >
-                        <LuAlignRight /> 오른쪽 정렬
-                      </Menu.Item>
-                      <Menu.Item
-                        value="alignJustify"
+                      />
+                      <MenuItem
+                        icon={<LuAlignJustify />}
+                        label="양쪽 정렬"
+                        value="align_justify"
+                        shortcut="Ctrl+J"
                         onClick={handleTextAlignJustify}
-                      >
-                        <LuAlignJustify /> 양쪽 정렬
-                      </Menu.Item>
+                      />
                     </Menu.Content>
                   </Menu.Positioner>
                 </Portal>
@@ -360,11 +600,15 @@ const DesignMenu = ({ editor }: { editor: CustomEditor }) => {
 
 const FileBar = ({ id, title, content, editor }: FileBarProps) => {
   return (
-    <HStack px={0} mx={4} gap={0}>
-      <FileMenu id={id} title={title} content={content} editor={editor} />
-      <InsertMenu editor={editor} />
-      <DesignMenu editor={editor} />
-    </HStack>
+    <Box width="100%" px={1}>
+      <Flex align="center">
+        <HStack gap={0}>
+          <FileMenu id={id} title={title} content={content} editor={editor} />
+          <InsertMenu editor={editor} />
+          <DesignMenu editor={editor} />
+        </HStack>
+      </Flex>
+    </Box>
   );
 };
 
