@@ -134,7 +134,6 @@ export const Toolbar = React.forwardRef(
   ) => {
     const toolbarStyle: React.CSSProperties = {
       position: "relative",
-      padding: "1px 18px 17px",
       margin: "0 -20px",
       ...style,
     };

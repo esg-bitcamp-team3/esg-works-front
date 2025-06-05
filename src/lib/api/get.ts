@@ -22,7 +22,7 @@ export async function getDataByCorpYear(data: DataFilter) {
   } catch (error) {}
 }
 
-import { ChartDetail } from "./interfaces/chart";
+import { ChartDetail, InteresrtChartDetail } from "./interfaces/chart";
 
 import { CategorizedESGDataList } from "./interfaces/categorizedEsgDataList";
 import { CategoryDetail } from "./interfaces/categoryDetail";
@@ -64,11 +64,48 @@ export const getEsgData = async (categoryId: string) => {
 
 export const getChart = async () => {
   try {
-    const res = await apiClient.get<ChartDetail[]>(`/charts/my`);
+    const res = await apiClient.get<ChartDetail[]>(`/charts/my/`);
     console.log("Chart data:", res.data);
     return res.data;
   } catch (error) {
-    console.error("ESG 데이터 가져오기 실패:", error);
+    console.error("차트 가져오기 실패:", error);
+    return null;
+  }
+};
+
+export const getInterestChart = async () => {
+  try {
+    const res = await apiClient.get<InteresrtChartDetail[]>(
+      `/interest-charts/my/`
+    );
+    console.log("Interest Chart data:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("관심 차트 가져오기 실패:", error);
+    return null;
+  }
+};
+
+export const getChartByType = async (type: string) => {
+  try {
+    const res = await apiClient.get<ChartDetail[]>(`/charts/my/${type}`);
+    console.log("Chart data:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error(`${type}인 차트 가져오기 실패:`, error);
+    return null;
+  }
+};
+
+export const getInterestChartByType = async (type: string) => {
+  try {
+    const res = await apiClient.get<InteresrtChartDetail[]>(
+      `/interest-charts/my/${type}`
+    );
+    console.log("Interest Chart data:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error(`${type}인 관심 차트 가져오기 실패:`, error);
     return null;
   }
 };

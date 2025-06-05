@@ -1,3 +1,5 @@
+import { ESGNumber } from "./esgNumber";
+
 export interface Section {
   sectionId: string;
   sectionName: string;
@@ -15,6 +17,7 @@ export interface CategoryDetail {
   unit: Unit;
   categoryName: string;
   description: string;
+  esgNumber?: ESGNumber[];
 }
 
 export interface Unit {

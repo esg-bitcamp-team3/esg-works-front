@@ -13,10 +13,8 @@ import {
   Descendant,
   Editor,
   Element as SlateElement,
-  Range,
   Transforms,
   createEditor,
-  Point,
 } from "slate";
 import { withHistory } from "slate-history";
 import {
@@ -33,7 +31,6 @@ import {
 } from "slate-react";
 import { Button, Icon, Toolbar } from "@/lib/editor/components";
 import {
-  ButtonElement,
   ChartBlockElement,
   ChartElement,
   CustomEditor,
@@ -42,10 +39,8 @@ import {
   CustomElementWithAlign,
   CustomTextKey,
   ImageElement,
-  LinkElement,
   ParagraphElement,
   RenderElementPropsFor,
-  TableElement,
 } from "./custom-types.d";
 import { Chart as ChartJSComponent } from "react-chartjs-2";
 import {
@@ -55,23 +50,12 @@ import {
   registerables,
 } from "chart.js";
 import { useDrop } from "react-dnd";
-import {
-  Box,
-  Flex,
-  HStack,
-  Separator,
-  Skeleton,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Flex, HStack, Separator, Text } from "@chakra-ui/react";
 import SaveButton from "./components/SaveButton";
 import { apiClient } from "../api/client";
 import EditorLoadingState from "./components/EditorLoadingState";
 import EditableTitle from "./components/EditableTitle";
 import FileBar from "./components/FileBar";
-import { ChartDetail } from "../api/interfaces/chart";
-import { LuStar } from "react-icons/lu";
-import isUrl from "is-url";
 
 export interface Report {
   id: string;
@@ -132,31 +116,19 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
     []
   );
   const editor = useMemo(
-    () =>
-      withInlines(
-        withTables(
-          withChart(withImages(withHistory(withReact(createEditor()))))
-        )
-      ),
+    () => withChart(withImages(withHistory(withReact(createEditor())))),
     []
   );
   //Drag & Drop
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CHART_ICON",
-    drop: (item: { chartType: string; data: ChartDetail }) => {
+    drop: (item: { chartType: string }) => {
       const chartElement: ChartElement = {
         type: "chart",
         chartType: item.chartType,
         data: {
-          labels: ["2020", "2021", "2022", "2023", "2024"],
-          datasets: item.data.dataSets.map((dataset) => ({
-            label: dataset.label,
-            data: dataset.esgDataList.map((item) => parseFloat(item.value)),
-            backgroundColor: dataset.backgroundColor,
-          borderColor: dataset.borderColor,
-          borderWidth: parseFloat(dataset.borderWidth),
-          fill: dataset.fill === "true",
-          })),
+          labels: ["A", "B", "C"],
+          datasets: [{ label: "Example", data: [10, 20, 30] }],
         },
         options: {},
         children: [{ text: "" }],
@@ -173,7 +145,7 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
     }),
   }));
   const [title, setTitle] = useState<string>("제목 없는 문서");
-  const [value, setValue] = useState<Descendant[]>();
+  const [value, setValue] = useState<Descendant[]>(initialValue);
   const [isLoading, setIsLoading] = useState(documentId ? true : false);
 
   // 문서 ID가 있으면 문서 불러오기
@@ -210,123 +182,88 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
     }
   };
 
-  if (!value) {
-    return null;
-  }
   return (
-    <Slate
-      editor={editor}
-      initialValue={value}
-      onChange={(newValue) => {
-        setValue(newValue);
-      }}
+    <Flex
+      direction="column"
+      height="100vh"
+      width="100vw"
+      justifyContent="center"
+      alignItems="center"
+      overflow="hidden"
     >
-      <VStack justifyContent="center" w="100vw" h="100vh" mt={12}>
-        <VStack
-          w="100vw"
-          h="auto"
-          position="sticky"
-          top={0}
-          zIndex={150}
-          justifyContent={"center"}
-          alignItems={"center"}
-        >
-          <Box w="80%" justifyContent={"center"} alignItems={"center"}>
-            <HStack justifyContent="start" alignItems="center" w="100%">
-              {isLoading ? (
-                <Skeleton height="48px" width="sm">
-                  <EditableTitle title={title} onChange={setTitle} />
-                </Skeleton>
-              ) : (
-                <EditableTitle title={title} onChange={setTitle} />
-              )}
-              <Icon
-                style={{
-                  cursor: "pointer",
-                  marginLeft: "8px",
-                  fontSize: "32px",
-                  color: "#718096", // gray.400 equivalent
-                }}
-                onClick={() => {
-                  // Toggle favorite status
-                  // You can implement this functionality later
-                  console.log("Toggle favorite for document:", documentId);
-                }}
-              >
-                star_outline
-              </Icon>
-            </HStack>
-
-            <FileBar
-              id={documentId}
-              title={title}
-              content={value}
-              editor={editor}
-            />
-          </Box>
-          <Box
-            px={10}
-            py={2}
-            w={"82%"}
-            boxShadow={"md"}
-            bg="gray.50"
-            borderRadius="full"
-            justifyContent="center"
-            alignItems={"center"}
-            m={2}
-          >
-            <Toolbar>
-              <MarkButton format="bold" icon="format_bold" />
-              <MarkButton format="italic" icon="format_italic" />
-              <MarkButton format="underline" icon="format_underlined" />
-              <MarkButton format="code" icon="code" />
-              <BlockButton format="heading-one" icon="looks_one" />
-              <BlockButton format="heading-two" icon="looks_two" />
-              <BlockButton format="block-quote" icon="format_quote" />
-              <BlockButton format="numbered-list" icon="format_list_numbered" />
-              <BlockButton format="bulleted-list" icon="format_list_bulleted" />
-              <BlockButton format="left" icon="format_align_left" />
-              <BlockButton format="center" icon="format_align_center" />
-              <BlockButton format="right" icon="format_align_right" />
-              <BlockButton format="justify" icon="format_align_justify" />
-              <ChartLayoutButton layout="full" icon="crop_7_5" />
-              <ChartLayoutButton layout="right" icon="vertical_split" />
-              <ChartLayoutButton
-                layout="left"
-                icon="vertical_split"
-                flipped={true}
-              />
-              <ChartLayoutButton layout="center" icon="view_week" />
-            </Toolbar>
-          </Box>
-        </VStack>
+      <Box
+        borderRadius="md"
+        boxShadow={"md"}
+        borderWidth="1px"
+        borderColor="gray.300"
+        borderStyle="solid"
+        bg="white"
+        height="100%"
+        width="80%"
+        overflow="auto"
+      >
         <Box
-          boxShadow={"md"}
-          borderWidth="1px"
-          borderColor="gray.300"
-          borderStyle="solid"
-          bg="white"
+          ref={drop}
+          justifyContent="center"
+          width="100%"
           height="100%"
-          width="80%"
-          overflow="auto"
+          direction="column"
+          style={{ background: isOver ? "#E3F2FD" : "transparent" }}
         >
-          <Box
-            ref={drop}
-            justifyContent="center"
-            width="100%"
-            height="100%"
-            direction="column"
-            bg="#fafafa"
-            p={12}
+          <Slate
+            editor={editor}
+            initialValue={value}
+            onChange={(newValue) => {
+              setValue(newValue);
+            }}
           >
-            <Box
-              p={4}
-              flex="1"
-              bg="white"
-              minH="100%"
-              border={"1px solid #ddd"}
-              style={{ background: isOver ? "#E3F2FD" : "white" }}
-            >
+            <Box position="sticky" top={0} zIndex={150} bg={"white"}>
+              <EditableTitle title={title} onChange={setTitle} />
+              <Separator />
+              <FileBar
+                id={documentId}
+                title={title}
+                content={value}
+                editor={editor}
+              />
+
+              <Separator />
+              <Flex px={5} pt={5} w={"100%"}>
+                <Toolbar>
+                  <MarkButton format="bold" icon="format_bold" />
+                  <MarkButton format="italic" icon="format_italic" />
+                  <MarkButton format="underline" icon="format_underlined" />
+                  <MarkButton format="code" icon="code" />
+                  <InsertImageButton />
+                  <InsertChartButton />
+                  <BlockButton format="heading-one" icon="looks_one" />
+                  <BlockButton format="heading-two" icon="looks_two" />
+                  <BlockButton format="block-quote" icon="format_quote" />
+                  <BlockButton
+                    format="numbered-list"
+                    icon="format_list_numbered"
+                  />
+                  <BlockButton
+                    format="bulleted-list"
+                    icon="format_list_bulleted"
+                  />
+                  <BlockButton format="left" icon="format_align_left" />
+                  <BlockButton format="center" icon="format_align_center" />
+                  <BlockButton format="right" icon="format_align_right" />
+                  <BlockButton format="justify" icon="format_align_justify" />
+                  <ChartLayoutButton layout="full" icon="crop_7_5" />
+                  <ChartLayoutButton layout="right" icon="vertical_split" />
+                  <ChartLayoutButton
+                    layout="left"
+                    icon="vertical_split"
+                    flipped={true}
+                  />
+                  <ChartLayoutButton layout="center" icon="view_week" />
+                </Toolbar>
+              </Flex>
+              <Separator />
+            </Box>
+            <Box p={5} flex="1">
               {isLoading ? (
                 <EditorLoadingState />
               ) : (
@@ -465,10 +402,10 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
                 />
               )}
             </Box>
-          </Box>
+          </Slate>
         </Box>
-      </VStack>
-    </Slate>
+      </Box>
+    </Flex>
   );
 };
 
@@ -753,27 +690,6 @@ const Element = (props: RenderElementProps) => {
       );
     case "image":
       return <Image {...props} />;
-    case "table":
-      return (
-        <table
-          style={{
-            position: "relative",
-          }}
-        >
-          <tbody {...attributes}>{children}</tbody>
-        </table>
-      );
-    case "table-row":
-      return <tr {...attributes}>{children}</tr>;
-    case "table-cell":
-      return <td {...attributes}>{children}</td>;
-    case "link":
-      return <LinkComponent {...props} />;
-    case "button":
-      return <EditableButtonComponent {...props} />;
-    case "badge":
-      return <BadgeComponent {...props} />;
-
     case "chart":
       return <Chart {...props} />;
     case "chart-block":
@@ -883,79 +799,6 @@ const withChart = (editor: CustomEditor): CustomEditor => {
   return editor;
 };
 
-const withTables = (editor: CustomEditor) => {
-  const { deleteBackward, deleteForward, insertBreak } = editor;
-
-  editor.deleteBackward = (unit: "character" | "word" | "line" | "block") => {
-    const { selection } = editor;
-
-    if (selection && Range.isCollapsed(selection)) {
-      const [cell] = Editor.nodes(editor, {
-        match: (n) =>
-          !Editor.isEditor(n) &&
-          SlateElement.isElement(n) &&
-          n.type === "table-cell",
-      });
-
-      if (cell) {
-        const [, cellPath] = cell;
-        const start = Editor.start(editor, cellPath);
-
-        if (Point.equals(selection.anchor, start)) {
-          return;
-        }
-      }
-    }
-
-    deleteBackward(unit);
-  };
-
-  editor.deleteForward = (unit) => {
-    const { selection } = editor;
-
-    if (selection && Range.isCollapsed(selection)) {
-      const [cell] = Editor.nodes(editor, {
-        match: (n) =>
-          !Editor.isEditor(n) &&
-          SlateElement.isElement(n) &&
-          n.type === "table-cell",
-      });
-
-      if (cell) {
-        const [, cellPath] = cell;
-        const end = Editor.end(editor, cellPath);
-
-        if (Point.equals(selection.anchor, end)) {
-          return;
-        }
-      }
-    }
-
-    deleteForward(unit);
-  };
-
-  editor.insertBreak = () => {
-    const { selection } = editor;
-
-    if (selection) {
-      const [table] = Editor.nodes(editor, {
-        match: (n) =>
-          !Editor.isEditor(n) &&
-          SlateElement.isElement(n) &&
-          n.type === "table",
-      });
-
-      if (table) {
-        return;
-      }
-    }
-
-    insertBreak();
-  };
-
-  return editor;
-};
-
 export const insertImage = (editor: CustomEditor, url: string) => {
   const text = { text: "" };
   const image: ImageElement = { type: "image", url, children: [text] };
@@ -1041,20 +884,6 @@ const InsertChartButton = () => {
   );
 };
 
-const InsertTableButton = () => {
-  const editor = useSlateStatic();
-  return (
-    <Button
-      onMouseDown={(event: MouseEvent) => {
-        event.preventDefault();
-        insertTable(editor);
-      }}
-    >
-      <Icon>table_chart</Icon>
-    </Button>
-  );
-};
-
 interface ChartLayoutButtonProps {
   layout: ChartLayout;
   icon: string;
@@ -1100,7 +929,7 @@ const ChartLayoutButton = ({
 
 const isImageUrl = (url: string): boolean => {
   if (!url) return false;
-  if (!isUrl(url)) return false;
+  // if (!isUrl(url)) return false
   const ext = new URL(url).pathname.split(".").pop();
   return imageExtensions.includes(ext!);
 };
@@ -1154,73 +983,12 @@ export const insertChart = (editor: CustomEditor) => {
 
 ChartJS.register(...registerables);
 
-export const insertTable = (editor: CustomEditor, rows = 3, cols = 3) => {
-  const tableRows = [];
-
-  // Create header row
-  const headerCells = [];
-  for (let j = 0; j < cols; j++) {
-    headerCells.push({
-      type: "table-cell",
-      children: [
-        {
-          text: String.fromCharCode(65 + j),
-          bold: true,
-        },
-      ],
-    });
-  }
-  tableRows.push({
-    type: "table-row",
-    children: headerCells,
-  });
-
-  // Create data rows
-  for (let i = 0; i < rows - 1; i++) {
-    const cells = [];
-    for (let j = 0; j < cols; j++) {
-      cells.push({
-        type: "table-cell",
-        children: [{ text: "" }],
-      });
-    }
-    tableRows.push({
-      type: "table-row",
-      children: cells,
-    });
-  }
-
-  // Insert the table
-  const table: TableElement = {
-    type: "table",
-    children: tableRows,
-  };
-
-  Transforms.insertNodes(editor, table);
-
-  // Move selection to a point after the table
-  const point = Editor.after(editor, Editor.end(editor, []));
-
-  // Only if we have a valid point, insert paragraph after the table
-  if (point) {
-    // Insert a new paragraph after the table, not inside it
-    Transforms.insertNodes(
-      editor,
-      { type: "paragraph", children: [{ text: "" }] },
-      { at: point }
-    );
-
-    // Move selection to the new paragraph
-    Transforms.select(editor, point);
-  }
-};
-
 // const Chart = ({
 //   attributes,
 //   children,
 //   element,
 // }: RenderElementPropsFor<ChartElement>) => {
-//   const { chartType, data, options } = element;ㄴ
+//   const { chartType, data, options } = element;
 //   const editor = useSlateStatic();
 //   const path = ReactEditor.findPath(editor, element);
 //   const selected = useSelected();
@@ -1674,259 +1442,6 @@ const isAlignElement = (
   element: CustomElement
 ): element is CustomElementWithAlign => {
   return "align" in element;
-};
-
-const withInlines = (editor: CustomEditor) => {
-  const { insertData, insertText, isInline, isElementReadOnly, isSelectable } =
-    editor;
-
-  editor.isInline = (element: CustomElement) =>
-    ["link", "button", "badge"].includes(element.type) || isInline(element);
-
-  editor.isElementReadOnly = (element: CustomElement) =>
-    element.type === "badge" || isElementReadOnly(element);
-
-  editor.isSelectable = (element: CustomElement) =>
-    element.type !== "badge" && isSelectable(element);
-
-  editor.insertText = (text) => {
-    if (text && isUrl(text)) {
-      wrapLink(editor, text);
-    } else {
-      insertText(text);
-    }
-  };
-
-  editor.insertData = (data) => {
-    const text = data.getData("text/plain");
-
-    if (text && isUrl(text)) {
-      wrapLink(editor, text);
-    } else {
-      insertData(data);
-    }
-  };
-
-  return editor;
-};
-
-export const insertLink = (editor: CustomEditor, url: string) => {
-  if (editor.selection) {
-    wrapLink(editor, url);
-  }
-};
-
-export const insertButton = (editor: CustomEditor) => {
-  if (editor.selection) {
-    wrapButton(editor);
-  }
-};
-
-const isLinkActive = (editor: CustomEditor): boolean => {
-  const [link] = Editor.nodes(editor, {
-    match: (n) =>
-      !Editor.isEditor(n) && SlateElement.isElement(n) && n.type === "link",
-  });
-  return !!link;
-};
-
-const isButtonActive = (editor: CustomEditor): boolean => {
-  const [button] = Editor.nodes(editor, {
-    match: (n) =>
-      !Editor.isEditor(n) && SlateElement.isElement(n) && n.type === "button",
-  });
-  return !!button;
-};
-
-const unwrapLink = (editor: CustomEditor) => {
-  Transforms.unwrapNodes(editor, {
-    match: (n) =>
-      !Editor.isEditor(n) && SlateElement.isElement(n) && n.type === "link",
-  });
-};
-
-const unwrapButton = (editor: CustomEditor) => {
-  Transforms.unwrapNodes(editor, {
-    match: (n) =>
-      !Editor.isEditor(n) && SlateElement.isElement(n) && n.type === "button",
-  });
-};
-
-const wrapLink = (editor: CustomEditor, url: string) => {
-  if (isLinkActive(editor)) {
-    unwrapLink(editor);
-  }
-
-  const { selection } = editor;
-  const isCollapsed = selection && Range.isCollapsed(selection);
-  const link: LinkElement = {
-    type: "link",
-    url,
-    children: isCollapsed ? [{ text: url }] : [],
-  };
-
-  if (isCollapsed) {
-    Transforms.insertNodes(editor, link);
-  } else {
-    Transforms.wrapNodes(editor, link, { split: true });
-    Transforms.collapse(editor, { edge: "end" });
-  }
-};
-
-const wrapButton = (editor: CustomEditor) => {
-  if (isButtonActive(editor)) {
-    unwrapButton(editor);
-  }
-
-  const { selection } = editor;
-  const isCollapsed = selection && Range.isCollapsed(selection);
-  const button: ButtonElement = {
-    type: "button",
-    children: isCollapsed ? [{ text: "Edit me!" }] : [],
-  };
-
-  if (isCollapsed) {
-    Transforms.insertNodes(editor, button);
-  } else {
-    Transforms.wrapNodes(editor, button, { split: true });
-    Transforms.collapse(editor, { edge: "end" });
-  }
-};
-
-// Put this at the start and end of an inline component to work around this Chromium bug:
-// https://bugs.chromium.org/p/chromium/issues/detail?id=1249405
-const InlineChromiumBugfix = () => (
-  <span contentEditable={false} style={{ fontSize: 0 }}>
-    {String.fromCodePoint(160) /* Non-breaking space */}
-  </span>
-);
-
-const allowedSchemes = ["http:", "https:", "mailto:", "tel:"];
-
-const LinkComponent = ({
-  attributes,
-  children,
-  element,
-}: RenderElementPropsFor<LinkElement>) => {
-  const selected = useSelected();
-  const safeUrl = useMemo(() => {
-    let parsedUrl: URL | null = null;
-    try {
-      parsedUrl = new URL(element.url);
-      // eslint-disable-next-line no-empty
-    } catch {}
-    if (parsedUrl && allowedSchemes.includes(parsedUrl.protocol)) {
-      return parsedUrl.href;
-    }
-    return "about:blank";
-  }, [element.url]);
-
-  return (
-    <a
-      {...attributes}
-      href={safeUrl}
-      style={selected ? { boxShadow: "0 0 0 3px #ddd" } : undefined}
-    >
-      <InlineChromiumBugfix />
-      {children}
-      <InlineChromiumBugfix />
-    </a>
-  );
-};
-
-const EditableButtonComponent = ({
-  attributes,
-  children,
-}: RenderElementProps) => {
-  return (
-    /*
-      Note that this is not a true button, but a span with button-like CSS.
-      True buttons are display:inline-block, but Chrome and Safari
-      have a bad bug with display:inline-block inside contenteditable:
-      - https://bugs.webkit.org/show_bug.cgi?id=105898
-      - https://bugs.chromium.org/p/chromium/issues/detail?id=1088403
-      Worse, one cannot override the display property: https://github.com/w3c/csswg-drafts/issues/3226
-      The only current workaround is to emulate the appearance of a display:inline button using CSS.
-    */
-    <span
-      {...attributes}
-      onClick={(ev) => ev.preventDefault()}
-      style={{
-        margin: "0 0.1em",
-        backgroundColor: "#efefef",
-        padding: "2px 6px",
-        border: "1px solid #767676",
-        borderRadius: "2px",
-        fontSize: "0.9em",
-      }}
-    >
-      <InlineChromiumBugfix />
-      {children}
-      <InlineChromiumBugfix />
-    </span>
-  );
-};
-
-const BadgeComponent = ({
-  attributes,
-  children,
-  element,
-}: RenderElementProps) => {
-  const selected = useSelected();
-
-  return (
-    <span
-      {...attributes}
-      contentEditable={false}
-      style={{
-        backgroundColor: "green",
-        color: "white",
-        padding: "2px 6px",
-        borderRadius: "2px",
-        fontSize: "0.9em",
-        boxShadow: selected ? "0 0 0 3px #ddd" : "none",
-      }}
-      data-playwright-selected={selected}
-    >
-      <InlineChromiumBugfix />
-      {children}
-      <InlineChromiumBugfix />
-    </span>
-  );
-};
-
-const AddLinkButton = () => {
-  const editor = useSlate();
-  return (
-    <Button
-      active={isLinkActive(editor)}
-      onMouseDown={(event: MouseEvent) => {
-        event.preventDefault();
-        const url = window.prompt("Enter the URL of the link:");
-        if (!url) return;
-        insertLink(editor, url);
-      }}
-    >
-      <Icon>link</Icon>
-    </Button>
-  );
-};
-
-const RemoveLinkButton = () => {
-  const editor = useSlate();
-
-  return (
-    <Button
-      active={isLinkActive(editor)}
-      onMouseDown={(event: MouseEvent) => {
-        if (isLinkActive(editor)) {
-          unwrapLink(editor);
-        }
-      }}
-    >
-      <Icon>link_off</Icon>
-    </Button>
-  );
 };
 
 const initialValue: Descendant[] = [
