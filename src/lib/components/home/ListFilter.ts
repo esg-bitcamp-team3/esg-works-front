@@ -6,29 +6,25 @@ import {
 } from "@/lib/api/interfaces/report";
 import { useEffect, useState } from "react";
 
-export const listFilter = (filter: string) => {
+export const listFilter = (filter: string, asc: boolean) => {
   const [reportList, setReportList] = useState<Report[]>(exampleReports);
   const [favoriteReport, setFavoriteReport] = useState<InterestReport[]>(ir);
   const [viewList, setViewList] = useState<Report[]>();
 
-  const recentCreate = reportList
-    .slice()
-    .sort(
-      (a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime()
-    );
+  const sortByDate = <T>(list: T[], key: keyof T) =>
+    list
+      .slice()
+      .sort((a, b) =>
+        asc
+          ? new Date(a[key] as string).getTime() -
+            new Date(b[key] as string).getTime()
+          : new Date(b[key] as string).getTime() -
+            new Date(a[key] as string).getTime()
+      );
 
-  const recentUpdate = reportList
-    .slice()
-    .sort(
-      (a, b) => new Date(b.updateAt).getTime() - new Date(a.updateAt).getTime()
-    );
-
-  const recentInterest = favoriteReport
-    .slice()
-    .sort(
-      (a, b) =>
-        new Date(b.checkTime).getTime() - new Date(a.checkTime).getTime()
-    );
+  const recentCreate = sortByDate(reportList, "createAt");
+  const recentUpdate = sortByDate(reportList, "updateAt");
+  const recentInterest = sortByDate(favoriteReport, "checkTime");
 
   useEffect(() => {
     try {
@@ -55,7 +51,7 @@ export const listFilter = (filter: string) => {
       const list: Report[] = recentInterest.map((report) => report.report);
       setViewList(list);
     }
-  }, [filter]);
+  }, [filter, asc]);
 
   return viewList;
 };

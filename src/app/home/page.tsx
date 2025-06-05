@@ -2,7 +2,7 @@
 
 import { Box, Button, Flex, Input, InputGroup } from "@chakra-ui/react";
 import { useState } from "react";
-import { TbSearch } from "react-icons/tb";
+import { TbSearch, TbSortAscending, TbSortDescending } from "react-icons/tb";
 import { FaRegStar } from "react-icons/fa";
 import { FaRegClock } from "react-icons/fa6";
 import { FaRegFileWord } from "react-icons/fa";
@@ -21,6 +21,8 @@ export default function Home() {
   const [activeFilter2, setActiveFilter2] = useState<null | "list" | "layout">(
     "list"
   );
+  const [sort, setSort] = useState<boolean>(false);
+
   return (
     <Flex
       padding={4}
@@ -119,11 +121,15 @@ export default function Home() {
               >
                 <TbLayoutGridFilled />
               </Button>
+              <Button variant="ghost" onClick={() => setSort((prev) => !prev)}>
+                {sort ? <TbSortAscending /> : <TbSortDescending />}
+              </Button>
             </Box>
           </ButtonGroup>
           <ListView
             filter1={activeFilter || ""}
             filter2={activeFilter2 || ""}
+            asc={sort}
           />
         </Flex>
       </Stack>

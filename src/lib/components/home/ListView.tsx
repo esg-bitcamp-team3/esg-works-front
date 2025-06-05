@@ -17,10 +17,11 @@ import { useState } from "react";
 interface viewProps {
   filter1: string;
   filter2: string;
+  asc: boolean;
 }
 
-const ListView = ({ filter1, filter2 }: viewProps) => {
-  const viewList = listFilter(filter1) || [];
+const ListView = ({ filter1, filter2, asc }: viewProps) => {
+  const viewList = listFilter(filter1, asc) || [];
 
   const [page, setPage] = useState(1);
   const pageSize = 6;
