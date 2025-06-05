@@ -1,35 +1,80 @@
+import {
+  Category,
+  CategoryList,
+  DataFilter,
+  PartialESGData,
+  Section,
+} from "../interface";
 import { apiClient } from "./client";
+import { ESGData } from "./interfaces/esgData";
+export async function getSearchSectionId(sectionId: string) {
+  try {
+    const response = await apiClient.get<Section[]>(
+      `/sections/search/${sectionId}`
+    );
+    return response.data;
+  } catch (error) {}
+}
+
+export async function getDataByCorpYear(data: DataFilter) {
+  try {
+    const response = await apiClient.get<PartialESGData>(
+      `/esg-data/data-value`,
+      {
+        params: data,
+      }
+    );
+    return response.data;
+  } catch (error) {}
+}
+
+import { ChartDetail } from "./interfaces/chart";
+
 import { CategorizedESGDataList } from "./interfaces/categorizedEsgDataList";
-import { CategoryDetail, Section } from "./interfaces/categoryDetail";
+import { CategoryDetail } from "./interfaces/categoryDetail";
 
 export const getSections = async () => {
-    try {
-        const res = await apiClient.get<Section[]>("/sections");
-        return res.data;
-    } catch (error) {
-        console.error("섹션 가져오기 실패:", error);
-        return [];
-    }
-}
+  try {
+    const res = await apiClient.get<Section[]>("/sections");
+    return res.data;
+  } catch (error) {
+    console.error("섹션 가져오기 실패:", error);
+    return [];
+  }
+};
 
 export const getCategories = async (sectionId: string) => {
-    try {
-        const res = await apiClient.get<CategoryDetail[]>(`/categories/by-section/${sectionId}`);
-        return res.data;
-    } catch (error) {
-        console.error("카테고리 가져오기 실패:", error);
-        return [];
-    }
-}
+  try {
+    const res = await apiClient.get<CategoryDetail[]>(
+      `/categories/by-section/${sectionId}`
+    );
+    return res.data;
+  } catch (error) {
+    console.error("카테고리 가져오기 실패:", error);
+    return [];
+  }
+};
 
 export const getEsgData = async (categoryId: string) => {
-    try {
-        const res = await apiClient.get<CategorizedESGDataList>(`/esg-data/category/${categoryId}`);
-        console.log("보내는 categoryId:", categoryId);
-        return res.data;
-    } catch (error) {
-        console.error("ESG 데이터 가져오기 실패:", error);
-        return null;
-    }
-}
+  try {
+    const res = await apiClient.get<CategorizedESGDataList>(
+      `/esg-data/category/${categoryId}`
+    );
+    console.log("보내는 categoryId:", categoryId);
+    return res.data;
+  } catch (error) {
+    console.error("ESG 데이터 가져오기 실패:", error);
+    return null;
+  }
+};
 
+export const getChart = async () => {
+  try {
+    const res = await apiClient.get<ChartDetail[]>(`/charts/my`);
+    console.log("Chart data:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("ESG 데이터 가져오기 실패:", error);
+    return null;
+  }
+};

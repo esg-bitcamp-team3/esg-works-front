@@ -19,12 +19,12 @@ import {
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
 import { use, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-
 import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories } from "@/lib/api/get";
+import ChartContent from "./ChartContent";
 
 const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
@@ -91,8 +91,8 @@ export default function ChartModal() {
   });
 
   const selectedCategoryId = categories
-  .filter((category) => selected.includes(category.categoryName))
-  .map((category) => category.categoryId);
+    .filter((category) => selected.includes(category.categoryName))
+    .map((category) => category.categoryId);
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
@@ -187,7 +187,10 @@ export default function ChartModal() {
                               item={gristandard}
                               key={gristandard.value}
                               onClick={() => {
-                                console.log("📌 선택된 섹션 ID:", gristandard.value);
+                                console.log(
+                                  "📌 선택된 섹션 ID:",
+                                  gristandard.value
+                                );
                                 setSelectedSectionId(gristandard.value);
                               }}
                               paddingLeft="2"
@@ -234,40 +237,47 @@ export default function ChartModal() {
                     padding="4"
                     overflowY="auto"
                   >
-                    {categories.filter(category => category.categoryName !== "비고").map((category) => (
-                      <Box key={category.categoryId}>
-                        <Checkbox.Root
-                          checked={selected.includes(category.categoryName)}
-                          onCheckedChange={() => {
-                            console.log("📌 선택된 카테고리 Name:", category.categoryName);
-                            const isChecked = selected.includes(
-                              category.categoryName
-                            );
-                            if (isChecked) {
-                              setSelected((prev) =>
-                                prev.filter((i) => i !== category.categoryName)
+                    {categories
+                      .filter((category) => category.categoryName !== "비고")
+                      .map((category) => (
+                        <Box key={category.categoryId}>
+                          <Checkbox.Root
+                            checked={selected.includes(category.categoryName)}
+                            onCheckedChange={() => {
+                              console.log(
+                                "📌 선택된 카테고리 Name:",
+                                category.categoryName
                               );
-                            } else {
-                              setSelected((prev) => [
-                                ...prev,
-                                category.categoryName,
-                              ]);
-                            }
-                          }}
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control
-                            _checked={{
-                              bg: "#2F6EEA",
-                              borderColor: "#2F6EEA",
+                              const isChecked = selected.includes(
+                                category.categoryName
+                              );
+                              if (isChecked) {
+                                setSelected((prev) =>
+                                  prev.filter(
+                                    (i) => i !== category.categoryName
+                                  )
+                                );
+                              } else {
+                                setSelected((prev) => [
+                                  ...prev,
+                                  category.categoryName,
+                                ]);
+                              }
                             }}
-                          />
-                          <Checkbox.Label>
-                            {category.categoryName}
-                          </Checkbox.Label>
-                        </Checkbox.Root>
-                      </Box>
-                    ))}
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control
+                              _checked={{
+                                bg: "#2F6EEA",
+                                borderColor: "#2F6EEA",
+                              }}
+                            />
+                            <Checkbox.Label>
+                              {category.categoryName}
+                            </Checkbox.Label>
+                          </Checkbox.Root>
+                        </Box>
+                      ))}
                   </Box>
                   {/* 태그 영역 */}
                   <Flex
@@ -334,6 +344,7 @@ export default function ChartModal() {
                     defaultValue={selectedTab}
                     onValueChange={(e) => setSelectedTab(e.value)}
                     // height="100%" 
+
                     display="flex"
                     flexDirection="column"
                   >
@@ -362,6 +373,7 @@ export default function ChartModal() {
 
                     <Tabs.ContentGroup>
                      <Tabs.Content value="chart">
+
                         <ChartContent
                           selected={selected}
                           charts={charts}
@@ -370,7 +382,7 @@ export default function ChartModal() {
                       </Tabs.Content>
                       <Tabs.Content value="table">
                         {/* 2번 탭 콘텐츠 */}
-                        <TableContent />
+                        <TableContent categoryIds={selectedCategoryId} />
                       </Tabs.Content>
                     </Tabs.ContentGroup>
                   </Tabs.Root>

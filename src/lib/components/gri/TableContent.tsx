@@ -1,66 +1,62 @@
-import { Table } from "@chakra-ui/react";
-import { LuTags } from "react-icons/lu";
+import { Box, Table, VStack } from "@chakra-ui/react";
 import ContentDetail from "./ContentDetail";
 import subCategory from "@/lib/data/gri";
-import { useState } from "react";
+import { Category } from "@/lib/interface";
+import { useEffect, useState } from "react";
+import { getCategories } from "@/lib/api/get";
 
 type SubCategoryKey = keyof typeof subCategory;
 
 interface Props {
   no: string;
+  year: string;
 }
 
-const TableContent = ({ no }: Props) => {
-  const category = no as SubCategoryKey;
-  // const [category, setCategory] = useState<SubCategoryKey>("201");
+const TableContent = ({ no, year }: Props) => {
+  const categoryNo = no as SubCategoryKey;
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dataList = await getCategories(no);
+        setCategoryList(dataList || []);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, [no]);
+
   return (
-    <Table.ScrollArea borderWidth="1px" maxH="xl" borderRadius="md">
-      <Table.Root minW={"lg"} size="lg" variant="outline" showColumnBorder>
-        <Table.Header>
-          <Table.Row bg="rgba(47, 110, 234, 0.1)">
-            <Table.ColumnHeader
-              padding={2}
-              justifyContent="center"
-              textAlign="center"
-            >
-              No.
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              padding={2}
-              justifyContent="center"
-              textAlign="center"
-              width={"70%"}
-            >
-              내용
-            </Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {Object.entries(subCategory[category]).map(([key, value]) => (
-            // <ContentDetail
-            //   Row={
-            <Table.Row key={key}>
-              <Table.Cell
-                padding={2}
-                justifyContent="center"
-                textAlign="center"
-              >
-                {no + "-" + key}
-              </Table.Cell>
-              <Table.Cell
-                padding={2}
-                justifyContent="center"
-                textAlign="center"
-              >
-                {value}
-              </Table.Cell>
-            </Table.Row>
-            //     }
-            //   />
-          ))}
-        </Table.Body>
-      </Table.Root>
-    </Table.ScrollArea>
+    <Box
+      minW="lg"
+      borderWidth="1px"
+      maxH="xl"
+      overflowY="auto"
+      borderRadius={"md"}
+    >
+      <VStack gap={0} width="100%">
+        {Object.entries(subCategory[categoryNo] || {}).map(([key, value]) => (
+          <Box
+            key={key}
+            width="100%"
+            p={2}
+            borderBottomWidth="1px"
+            display="flex"
+            justifyContent="center"
+            textAlign="center"
+          >
+            <ContentDetail
+              row={value}
+              categoriesList={categoryList.filter((category) =>
+                category.categoryId.startsWith(no + key)
+              )}
+              year={year}
+            />
+          </Box>
+        ))}
+      </VStack>
+    </Box>
   );
 };
 

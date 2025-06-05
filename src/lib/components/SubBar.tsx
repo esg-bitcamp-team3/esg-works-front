@@ -19,6 +19,9 @@ import { RxLayout } from "react-icons/rx";
 import { FaRegStar } from "react-icons/fa";
 import Chart from "chart.js/auto";
 import { Resizable } from "re-resizable";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import DraggableChartIcon from "./DraggableChartIcon";
 
 const items = [
   {
@@ -142,10 +145,11 @@ const Subbar = () => {
         position="fixed"
         right={activeIndex !== null ? `${sidebarWidth}px` : "0px"} // ❗사이드바 너비에 따라 이동
         top="10"
+        zIndex={1000}
       >
         <Box
           w="40px"
-          h="24vh"
+          h="30vh"
           bg="white"
           borderTopLeftRadius="xl"
           borderBottomLeftRadius="xl"
@@ -160,6 +164,7 @@ const Subbar = () => {
               variant="ghost"
               color="#2F6EEA"
               onClick={() => setActiveIndex(idx)}
+              w={"100%"}
             >
               {item.icon}
             </Button>
@@ -180,7 +185,7 @@ const Subbar = () => {
             position: "fixed",
             right: 0,
             top: 0,
-            zIndex: 99,
+            zIndex: 1000,
             backgroundColor: "white",
           }}
         >
@@ -325,26 +330,32 @@ const Subbar = () => {
               )}
               {activeIndex === 1 && (
                 <Box p={4}>
-                  <canvas
-                    ref={canvasEl2}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <DraggableChartIcon chartType="pie">
+                    <canvas
+                      ref={canvasEl2}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </DraggableChartIcon>
                 </Box>
               )}
               {activeIndex === 2 && (
                 <Box p={4}>
-                  <canvas
-                    ref={canvasEl1}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <DraggableChartIcon chartType="bar">
+                    <canvas
+                      ref={canvasEl1}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </DraggableChartIcon>
                 </Box>
               )}
               {activeIndex === 3 && (
                 <Box p={4}>
-                  <canvas
-                    ref={canvasEl}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <DraggableChartIcon chartType="line">
+                    <canvas
+                      ref={canvasEl}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </DraggableChartIcon>
                 </Box>
               )}
             </Box>
