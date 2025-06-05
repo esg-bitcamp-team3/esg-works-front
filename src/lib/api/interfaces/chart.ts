@@ -26,10 +26,9 @@ export interface ChartType {
 export interface DatasetType {
   type: "bar" | "line" | "pie" | "radar" | "doughnut" | "scatter" | "bubble" | "polarArea";
   label: string;
-
   data: number[];
-  backgroundColor?: string | string[];
-  borderColor?: string;
+  // backgroundColor?: string | string[];
+  // borderColor?: string;
 }
 
 export interface DataType {
@@ -86,4 +85,8 @@ export interface ChartDetail {
   updatedBy: string;
   createdAt: Date;
   createBy: string;
+    esgNumberDTOList?: Array<{
+    year: string;
+  }>;
+  
 }
