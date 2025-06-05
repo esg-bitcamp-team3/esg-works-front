@@ -3,7 +3,6 @@
 import {
   Table,
   Checkbox,
-  IconButton,
   ActionBar,
   Portal,
   Button,
@@ -12,7 +11,6 @@ import {
 } from "@chakra-ui/react";
 
 import { useEffect, useState } from "react";
-import { FaPlusCircle } from "react-icons/fa";
 import { getEsgData } from "@/lib/api/get";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
@@ -21,7 +19,7 @@ interface TableContentProps {
 }
 
 const TableContent = ({ categoryIds }: TableContentProps) => {
-  const [selection, setSelection] = useState<string[]>([]);
+  // const [selection, setSelection] = useState<string[]>([]);
   const [editableData, setEditableData] = useState<CategorizedESGDataList[]>(
     []
   );
@@ -29,7 +27,7 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
     Promise.all(categoryIds.map((id) => getEsgData(id)))
       .then((results) => {
         const valid = results.filter(Boolean) as CategorizedESGDataList[];
-        setCategorizedEsgData(valid);
+        // setCategorizedEsgData(valid);
         setEditableData(valid); // ← 수정용 상태에도 저장
       })
       .catch((err) => console.error("ESG data fetch error:", err));
@@ -103,7 +101,7 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
 
     return (
       <Table.Row key={categoryId}>
-        <Table.Cell>
+        {/* <Table.Cell>
           <Checkbox.Root
             size="sm"
             aria-label="Select row"
@@ -119,9 +117,9 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
             <Checkbox.HiddenInput />
             <Checkbox.Control />
           </Checkbox.Root>
-        </Table.Cell>
+        </Table.Cell> */}
         <Table.Cell>{categoryName}</Table.Cell>
-        <Table.Cell>{unitName}</Table.Cell>
+        <Table.Cell textAlign={"center"}>{unitName}</Table.Cell>
         {years.map((year) => {
           const yearIndex = item.esgNumberDTOList.findIndex(
             (e) => e.year === year
@@ -129,41 +127,11 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
           const value = item.esgNumberDTOList[yearIndex]?.value ?? "";
 
           return (
-            <Table.Cell key={`${categoryId}-${year}`}>
-              <input
-                type="number"
-                value={value}
-                onChange={(e) => {
-                  const newData = [...editableData];
-                  if (yearIndex !== -1) {
-                    newData[i].esgNumberDTOList[yearIndex].value = parseFloat(
-                      e.target.value
-                    );
-                  } else {
-                    newData[i].esgNumberDTOList.push({
-                      categoryId,
-                      corpId: "",
-                      year,
-                      value: parseFloat(e.target.value),
-                    });
-                  }
-                  setEditableData(newData);
-                }}
-                className="esg-input"
-              />
+            <Table.Cell textAlign={"end"} key={`${categoryId}-${year}`}>
+              {unitName === "원" ? value?.toLocaleString("ko-KR") : value}
             </Table.Cell>
           );
         })}
-        <Table.Cell>
-          <IconButton
-            aria-label="Add row"
-            size="sm"
-            onClick={() => {}}
-            variant="ghost"
-          >
-            <FaPlusCircle />
-          </IconButton>
-        </Table.Cell>
       </Table.Row>
     );
   });
@@ -171,22 +139,22 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
   return (
     <>
       <Box
+        overflowX="auto" // 반드시 X 방향 오토
         overflowY="auto"
-        overflowX="auto"
-        maxH="345"
+        maxH="345px"
         w="100%"
         boxShadow="md"
         border="1px solid"
         borderColor="gray.200"
         borderRadius="lg"
       >
-        <Box minW="1200px">
+        <Box minW={`${200 + years.length * 100}px`}>
           {" "}
-          {/* 필요에 따라 minW 조정 */}
+          {/* 테이블 넓이 계산해서 보장 */}
           <Table.Root size="md" variant="outline" showColumnBorder>
             <Table.Header>
               <Table.Row>
-                <Table.ColumnHeader w="6">
+                {/* <Table.ColumnHeader w="6">
                   <Checkbox.Root
                     size="sm"
                     aria-label="Select all rows"
@@ -210,40 +178,22 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
                     <Checkbox.HiddenInput />
                     <Checkbox.Control />
                   </Checkbox.Root>
-                </Table.ColumnHeader>
-
+                </Table.ColumnHeader> */}
                 <Table.ColumnHeader>지표</Table.ColumnHeader>
-                <Table.ColumnHeader>단위</Table.ColumnHeader>
+                <Table.ColumnHeader w={51}>단위</Table.ColumnHeader>
                 {years.map((year) => (
-                  <Table.ColumnHeader key={year}>
-                    <Box display="flex" alignItems="center" gap="1">
+                  <Table.ColumnHeader key={year} textAlign="end">
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="flex-end"
+                      gap="1"
+                      w="100%"
+                    >
                       {year}
-                      <IconButton
-                        aria-label={`Delete year ${year}`}
-                        size="xs"
-                        variant="ghost"
-                        onClick={() => handleRemoveColumn(year)}
-                        _hover={{
-                          backgroundColor: "red.100",
-                          color: "red.600",
-                        }}
-                      >
-                        ✕
-                      </IconButton>
                     </Box>
                   </Table.ColumnHeader>
                 ))}
-                <Table.ColumnHeader>
-                  {" "}
-                  <IconButton
-                    aria-label="Add column"
-                    size="sm"
-                    onClick={handleAddColumn}
-                    variant="ghost"
-                  >
-                    <FaPlusCircle />
-                  </IconButton>
-                </Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
             <Table.Body>{rows}</Table.Body>
@@ -251,7 +201,7 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
         </Box>
       </Box>
 
-      <ActionBar.Root open={selection.length > 0}>
+      {/* <ActionBar.Root open={selection.length > 0}>
         <Portal>
           <ActionBar.Positioner>
             <ActionBar.Content>
@@ -268,7 +218,7 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
             </ActionBar.Content>
           </ActionBar.Positioner>
         </Portal>
-      </ActionBar.Root>
+      </ActionBar.Root> */}
     </>
   );
 };
