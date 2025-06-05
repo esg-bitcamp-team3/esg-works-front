@@ -323,22 +323,28 @@ const Subbar = () => {
               {activeIndex === 0 && (
                 <Flex flexDirection="column" gap={4}>
                   <Box p={4}>
-                    <canvas
-                      ref={canvasEl2}
-                      style={{ width: "100%", height: "100%" }}
-                    />
+                    <DraggableChartIcon chartType="pie" data={pieChartData}>
+                      <canvas
+                        ref={canvasEl2}
+                        style={{ width: "100%", height: "100%" }}
+                      />
+                    </DraggableChartIcon>
                   </Box>
                   <Box p={4}>
-                    <canvas
-                      ref={canvasEl1}
-                      style={{ width: "100%", height: "100%" }}
-                    />
+                    <DraggableChartIcon chartType="bar" data={barChartData}>
+                      <canvas
+                        ref={canvasEl1}
+                        style={{ width: "100%", height: "100%" }}
+                      />
+                    </DraggableChartIcon>
                   </Box>
                   <Box p={4}>
-                    <canvas
-                      ref={canvasEl}
-                      style={{ width: "100%", height: "100%" }}
-                    />
+                    <DraggableChartIcon chartType="line" data={lineChartData}>
+                      <canvas
+                        ref={canvasEl}
+                        style={{ width: "100%", height: "100%" }}
+                      />
+                    </DraggableChartIcon>
                   </Box>
                 </Flex>
               )}
