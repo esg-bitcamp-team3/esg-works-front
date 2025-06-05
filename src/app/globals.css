@@ -47,13 +47,69 @@ blockquote[dir="rtl"] {
   border-right: 2px solid #ddd;
 }
 
+/* Table styles */
 table {
   border-collapse: collapse;
+  width: 100%;
+  margin: 20px 0;
+  border: 1px solid #e2e8f0;
+  font-size: 0.95em;
+  table-layout: fixed;
 }
 
+th {
+  background-color: #f7fafc;
+  color: #1a202c;
+  font-weight: 600;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  padding: 12px 10px;
+  min-width: 100px;
+}
 td {
   padding: 10px;
-  border: 2px solid #ddd;
+  border: 1px solid #e2e8f0;
+  vertical-align: top;
+  min-height: 30px; /* Minimum height for all cells */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word; /* Allow long content to wrap */
+}
+
+/* Ensure all cells have reasonable minimum dimensions */
+table td,
+table th {
+  min-width: 50px;
+  position: relative; /* For absolute positioning of child elements if needed */
+}
+table td:first-child,
+table th:first-child {
+  min-width: 120px;
+}
+
+tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+tr:hover {
+  background-color: #edf2f7;
+}
+
+/* Add styles for table selection/focus */
+[data-slate-editor] table:focus-within {
+  outline: 2px solid #3182ce;
+  outline-offset: 2px;
+}
+
+/* Improve table cell editing experience */
+[data-slate-editor] td:focus-within {
+  background-color: #e6f6ff;
+  position: relative;
+}
+
+/* Add styles for table headers */
+[data-slate-editor] td:first-of-type {
+  font-weight: 500;
 }
 
 input {
