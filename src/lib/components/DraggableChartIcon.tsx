@@ -1,10 +1,11 @@
 import { ChartData, ChartType } from "chart.js";
+import { cloneDeep } from "lodash";
 import { useDrag } from "react-dnd";
 
 interface Props {
   chartType: string;
   children: React.ReactNode;
-  data?: ChartData<"pie" | "bar" | "line" | "doughnut", number[], string>;
+  data?: ChartData<"pie" | "bar" | "line", number[], string | number>;
 }
 
 export default function DraggableChartIcon({
@@ -14,7 +15,7 @@ export default function DraggableChartIcon({
 }: Props) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "CHART_ICON",
-    item: { chartType, data },
+    item: { chartType, data: cloneDeep(data) },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),

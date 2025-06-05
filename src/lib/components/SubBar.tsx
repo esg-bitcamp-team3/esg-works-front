@@ -22,6 +22,7 @@ import { Resizable } from "re-resizable";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import DraggableChartIcon from "./DraggableChartIcon";
+import cloneDeep from "lodash/cloneDeep";
 
 const items = [
   {
@@ -57,7 +58,7 @@ const Subbar = () => {
       labels: ["Red", "Blue", "Yellow"],
       datasets: [
         {
-          label: "My First Dataset",
+          label: "Pie Chart Example",
           data: [300, 50, 100],
           backgroundColor: [
             "rgb(255, 99, 132)",
@@ -65,6 +66,44 @@ const Subbar = () => {
             "rgb(255, 205, 86)",
           ],
           hoverOffset: 4,
+        },
+      ],
+    }),
+    []
+  );
+  const barChartData = useMemo(
+    () => ({
+      labels: [1, 2, 3, 4, 5, 6, 7],
+      datasets: [
+        {
+          label: "Bar Chart",
+          data: [32, 99, 80, 81, 56, 55, 40],
+          backgroundColor: [
+            "rgb(227, 106, 131)",
+            "rgb(249, 209, 96)",
+            "rgb(123, 204, 148)",
+            "rgb(130, 211, 207)",
+            "rgb(111, 162, 247)",
+            "rgb(128, 89, 230)",
+            "rgb(80, 80, 80)",
+          ],
+          borderColor: "gray",
+          borderWidth: 1,
+        },
+      ],
+    }),
+    []
+  );
+  const lineChartData = useMemo(
+    () => ({
+      labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      datasets: [
+        {
+          label: "Line Chart",
+          data: [2, 0, 9, 0, 6, 0, 0, 3, 3, 16],
+          fill: false,
+          borderColor: "rgb(75, 192, 192)",
+          tension: 0.1,
         },
       ],
     }),
@@ -98,29 +137,10 @@ const Subbar = () => {
       if (existing) existing.destroy();
       barChartRef.current = new Chart(canvasEl1.current, {
         type: "bar",
-        data: {
-          labels: [1, 2, 3, 4, 5, 6, 7],
-          datasets: [
-            {
-              label: "Bar Chart",
-              data: [65, 59, 80, 81, 56, 55, 40],
-              backgroundColor: [
-                "rgb(227, 106, 131)",
-                "rgb(249, 209, 96)",
-                "rgb(123, 204, 148)",
-                "rgb(130, 211, 207)",
-                "rgb(111, 162, 247)",
-                "rgb(128, 89, 230)",
-                "rgb(80, 80, 80)",
-              ],
-              borderColor: "gray",
-              borderWidth: 1,
-            },
-          ],
-        },
+        data: barChartData,
       });
     }
-  }, [activeIndex]);
+  }, [activeIndex, barChartData]);
 
   useEffect(() => {
     if (canvasEl.current) {
@@ -128,21 +148,10 @@ const Subbar = () => {
       if (existing) existing.destroy();
       lineChartRef.current = new Chart(canvasEl.current, {
         type: "line",
-        data: {
-          labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          datasets: [
-            {
-              label: "Line Chart",
-              data: [2, 0, 9, 0, 6, 0, 0, 3, 3, 16],
-              fill: false,
-              borderColor: "rgb(75, 192, 192)",
-              tension: 0.1,
-            },
-          ],
-        },
+        data: lineChartData,
       });
     }
-  }, [activeIndex]);
+  }, [activeIndex, lineChartData]);
 
   return (
     <>
@@ -345,7 +354,7 @@ const Subbar = () => {
               )}
               {activeIndex === 2 && (
                 <Box p={4}>
-                  <DraggableChartIcon chartType="bar">
+                  <DraggableChartIcon chartType="bar" data={barChartData}>
                     <canvas
                       ref={canvasEl1}
                       style={{ width: "100%", height: "100%" }}
@@ -355,7 +364,7 @@ const Subbar = () => {
               )}
               {activeIndex === 3 && (
                 <Box p={4}>
-                  <DraggableChartIcon chartType="line">
+                  <DraggableChartIcon chartType="line" data={lineChartData}>
                     <canvas
                       ref={canvasEl}
                       style={{ width: "100%", height: "100%" }}
