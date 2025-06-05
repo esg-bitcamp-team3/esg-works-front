@@ -72,3 +72,13 @@ export const getChart = async () => {
     return null;
   }
 };
+
+export const getCategory = async () => {
+  try {
+    const res = await apiClient.get<Category[]>("/categories");
+    return res.data;
+  } catch (error) {
+    console.error("카테고리 리스트를 가져오지 못했습니다.");
+    return null;
+  }
+};
