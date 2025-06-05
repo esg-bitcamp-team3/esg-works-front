@@ -81,14 +81,13 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
       borderWidth="1px"
       borderRadius="xl"
       mb={4}
-      boxShadow="sm"
       bg="white"
       transition="all 0.2s"
       _hover={{ boxShadow: "md" }}
     >
       <HStack gap={4} align="stretch" justifyContent={"space-between"}>
         <HStack>
-          <Text fontSize={"md"} fontWeight={"bold"}>
+          <Text fontSize={"sm"} fontWeight={"bold"} maxLines={1}>
             {category.categoryName}
           </Text>
           <ToggleTip
@@ -125,8 +124,11 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
                     {...commonProps}
                     type="number"
                     borderRadius="md"
+                    borderWidth={1}
                     borderColor="gray.300"
                     _hover={{ borderColor: "gray.400" }}
+                    _focus={{ borderColor: "gray.400" }}
+                    bg={"white"}
                     w={"80%"}
                     p={4}
                     placeItems={"end"}
@@ -141,8 +143,11 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
                     {...commonProps}
                     type="number"
                     borderRadius="md"
+                    borderWidth={1}
                     borderColor="gray.300"
                     _hover={{ borderColor: "gray.400" }}
+                    _focus={{ borderColor: "gray.400" }}
+                    bg={"white"}
                     w={"40%"}
                     p={4}
                     placeItems={"end"}
@@ -167,10 +172,14 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
                   {...commonProps}
                   placeholder={category.unit.unitName}
                   borderRadius="md"
+                  borderWidth={1}
                   borderColor="gray.300"
                   _hover={{ borderColor: "gray.400" }}
+                  _focus={{ borderColor: "gray.400" }}
                   minH="120px"
+                  maxW="80%"
                   resize="vertical"
+                  bg="white"
                 />
               );
             }

@@ -1,10 +1,11 @@
-import { Accordion, Button, Flex, HStack } from "@chakra-ui/react";
+import { Accordion, Button, Flex, HStack, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
 import DynamicInputForm from "./InputForm";
 import { Category } from "@/lib/interface";
 import { tokenCheck } from "@/lib/api/auth/auth";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
+import { LuSave } from "react-icons/lu";
 
 interface Prop {
   row: string;
@@ -64,12 +65,16 @@ const ContentDetail = ({ row, categoriesList, year }: Prop) => {
       <Accordion.Root collapsible variant={"plain"}>
         <Accordion.Item value={"content"}>
           <HStack paddingRight={4}>
-            <Accordion.ItemTrigger p={2}>{row}</Accordion.ItemTrigger>
+            <Accordion.ItemTrigger p={2}>
+              <Text fontSize="sm" fontWeight="bold" color="gray.700">
+                {row}
+              </Text>
+            </Accordion.ItemTrigger>
             <Button
-              bg="white"
-              color="black"
-              border="1px solid"
+              variant={"solid"}
               onClick={handleSaveAll}
+              colorPalette="gray"
+              px={6}
             >
               저장
             </Button>
@@ -78,6 +83,7 @@ const ContentDetail = ({ row, categoriesList, year }: Prop) => {
             <Accordion.ItemBody p={2}>
               {categoriesList.map((category) => (
                 <DynamicInputForm
+                  key={category.categoryId}
                   category={category}
                   year={year}
                   onFieldChange={handleFieldChange}

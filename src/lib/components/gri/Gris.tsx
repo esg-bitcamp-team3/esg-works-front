@@ -1,4 +1,4 @@
-import { Accordion, Box, Span, Icon } from "@chakra-ui/react";
+import { Accordion, Box, Span, Icon, Text, Flex } from "@chakra-ui/react";
 import { FaChevronDown } from "react-icons/fa";
 import TableContent from "./TableContent";
 import { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ interface GriProps {
 
 const Gri = ({ section, year }: GriProps) => {
   const [sectionList, setSectionList] = useState<Section[]>([]);
+  const [value, setValue] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,7 +31,12 @@ const Gri = ({ section, year }: GriProps) => {
   }, [sectionList]);
 
   return (
-    <Accordion.Root collapsible width="100%">
+    <Accordion.Root
+      collapsible
+      width="100%"
+      value={[value]}
+      onValueChange={(e) => setValue(e.value[0] || "")}
+    >
       {sectionList.map((item, index) => (
         <Accordion.Item
           key={index}
@@ -52,20 +58,19 @@ const Gri = ({ section, year }: GriProps) => {
               borderBottomWidth: "1px",
               borderColor: "gray.200",
             }}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            width="100%"
           >
-            <Span flex="1" fontSize="lg" fontWeight="semibold" color="gray.700">
+            <Text textStyle={"md"} fontWeight="bold" color="gray.700">
               {item.sectionId + " : " + item.sectionName}
-            </Span>
-            <Icon
-              as={FaChevronDown}
-              transform="auto"
-              transition="transform 0.2s ease"
-              _expanded={{ transform: "rotate(180deg)" }}
-              color="blue.500"
-            />
+            </Text>
+
+            <Accordion.ItemIndicator colorPalette="blue" />
           </Accordion.ItemTrigger>
           <Accordion.ItemContent>
-            <Box p={6} bg="white" borderTop="none">
+            <Box p={6} bg="white">
               {<TableContent no={item.sectionId} year={year} />}
             </Box>
           </Accordion.ItemContent>

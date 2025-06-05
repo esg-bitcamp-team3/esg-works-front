@@ -1,4 +1,4 @@
-import { Table } from "@chakra-ui/react";
+import { Box, Table, VStack } from "@chakra-ui/react";
 import ContentDetail from "./ContentDetail";
 import subCategory from "@/lib/data/gri";
 import { Category } from "@/lib/interface";
@@ -28,29 +28,35 @@ const TableContent = ({ no, year }: Props) => {
   }, [no]);
 
   return (
-    <Table.ScrollArea borderWidth="1px" maxH="xl" borderRadius="md">
-      <Table.Root minW={"lg"} size="lg" variant="outline" showColumnBorder>
-        <Table.Body>
-          {Object.entries(subCategory[categoryNo] || {}).map(([key, value]) => (
-            <Table.Row key={key}>
-              <Table.Cell
-                padding={2}
-                justifyContent="center"
-                textAlign="center"
-              >
-                <ContentDetail
-                  row={value}
-                  categoriesList={categoryList.filter((category) =>
-                    category.categoryId.startsWith(no + key)
-                  )}
-                  year={year}
-                />
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-    </Table.ScrollArea>
+    <Box
+      minW="lg"
+      borderWidth="1px"
+      maxH="xl"
+      overflowY="auto"
+      borderRadius={"md"}
+    >
+      <VStack gap={0} width="100%">
+        {Object.entries(subCategory[categoryNo] || {}).map(([key, value]) => (
+          <Box
+            key={key}
+            width="100%"
+            p={2}
+            borderBottomWidth="1px"
+            display="flex"
+            justifyContent="center"
+            textAlign="center"
+          >
+            <ContentDetail
+              row={value}
+              categoriesList={categoryList.filter((category) =>
+                category.categoryId.startsWith(no + key)
+              )}
+              year={year}
+            />
+          </Box>
+        ))}
+      </VStack>
+    </Box>
   );
 };
 

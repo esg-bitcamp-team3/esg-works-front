@@ -19,6 +19,9 @@ import { RxLayout } from "react-icons/rx";
 import { FaRegStar } from "react-icons/fa";
 import Chart from "chart.js/auto";
 import { Resizable } from "re-resizable";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import DraggableChartIcon from "./DraggableChartIcon";
 
 const items = [
   {
@@ -327,26 +330,32 @@ const Subbar = () => {
               )}
               {activeIndex === 1 && (
                 <Box p={4}>
-                  <canvas
-                    ref={canvasEl2}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <DraggableChartIcon chartType="pie">
+                    <canvas
+                      ref={canvasEl2}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </DraggableChartIcon>
                 </Box>
               )}
               {activeIndex === 2 && (
                 <Box p={4}>
-                  <canvas
-                    ref={canvasEl1}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <DraggableChartIcon chartType="bar">
+                    <canvas
+                      ref={canvasEl1}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </DraggableChartIcon>
                 </Box>
               )}
               {activeIndex === 3 && (
                 <Box p={4}>
-                  <canvas
-                    ref={canvasEl}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <DraggableChartIcon chartType="line">
+                    <canvas
+                      ref={canvasEl}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </DraggableChartIcon>
                 </Box>
               )}
             </Box>
