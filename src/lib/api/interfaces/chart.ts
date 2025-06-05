@@ -66,3 +66,11 @@ export interface ChartDetail {
   createdAt: Date;
   createBy: string;
 }
+
+export interface InteresrtChartDetail {
+  interestChartId: string;
+  chartId: string;
+  chartDetail: ChartDetail;
+  userId: string;
+  checkTime: Date;
+}
