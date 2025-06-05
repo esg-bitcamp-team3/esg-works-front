@@ -47,11 +47,13 @@ export default function ChartMake({ chartData }: Props) {
     // destroy old chart if it exists
     chartInstance.current?.destroy();
 
+    console.log("data", chartData);
+
     // create new chart
     chartInstance.current = new Chart(ctx, {
       data: {
         labels: ["2020", "2021", "2022", "2023", "2024"],
-        datasets: chartData?.dataSets.map((data) => ({
+        datasets: chartData.dataSets.map((data) => ({
           type: (data.type || "line") as ChartType,
           data: data.esgDataList.map((item) => parseFloat(item.value)),
           backgroundColor: data.backgroundColor,
