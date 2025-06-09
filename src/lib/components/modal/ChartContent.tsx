@@ -1,15 +1,12 @@
 import {
   Box,
   Button,
-  CloseButton,
-  Drawer,
   Flex,
   HStack,
-  Portal,
+  Icon,
+  Stack,
   Text,
   VStack,
-  Stack,
-  Icon
 } from "@chakra-ui/react";
 
 import { Chart } from "react-chartjs-2";
@@ -18,35 +15,11 @@ import { useEffect, useState } from "react";
 
 import {
   FcBarChart,
+  FcComboChart,
   FcDoughnutChart,
   FcLineChart,
   FcPieChart,
 } from "react-icons/fc";
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  RadialLinearScale,
-  Tooltip,
-  Legend,
-} from "chart.js";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  RadialLinearScale,
-  Tooltip,
-  Legend
-);
 
 import { getEsgData } from "@/lib/api/get";
 import {
@@ -56,7 +29,12 @@ import {
 } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
-const chartOptionsBase = {
+// Add this import at the top with other imports
+import { ChartOptions } from "chart.js";
+import ChartColor from "./chartColor";
+
+// Inside the ChartContent component, add this options configuration
+const chartOptions: ChartOptions = {
   responsive: true,
   scales: {
     y: {
@@ -73,7 +51,6 @@ const chartOptionsBase = {
     // },
   },
 };
-
 
 const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   const [chartData, setChartData] = useState<DataType>();
@@ -136,10 +113,10 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
     }
   }, [categorizedEsgDataList, selectedChartType, selectedColors]);
 
-  const chartOptions = {
-    ...chartOptionsBase,
+  const localChartOptions = {
+    ...chartOptions,
     plugins: {
-      ...chartOptionsBase.plugins,
+      ...chartOptions.plugins,
       custom_canvas_background_color: {
         color: backgroundColor,
       },
@@ -172,10 +149,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
           { type: "line", icon: FcLineChart },
           { type: "pie", icon: FcPieChart },
           { type: "doughnut", icon: FcDoughnutChart },
-          { type: "radar", icon: FcBarChart },
-          { type: "polarArea", icon: FcBarChart },
-          { type: "scatter", icon: FcBarChart },
-          { type: "bubble", icon: FcBarChart },
+          { type: "mixed", icon: FcComboChart },
         ].map(({ type, icon }) => (
           <Button
             key={type}
@@ -214,6 +188,14 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
           {/* <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
           </Text> */}
+
+          <ChartColor
+            categorizedEsgDataList={categorizedEsgDataList}
+            selectedColors={selectedColors}
+            setSelectedColors={setSelectedColors}
+            backgroundColor={backgroundColor}
+            setBackgroundColor={setBackgroundColor}
+          />
         </HStack>
         {!chartData || !chartData.labels || !chartData.datasets ? (
           <Text fontSize="sm" color="gray.500">

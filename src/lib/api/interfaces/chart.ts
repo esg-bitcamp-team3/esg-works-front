@@ -24,7 +24,7 @@ export interface ChartType {
 //     };
 
 export interface DatasetType {
-  type: "bar" | "line" | "pie" | "doughnut" | "polarArea";
+  type: "bar" | "line" | "pie" | "doughnut";
   label: string;
   data: number[];
   // backgroundColor?: string | string[];
