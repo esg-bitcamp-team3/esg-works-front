@@ -24,11 +24,7 @@ import {
 } from "react-icons/fc";
 
 import { getEsgData } from "@/lib/api/get";
-import {
-  ChartContentProps,
-  DatasetType,
-  DataType,
-} from "@/lib/api/interfaces/chart";
+import { DatasetType, DataType } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
 // Add this import at the top with other imports
@@ -76,29 +72,25 @@ ChartJS.register(
   Legend
 );
 
-const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
+export interface ChartContentProps {
+  categorizedEsgDataList: CategorizedESGDataList[];
+  charts: {
+    type: string;
+    label: string;
+    icons: React.ElementType;
+  }[];
+}
+
+const ChartContent = ({
+  categorizedEsgDataList,
+  charts,
+}: ChartContentProps) => {
   const [chartData, setChartData] = useState<DataType>();
-  const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
-    CategorizedESGDataList[]
-  >([]);
   const [selectedChartType, setSelectedChartType] =
     useState<DatasetType["type"]>("bar");
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
 
   const [backgroundColor, setBackgroundColor] = useState(parseColor("#ffffff"));
-
-  useEffect(() => {
-    Promise.all(categoryId.map((id) => getEsgData(id)))
-      .then((results) => {
-        const validResults = results.filter(
-          (result): result is CategorizedESGDataList => result !== null
-        );
-        setCategorizedEsgDataList(validResults);
-      })
-      .catch((error) => {
-        console.error("Error fetching ESG data:", error);
-      });
-  }, [categoryId, selected]);
 
   useEffect(() => {
     if (categorizedEsgDataList.length > 0) {
