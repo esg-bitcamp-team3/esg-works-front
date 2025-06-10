@@ -142,7 +142,8 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         // maxHeight={{ base: "30vh", md: "45vh", lg: "35vh" }}
         padding={3}
         borderRadius="md"
-        outline={"1px solid #E2E8F0"}
+        // outline={"1px solid #E2E8F0"}
+        // justifyContent='end'
       >
         {[
           { type: "bar", icon: FcBarChart },
@@ -163,7 +164,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             justifyContent="flex-start"
             p={3}
           >
-            <Icon as={icon} mr={2} /> {type.toUpperCase()}
+            <Icon as={icon} /> 
           </Button>
         ))}
       </Stack>
@@ -201,11 +202,35 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             </Box>
           )}
         </VStack>
-        <Box flex="1" outline={"1px solid #E2E8F0"}>
+        <Box flex="2" outline={"1px solid #E2E8F0"}>
           {/* <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
           </Text> */}
           {/* 색상과 배경색 설정을 위한 사용자 정의 컴포넌트 */}
+          {/* <Flex gap='2' w='100%'>
+             {[
+          { type: "bar", icon: FcBarChart },
+          { type: "line", icon: FcLineChart },
+          { type: "pie", icon: FcPieChart },
+          { type: "doughnut", icon: FcDoughnutChart },
+          { type: "mixed", icon: FcComboChart },
+        ].map(({ type, icon }) => (
+          <Button
+            key={type}
+            onClick={() =>
+              setSelectedChartType(type as typeof selectedChartType)
+            }
+            variant="outline"
+            colorScheme="blue"
+            // width="full"
+            textAlign="left"
+            justifyContent="flex-start"
+            p={3}
+          >
+            <Icon as={icon} /> 
+          </Button>
+        ))}
+          </Flex> */}
           <ChartColor
             categorizedEsgDataList={categorizedEsgDataList}
             selectedColors={selectedColors}
