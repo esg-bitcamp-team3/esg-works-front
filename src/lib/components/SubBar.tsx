@@ -180,6 +180,37 @@ const Subbar = () => {
         } else {
           setError("Mix 차트 데이터를 불러올 수 없습니다.");
         }
+
+        if (interestEntireData && interestEntireData.length > 0) {
+          console.log("Fetched Interest Entire data:", interestEntireData);
+          setInterestEntireChart(interestEntireData);
+        } else {
+          setError("관심 전체 차트 데이터를 불러올 수 없습니다.");
+        }
+        if (interestBarData && interestBarData.length > 0) {
+          console.log("Fetched Interest Bar data:", interestBarData);
+          setInterestBarChart(interestBarData);
+        } else {
+          setError("관심 Bar 차트 데이터를 불러올 수 없습니다.");
+        }
+        if (interestLineData && interestLineData.length > 0) {
+          console.log("Fetched Interest Line data:", interestLineData);
+          setInterestLineChart(interestLineData);
+        } else {
+          setError("관심 Line 차트 데이터를 불러올 수 없습니다.");
+        }
+        if (interestPieData && interestPieData.length > 0) {
+          console.log("Fetched Interest Pie data:", interestPieData);
+          setInterestPieChart(interestPieData);
+        } else {
+          setError("관심 Pie 차트 데이터를 불러올 수 없습니다.");
+        }
+        if (interestDoughnutData && interestDoughnutData.length > 0) {
+          console.log("Fetched Interest Doughnut data:", interestDoughnutData);
+          setInterestDoughnutChart(interestDoughnutData);
+        } else {
+          setError("관심 Doughnut 차트 데이터를 불러올 수 없습니다.");
+        }
       } catch (err) {
         setError("차트 데이터를 가져오는 중 오류가 발생했습니다.");
       } finally {
@@ -365,10 +396,37 @@ const Subbar = () => {
                   <Flex flexDirection="column" gap={4}>
                     <Box p={4}>
                       <>
-                        {entireChart &&
-                          entireChart.map((data, index) => (
-                            <Flex key={index} flexDirection="column" gap={4}>
+                        {pieChart &&
+                          pieChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={5}>
+                              <DraggableChartIcon chartType="pie" data={data}>
+                                <SingleChart chartData={data || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                        {lineChart &&
+                          lineChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={5}>
                               <DraggableChartIcon chartType="line" data={data}>
+                                <SingleChart chartData={data || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                        {doughnutChart &&
+                          doughnutChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={5}>
+                              <DraggableChartIcon
+                                chartType="dougnut"
+                                data={data}
+                              >
+                                <SingleChart chartData={data || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                        {barChart &&
+                          barChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={5}>
+                              <DraggableChartIcon chartType="bar" data={data}>
                                 <SingleChart chartData={data || []} />
                               </DraggableChartIcon>
                             </Flex>
@@ -432,7 +490,7 @@ const Subbar = () => {
                         {lineChart &&
                           lineChart.map((data, index) => (
                             <Flex key={index} flexDirection="column" gap={4}>
-                              <DraggableChartIcon chartType="line" data={data}>
+                              <DraggableChartIcon chartType="mix" data={data}>
                                 <MixedChart chartData={data || []} />
                               </DraggableChartIcon>
                             </Flex>
@@ -445,86 +503,173 @@ const Subbar = () => {
             )}
 
             {/* 즐겨찾기 차트 */}
-            {selectedTab === "star" && (
-              <Box mt={6} flex="1" overflowY="auto">
-                {activeIndex === 0 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {interestEntireChart &&
-                          interestEntireChart.map((data, index) => (
-                            <Flex key={index} flexDirection="column" gap={4}>
-                              <DraggableChartIcon
-                                chartType="line"
-                                data={data.chartDetail}
-                              >
-                                <ChartMake chartData={data.chartDetail || []} />
-                              </DraggableChartIcon>
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
-                {activeIndex === 1 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {interestPieChart &&
-                          interestPieChart.map((data, index) => (
-                            <Flex key={index} flexDirection="column" gap={4}>
-                              <DraggableChartIcon
-                                chartType="pie"
-                                data={data.chartDetail}
-                              >
-                                <ChartMake chartData={data.chartDetail || []} />
-                              </DraggableChartIcon>
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
-                {activeIndex === 2 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {interestBarChart &&
-                          interestBarChart.map((data, index) => (
-                            <Flex key={index} flexDirection="column" gap={4}>
-                              <DraggableChartIcon
-                                chartType="bar"
-                                data={data.chartDetail}
-                              >
-                                <ChartMake chartData={data.chartDetail || []} />
-                              </DraggableChartIcon>
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
-                {activeIndex === 3 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {interestLineChart &&
-                          interestLineChart.map((data, index) => (
-                            <Flex key={index} flexDirection="column" gap={4}>
-                              <DraggableChartIcon
-                                chartType="line"
-                                data={data.chartDetail}
-                              >
-                                <ChartMake chartData={data.chartDetail || []} />
-                              </DraggableChartIcon>
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
-              </Box>
-            )}
+            {selectedTab === "star" &&
+              (console.log("interestEntireChart", interestEntireChart),
+              console.log("interestLineChart", interestLineChart),
+              console.log("interestPieChart", interestPieChart),
+              console.log("interestBarChart", interestBarChart),
+              console.log("interestDoughnutChart", interestDoughnutChart),
+              (
+                <Box mt={6} flex="1" overflowY="auto">
+                  {activeIndex === 0 && (
+                    <Flex flexDirection="column" gap={4}>
+                      <Box p={4}>
+                        <>
+                          {interestPieChart &&
+                            interestPieChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="pie"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                          {interestBarChart &&
+                            interestBarChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="bar"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                          {interestLineChart &&
+                            interestLineChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="line"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                          {interestDoughnutChart &&
+                            interestDoughnutChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="doughnut"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                          {interestMixChart &&
+                            interestMixChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="mix"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                        </>
+                      </Box>
+                    </Flex>
+                  )}
+                  {activeIndex === 1 && (
+                    <Flex flexDirection="column" gap={4}>
+                      <Box p={4}>
+                        <>
+                          {interestEntireChart &&
+                            interestEntireChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="line"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                        </>
+                      </Box>
+                    </Flex>
+                  )}
+                  {activeIndex === 2 && (
+                    <Flex flexDirection="column" gap={4}>
+                      <Box p={4}>
+                        <>
+                          {interestBarChart &&
+                            interestBarChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="bar"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                        </>
+                      </Box>
+                    </Flex>
+                  )}
+                  {activeIndex === 3 && (
+                    <Flex flexDirection="column" gap={4}>
+                      <Box p={4}>
+                        <>
+                          {interestLineChart &&
+                            interestLineChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="line"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                        </>
+                      </Box>
+                    </Flex>
+                  )}
+                  {activeIndex === 4 && (
+                    <Flex flexDirection="column" gap={4}>
+                      <Box p={4}>
+                        <>
+                          {interestLineChart &&
+                            interestLineChart.map((data, index) => (
+                              <Flex key={index} flexDirection="column" gap={5}>
+                                <DraggableChartIcon
+                                  chartType="doughnut"
+                                  data={data.chartDetail}
+                                >
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
+                                  />
+                                </DraggableChartIcon>
+                              </Flex>
+                            ))}
+                        </>
+                      </Box>
+                    </Flex>
+                  )}
+                </Box>
+              ))}
           </Box>
         </Resizable>
       )}
