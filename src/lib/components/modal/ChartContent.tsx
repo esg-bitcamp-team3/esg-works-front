@@ -109,12 +109,8 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
       ).sort();
       setYears(extractedYears);
 
-
-      const datasets = categorizedEsgDataList.map((category, idx) => {
-        // 선택된 색상이 있다면 사용하고, 없다면 무작위 색상 생성
-        const color =
-          selectedColors[idx] ||
-          `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+      const datasets = categorizedEsgDataList.map((category, index) => {
+        const color = selectedColors[index] || "#2F6EEA";
 
         return {
           type: selectedChartType,
@@ -149,7 +145,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
       },
     },
   };
-
+  
   return (
     <Flex
       direction={{ base: "column", md: "column" }}
@@ -256,8 +252,28 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             backgroundColor={backgroundColor}
             setBackgroundColor={setBackgroundColor}
           />
-        </Box>
-      </Stack>
+        </HStack>
+        {!chartData || chartData.datasets.length === 0 ? (
+          <Text fontSize="sm" color="gray.500">
+            차트를 불러올 수 없습니다.
+          </Text>
+        ) : (
+          <Box
+            width="100%"
+            // height="30vh"
+            justifyContent="center"
+            alignContent="center"
+            mt={4}
+          >
+            <Chart
+              key={JSON.stringify(selectedColors)} // 색상 바뀔 때마다 컴포넌트 강제 리마운트
+              type={selectedChartType}
+              data={chartData}
+              // options={chartOptions}
+            />
+          </Box>
+        )}
+      </VStack>
     </Flex>
   );
 };
