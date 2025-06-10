@@ -9,18 +9,12 @@ import {
   Separator,
   Text,
 } from "@chakra-ui/react";
-import { GoFileDirectory } from "react-icons/go";
-import { TfiPieChart } from "react-icons/tfi";
-import { BsBarChartLine } from "react-icons/bs";
-import { RiLineChartLine } from "react-icons/ri";
-import { CiViewTable } from "react-icons/ci";
 import { useState, useEffect, useRef } from "react";
-import { RxLayout } from "react-icons/rx";
-import { FaRegStar } from "react-icons/fa";
 import Chart from "chart.js/auto";
 import { Resizable } from "re-resizable";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { Bar } from "react-chartjs-2";
 import DraggableChartIcon from "./DraggableChartIcon";
 import {
   getChart,
@@ -29,36 +23,55 @@ import {
   getInterestChartByType,
 } from "../api/get";
 import { ChartDetail, InteresrtChartDetail } from "../api/interfaces/chart";
-import { Bar } from "react-chartjs-2";
-import ChartMake from "./chart/SingleChart";
+import ChartMake from "./chart/ChartMake";
 import cloneDeep from "lodash/cloneDeep";
-import MixedChart from "./chart/MixedChart";
+import ChartModal from "./modal/chart-modal";
+
+import {
+  PiChartPieSlice,
+  PiFolder,
+  PiChartBar,
+  PiChartLine,
+  PiGridNine,
+  PiSquaresFour,
+  PiSquaresFourBold,
+  PiStar,
+  PiStarBold,
+} from "react-icons/pi";
 import SingleChart from "./chart/SingleChart";
+// import { GoFileDirectory } from "react-icons/go";
+// import { TfiPieChart } from "react-icons/tfi";
+// import { BsBarChartLine } from "react-icons/bs";
+// import { RiLineChartLine } from "react-icons/ri";
+// import { CiViewTable } from "react-icons/ci";
+// import { RxLayout } from "react-icons/rx";
+// import { FaRegStar } from "react-icons/fa";
+// import { FaRegFolder } from "react-icons/fa";
 
 const items = [
   {
-    icon: <GoFileDirectory />,
-    titleIcon: <GoFileDirectory size={30} color="#2F6EEA" />,
+    icon: <PiFolder />,
+    titleIcon: <PiFolder size={30} color="#2F6EEA" />,
     title: "전체파일",
   },
   {
-    icon: <TfiPieChart />,
-    titleIcon: <TfiPieChart size={30} color="#2F6EEA" />,
+    icon: <PiChartPieSlice />,
+    titleIcon: <PiChartPieSlice size={30} color="#2F6EEA" />,
     title: "원그래프",
   },
   {
-    icon: <BsBarChartLine />,
-    titleIcon: <BsBarChartLine size={30} color="#2F6EEA" />,
+    icon: <PiChartBar />,
+    titleIcon: <PiChartBar size={30} color="#2F6EEA" />,
     title: "막대그래프",
   },
   {
-    icon: <RiLineChartLine />,
-    titleIcon: <RiLineChartLine size={30} color="#2F6EEA" />,
+    icon: <PiChartLine />,
+    titleIcon: <PiChartLine size={30} color="#2F6EEA" />,
     title: "꺾은선그래프",
   },
   {
-    icon: <CiViewTable />,
-    titleIcon: <CiViewTable size={30} color="#2F6EEA" />,
+    icon: <PiGridNine />,
+    titleIcon: <PiGridNine size={30} color="#2F6EEA" />,
     title: "표",
   },
 ];
@@ -312,25 +325,29 @@ const Subbar = () => {
               <Box
                 display="flex"
                 justifyContent="space-between"
+                // gap="1"
                 width="100%"
                 bg="white"
                 borderRadius="md"
-                padding="0"
+                alignItems="center"
               >
                 {/* 전체 버튼 */}
                 <Button
                   bg="white"
-                  _hover={{ bg: "gray.100", pr: "46px" }}
+                  // _hover={{ bg: "gray.100"}}
                   onClick={() => setSelectedTab("all")}
                   display="flex"
+                  gap="3"
                   alignItems="center"
                   justifyContent="center"
-                  pl={12}
+                  paddingLeft="8"
+                  paddingRight="6"
                 >
-                  <RxLayout
-                    color={selectedTab === "all" ? "#2F6EEA" : "gray"}
-                    size="12px" // 👈 작은 화면용으로 크기 제한
-                  />
+                  {selectedTab === "all" ? (
+                    <PiSquaresFourBold color="#2F6EEA" size="12px" />
+                  ) : (
+                    <PiSquaresFour color="gray" size="12px" />
+                  )}
                   <Text
                     fontSize={{ base: "xs", md: "sm", lg: "md" }}
                     color={selectedTab === "all" ? "#2F6EEA" : "gray"}
@@ -343,23 +360,21 @@ const Subbar = () => {
                 {/* 즐겨찾기 버튼 */}
                 <Button
                   bg="white"
-                  _hover={{ bg: "gray.100", pl: "30px" }}
-                  // 👈 아이콘과 텍스트 사이 간격
-                  onClick={() => {
-                    setSelectedTab("star");
-                    setActiveIndex(0);
-                  }}
+                  // _hover={{ bg: "gray.100" }}
+                  gap="3" // 👈 아이콘과 텍스트 사이 간격
+                  onClick={() => setSelectedTab("star")}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
-                  pr={8}
+                  paddingLeft="3"
+                  paddingRight="5"
                 >
-                  <FaRegStar
-                    color={selectedTab === "star" ? "#2F6EEA" : "gray"}
-                    size="12px" // 👈 작은 화면용으로 크기 제한
-                  />
+                  {selectedTab === "star" ? (
+                    <PiStarBold color="#2F6EEA" size="12px" />
+                  ) : (
+                    <PiStar color="gray" size="12px" />
+                  )}
                   <Text
-                    ml={2}
                     fontSize={{ base: "xs", md: "sm", lg: "md" }}
                     color={selectedTab === "star" ? "#2F6EEA" : "gray"}
                     fontWeight={selectedTab === "star" ? "bold" : "normal"}
@@ -367,6 +382,8 @@ const Subbar = () => {
                     즐겨찾기
                   </Text>
                 </Button>
+                {/* 차트 추가 버튼 */}
+                <ChartModal />
               </Box>
             </HStack>
 
@@ -374,9 +391,10 @@ const Subbar = () => {
               width="100%"
               height="4px"
               display="flex"
-              mt="2"
+              // mt="2"
               borderRadius="md"
               overflow="hidden"
+              paddingRight="12"
             >
               <Box
                 flex="1"
@@ -491,7 +509,7 @@ const Subbar = () => {
                           lineChart.map((data, index) => (
                             <Flex key={index} flexDirection="column" gap={4}>
                               <DraggableChartIcon chartType="mix" data={data}>
-                                <MixedChart chartData={data || []} />
+                                <SingleChart chartData={data || []} />
                               </DraggableChartIcon>
                             </Flex>
                           ))}
