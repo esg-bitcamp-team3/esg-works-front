@@ -16,6 +16,7 @@ export interface Unit {
 }
 export interface Category {
   categoryId: string;
+  sectionId: string;
   unit: Unit;
   categoryName: string;
   description: string;

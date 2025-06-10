@@ -1,6 +1,6 @@
 "use client";
 import GriPage from "@/lib/components/gri/GriPage";
-import { Flex, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 
 const Page = () => {
   return (

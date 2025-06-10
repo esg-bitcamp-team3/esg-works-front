@@ -9,44 +9,63 @@ import {
   Separator,
   Text,
 } from "@chakra-ui/react";
-import { GoFileDirectory } from "react-icons/go";
-import { TfiPieChart } from "react-icons/tfi";
-import { BsBarChartLine } from "react-icons/bs";
-import { RiLineChartLine } from "react-icons/ri";
-import { CiViewTable } from "react-icons/ci";
 import { useState, useEffect, useRef } from "react";
-import { RxLayout } from "react-icons/rx";
-import { FaRegStar } from "react-icons/fa";
 import Chart from "chart.js/auto";
 import { Resizable } from "re-resizable";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { Bar } from "react-chartjs-2";
 import DraggableChartIcon from "./DraggableChartIcon";
+import { getChart, getChartByType, getInterestChart } from "../api/get";
+import { ChartDetail, InteresrtChartDetail } from "../api/interfaces/chart";
+import ChartMake from "./chart/ChartMake";
+import cloneDeep from "lodash/cloneDeep";
+import ChartModal from "./modal/chart-modal";
+
+import {
+  PiChartPieSlice,
+  PiFolder,
+  PiChartBar,
+  PiChartLine,
+  PiGridNine,
+  PiSquaresFour,
+  PiSquaresFourBold,
+  PiStar,
+  PiStarBold,
+} from "react-icons/pi";
+// import { GoFileDirectory } from "react-icons/go";
+// import { TfiPieChart } from "react-icons/tfi";
+// import { BsBarChartLine } from "react-icons/bs";
+// import { RiLineChartLine } from "react-icons/ri";
+// import { CiViewTable } from "react-icons/ci";
+// import { RxLayout } from "react-icons/rx";
+// import { FaRegStar } from "react-icons/fa";
+// import { FaRegFolder } from "react-icons/fa";
 
 const items = [
   {
-    icon: <GoFileDirectory />,
-    titleIcon: <GoFileDirectory size={30} color="#2F6EEA" />,
+    icon: <PiFolder />,
+    titleIcon: <PiFolder size={30} color="#2F6EEA" />,
     title: "전체파일",
   },
   {
-    icon: <TfiPieChart />,
-    titleIcon: <TfiPieChart size={30} color="#2F6EEA" />,
+    icon: <PiChartPieSlice />,
+    titleIcon: <PiChartPieSlice size={30} color="#2F6EEA" />,
     title: "원그래프",
   },
   {
-    icon: <BsBarChartLine />,
-    titleIcon: <BsBarChartLine size={30} color="#2F6EEA" />,
+    icon: <PiChartBar />,
+    titleIcon: <PiChartBar size={30} color="#2F6EEA" />,
     title: "막대그래프",
   },
   {
-    icon: <RiLineChartLine />,
-    titleIcon: <RiLineChartLine size={30} color="#2F6EEA" />,
+    icon: <PiChartLine />,
+    titleIcon: <PiChartLine size={30} color="#2F6EEA" />,
     title: "꺾은선그래프",
   },
   {
-    icon: <CiViewTable />,
-    titleIcon: <CiViewTable size={30} color="#2F6EEA" />,
+    icon: <PiGridNine />,
+    titleIcon: <PiGridNine size={30} color="#2F6EEA" />,
     title: "표",
   },
 ];
@@ -54,90 +73,99 @@ const items = [
 const Subbar = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [selectedTab, setSelectedTab] = useState<"all" | "star">("all");
-  const canvasEl = useRef(null);
-  const canvasEl1 = useRef(null);
-  const canvasEl2 = useRef(null);
   const [sidebarWidth, setSidebarWidth] = useState(350); // 👈 수정: 사이드바 너비 상태 추가
-  const pieChartRef = useRef<Chart | null>(null);
-  const barChartRef = useRef<Chart | null>(null);
-  const lineChartRef = useRef<Chart | null>(null);
+  const [entireChart, setEntireChart] = useState<ChartDetail[] | null>([]);
+  const [lineChart, setLineChart] = useState<ChartDetail[] | null>([]);
+  const [pieChart, setPieChart] = useState<ChartDetail[] | null>([]);
+  const [barChart, setBarChart] = useState<ChartDetail[] | null>([]);
+  const [doughnutChart, setDoughnutChart] = useState<ChartDetail[] | null>([]);
+  const [polarAreaChart, setPolarAreaChart] = useState<ChartDetail[] | null>(
+    []
+  );
+  const [radarChart, setRadarChart] = useState<ChartDetail[] | null>([]);
+  const [mixChart, setMixChart] = useState<ChartDetail[] | null>([]);
   const DEFAULT_SIDEBAR_WIDTH = 350;
-  useEffect(() => {
-    if (canvasEl2.current) {
-      const existing = Chart.getChart(canvasEl2.current);
-      if (existing) existing.destroy();
-      pieChartRef.current = new Chart(canvasEl2.current, {
-        type: "doughnut",
-        data: {
-          labels: ["Red", "Blue", "Yellow"],
-          datasets: [
-            {
-              label: "My First Dataset",
-              data: [300, 50, 100],
-              backgroundColor: [
-                "rgb(255, 99, 132)",
-                "rgb(54, 162, 235)",
-                "rgb(255, 205, 86)",
-              ],
-              hoverOffset: 4,
-            },
-          ],
-        },
-      });
-    }
-  }, [activeIndex]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  // 즐겨 찾기 차트 가져오기
   useEffect(() => {
-    if (canvasEl1.current) {
-      const existing = Chart.getChart(canvasEl1.current);
-      if (existing) existing.destroy();
-      barChartRef.current = new Chart(canvasEl1.current, {
-        type: "bar",
-        data: {
-          labels: [1, 2, 3, 4, 5, 6, 7],
-          datasets: [
-            {
-              label: "Bar Chart",
-              data: [65, 59, 80, 81, 56, 55, 40],
-              backgroundColor: [
-                "rgb(227, 106, 131)",
-                "rgb(249, 209, 96)",
-                "rgb(123, 204, 148)",
-                "rgb(130, 211, 207)",
-                "rgb(111, 162, 247)",
-                "rgb(128, 89, 230)",
-                "rgb(80, 80, 80)",
-              ],
-              borderColor: "gray",
-              borderWidth: 1,
-            },
-          ],
-        },
-      });
-    }
-  }, [activeIndex]);
+    const fetchChart = async () => {
+      setLoading(true);
+      try {
+        const barData = await getChartByType("bar");
+        const lineData = await getChartByType("line");
+        // const pieData = await getChartByType("pie");
+        // const doughnutData = await getChartByType("doughnut");
+        // const polarAreaData = await getChartByType("polarArea");
+        // const radarData = await getChartByType("radar");
+        // const mixData = await getChartByType("mix");
+        // const entireData = await getChart();
 
-  useEffect(() => {
-    if (canvasEl.current) {
-      const existing = Chart.getChart(canvasEl.current);
-      if (existing) existing.destroy();
-      lineChartRef.current = new Chart(canvasEl.current, {
-        type: "line",
-        data: {
-          labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          datasets: [
-            {
-              label: "Line Chart",
-              data: [2, 0, 9, 0, 6, 0, 0, 3, 3, 16],
-              fill: false,
-              borderColor: "rgb(75, 192, 192)",
-              tension: 0.1,
-            },
-          ],
-        },
-      });
-    }
-  }, [activeIndex]);
+        // if (entireData && entireData.length > 0) {
+        //   console.log("Fetched Entire data:", entireData);
+        //   setEntireChart(entireData);
+        // } else {
+        //   setError("전체 차트 데이터를 불러올 수 없습니다.");
+        // }
+
+        // if (barData && barData.length > 0) {
+        //   console.log("Fetched Bar data:", barData);
+        //   setBarChart(barData);
+        // } else {
+        //   setError("Bar 차트 데이터를 불러올 수 없습니다.");
+        // }
+
+        if (lineData && lineData.length > 0) {
+          console.log("Fetched Line data:", lineData);
+          setLineChart(lineData);
+        } else {
+          setError("Line 차트 데이터를 불러올 수 없습니다.");
+        }
+
+        // if (pieData && pieData.length > 0) {
+        //   console.log("Fetched Pie data:", pieData);
+        //   setPieChart(pieData);
+        // } else {
+        //   setError("Pie 차트 데이터를 불러올 수 없습니다.");
+        // }
+
+        // if (doughnutData && doughnutData.length > 0) {
+        //   console.log("Fetched Doughnut data:", doughnutData);
+        //   setDoughnutChart(doughnutData);
+        // } else {
+        //   setError("Doughnut 차트 데이터를 불러올 수 없습니다.");
+        // }
+
+        // if (polarAreaData && polarAreaData.length > 0) {
+        //   console.log("Fetched PolarArea data:", polarAreaData);
+        //   setPolarAreaChart(polarAreaData);
+        // } else {
+        //   setError("PolarArea 차트 데이터를 불러올 수 없습니다.");
+        // }
+
+        // if (radarData && radarData.length > 0) {
+        //   console.log("Fetched Radar data:", radarData);
+        //   setRadarChart(radarData);
+        // } else {
+        //   setError("Radar 차트 데이터를 불러올 수 없습니다.");
+        // }
+
+        // if (mixData && mixData.length > 0) {
+        //   console.log("Fetched Mix data:", mixData);
+        //   setMixChart(mixData);
+        // } else {
+        //   setError("Mix 차트 데이터를 불러올 수 없습니다.");
+        // }
+      } catch (err) {
+        setError("차트 데이터를 가져오는 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChart();
+  }, []);
 
   return (
     <>
@@ -230,25 +258,29 @@ const Subbar = () => {
               <Box
                 display="flex"
                 justifyContent="space-between"
+                // gap="1"
                 width="100%"
                 bg="white"
                 borderRadius="md"
-                padding="0"
+                alignItems="center"
               >
                 {/* 전체 버튼 */}
                 <Button
                   bg="white"
-                  _hover={{ bg: "gray.100", pr: "46px" }}
+                  // _hover={{ bg: "gray.100"}}
                   onClick={() => setSelectedTab("all")}
                   display="flex"
+                  gap="3"
                   alignItems="center"
                   justifyContent="center"
-                  pl={12}
+                  paddingLeft="8"
+                  paddingRight="6"
                 >
-                  <RxLayout
-                    color={selectedTab === "all" ? "#2F6EEA" : "gray"}
-                    size="12px" // 👈 작은 화면용으로 크기 제한
-                  />
+                  {selectedTab === "all" ? (
+                    <PiSquaresFourBold color="#2F6EEA" size="12px" />
+                  ) : (
+                    <PiSquaresFour color="gray" size="12px" />
+                  )}
                   <Text
                     fontSize={{ base: "xs", md: "sm", lg: "md" }}
                     color={selectedTab === "all" ? "#2F6EEA" : "gray"}
@@ -261,20 +293,21 @@ const Subbar = () => {
                 {/* 즐겨찾기 버튼 */}
                 <Button
                   bg="white"
-                  _hover={{ bg: "gray.100", pl: "30px" }}
-                  gap={1} // 👈 아이콘과 텍스트 사이 간격
+                  // _hover={{ bg: "gray.100" }}
+                  gap="3" // 👈 아이콘과 텍스트 사이 간격
                   onClick={() => setSelectedTab("star")}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
-                  pr={8}
+                  paddingLeft="3"
+                  paddingRight="5"
                 >
-                  <FaRegStar
-                    color={selectedTab === "star" ? "#2F6EEA" : "gray"}
-                    size="12px" // 👈 작은 화면용으로 크기 제한
-                  />
+                  {selectedTab === "star" ? (
+                    <PiStarBold color="#2F6EEA" size="12px" />
+                  ) : (
+                    <PiStar color="gray" size="12px" />
+                  )}
                   <Text
-                    ml={2}
                     fontSize={{ base: "xs", md: "sm", lg: "md" }}
                     color={selectedTab === "star" ? "#2F6EEA" : "gray"}
                     fontWeight={selectedTab === "star" ? "bold" : "normal"}
@@ -282,6 +315,8 @@ const Subbar = () => {
                     즐겨찾기
                   </Text>
                 </Button>
+                {/* 차트 추가 버튼 */}
+                <ChartModal />
               </Box>
             </HStack>
 
@@ -289,9 +324,10 @@ const Subbar = () => {
               width="100%"
               height="4px"
               display="flex"
-              mt="2"
+              // mt="2"
               borderRadius="md"
               overflow="hidden"
+              paddingRight="12"
             >
               <Box
                 flex="1"
@@ -309,28 +345,22 @@ const Subbar = () => {
               {activeIndex === 0 && (
                 <Flex flexDirection="column" gap={4}>
                   <Box p={4}>
-                    <canvas
-                      ref={canvasEl2}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </Box>
-                  <Box p={4}>
-                    <canvas
-                      ref={canvasEl1}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </Box>
-                  <Box p={4}>
-                    <canvas
-                      ref={canvasEl}
-                      style={{ width: "100%", height: "100%" }}
-                    />
+                    <>
+                      {lineChart &&
+                        lineChart.map((data, index) => (
+                          <Flex key={index} flexDirection="column" gap={4}>
+                            <DraggableChartIcon chartType="line" data={data}>
+                              <ChartMake chartData={data || []} />
+                            </DraggableChartIcon>
+                          </Flex>
+                        ))}
+                    </>
                   </Box>
                 </Flex>
               )}
-              {activeIndex === 1 && (
+              {/* {activeIndex === 1 && (
                 <Box p={4}>
-                  <DraggableChartIcon chartType="pie">
+                  <DraggableChartIcon chartType="pie" data={pieChartData}>
                     <canvas
                       ref={canvasEl2}
                       style={{ width: "100%", height: "100%" }}
@@ -340,7 +370,7 @@ const Subbar = () => {
               )}
               {activeIndex === 2 && (
                 <Box p={4}>
-                  <DraggableChartIcon chartType="bar">
+                  <DraggableChartIcon chartType="bar" data={barChartData}>
                     <canvas
                       ref={canvasEl1}
                       style={{ width: "100%", height: "100%" }}
@@ -350,14 +380,14 @@ const Subbar = () => {
               )}
               {activeIndex === 3 && (
                 <Box p={4}>
-                  <DraggableChartIcon chartType="line">
+                  <DraggableChartIcon chartType="line" data={lineChartData}>
                     <canvas
                       ref={canvasEl}
                       style={{ width: "100%", height: "100%" }}
                     />
                   </DraggableChartIcon>
                 </Box>
-              )}
+              )} */}
             </Box>
           </Box>
         </Resizable>

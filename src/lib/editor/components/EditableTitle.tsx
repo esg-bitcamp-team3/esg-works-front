@@ -15,44 +15,43 @@ const EditableTitle = ({
       textStyle="xl"
       fontWeight="bold"
       size="lg"
-      m={4}
+      width={"auto"}
+      maxW="md"
     >
       <Editable.Preview
+        px={4}
         css={{
           display: "flex",
           flexDirection: "column",
           width: "100%",
           minHeight: "48px",
-          padding: "8px 0",
           fontSize: "xl",
           fontWeight: "bold",
           textAlign: "start",
           justifyContent: "center",
           alignItems: "start",
-          paddingLeft: "10px",
         }}
       />
       <Editable.Input
+        px={4}
         placeholder="제목을 입력하세요"
         css={{
           display: "block",
           width: "100%",
-          minHeight: "42px",
-          padding: "8px 0",
+          height: "48px",
           textAlign: "start",
           fontSize: "xl",
           fontWeight: "bold",
-          paddingLeft: "8px",
         }}
         _focus={{
           borderColor: "#ddd",
           boxShadow: "0 0 0",
           outline: "none",
+          height: "48px",
           backgroundColor: "#fafafa",
           fontSize: "xl",
           fontWeight: "bold",
           textAlign: "start",
-          paddingLeft: "8px",
         }}
       />
     </Editable.Root>

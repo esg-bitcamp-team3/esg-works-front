@@ -3,7 +3,13 @@ import { Flex } from "@chakra-ui/react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <Flex bg={"gray.100"} minHeight="100vh">
+    <Flex
+      bg={"white"}
+      h={"100vh"}
+      w={"100vw"}
+      justifyContent="center"
+      alignItems="center"
+    >
       <Sidebar />
       <main>{children}</main>
     </Flex>

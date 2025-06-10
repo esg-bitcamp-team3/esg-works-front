@@ -1,17 +1,26 @@
 import { createListCollection, Flex, Portal, Select } from "@chakra-ui/react";
 
-interface Props {
-  items: string[];
-  text: string;
-  selected: (value: string) => void;
+interface Item {
+  label: string;
+  value: string;
 }
 
-const Selector = ({ items, text, selected }: Props) => {
-  const collection = createListCollection({ items });
+interface Props {
+  items: Item[];
+  text: string;
+  selected: (value: string) => void;
+  width?: string;
+}
+
+const Selector = ({ items, text, selected, width }: Props) => {
+  const collection = createListCollection({
+    items: items.map((item) => item.value),
+  });
+
   return (
     <Select.Root
       collection={collection}
-      size="md"
+      size={"md"}
       defaultHighlightedValue={text}
       onValueChange={(details) => {
         const value = Array.isArray(details.value)
@@ -24,7 +33,7 @@ const Selector = ({ items, text, selected }: Props) => {
 
       <Select.Control>
         <Select.Trigger>
-          <Flex align="center" gap="4" minW="200px">
+          <Flex align="center" gap="4" minW={width || "170px"}>
             <Select.IndicatorGroup position="start">
               <Select.Indicator color="#2F6EEA" />
             </Select.IndicatorGroup>
@@ -41,12 +50,13 @@ const Selector = ({ items, text, selected }: Props) => {
           </Flex>
         </Select.Trigger>
       </Select.Control>
+
       <Portal>
         <Select.Positioner>
           <Select.Content>
-            {collection.items.map((framework) => (
-              <Select.Item item={framework} key={framework}>
-                {framework}
+            {items.map((item) => (
+              <Select.Item key={item.value} item={item.value}>
+                {item.label}
               </Select.Item>
             ))}
           </Select.Content>
