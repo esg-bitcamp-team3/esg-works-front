@@ -8,8 +8,47 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  RadialLinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
+import { Accordion, Span } from "@chakra-ui/react";
+
+const backgroundPlugin = {
+  id: "custom_canvas_background_color",
+  beforeDraw: (chart: any, args: any, options: any) => {
+    const { ctx, chartArea } = chart;
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-over";
+    ctx.fillStyle = options.color || "#ffff"; // 블랙 대신 미드나잇 그레이
+    // 배경 컬러를 차트 영역보다 약간 작게 적용
+    if (chartArea) {
+      const padding = {
+        top: 12,
+        bottom: 12,
+        left: 12,
+        right: 12,
+      };
+      ctx.fillRect(
+        chartArea.left + padding.left,
+        chartArea.top + padding.top,
+        chartArea.right - chartArea.left - padding.left - padding.right,
+        chartArea.bottom - chartArea.top - padding.top - padding.bottom
+      );
+    }
+    ctx.restore();
+  },
+};
+ChartJS.register(backgroundPlugin);
 
 interface ChartSettingsDrawerProps {
   categorizedEsgDataList: CategorizedESGDataList[];
@@ -55,42 +94,59 @@ const ChartColor = ({
             </Drawer.Header>
 
             <Drawer.Body display="flex" flexDirection="column" gap="4">
-              <Box>
-                <Text fontWeight="medium" mb="1">
-                  차트 배경
-                </Text>
-                <input
-                  type="color"
-                  value={backgroundColor}
-                  onChange={(e) => setBackgroundColor(e.target.value)}
-                />
-              </Box>
+              <Accordion.Root collapsible defaultValue={["a"]}>
+                <Accordion.Item value="b">
+                  <Accordion.ItemTrigger>
+                    <Span flex="1" fontWeight="medium" mb="1">
+                      차트 배경
+                    </Span>
 
-              <Seperator />
+                    <Accordion.ItemIndicator />
+                  </Accordion.ItemTrigger>
 
-              <Box mb={100}>
-                <Text fontWeight="medium" mb="1">
-                  차트 색상
-                </Text>
-                <VStack gap={2} align="stretch">
-                  {categorizedEsgDataList.map((category, index) => (
-                    <HStack key={category.categoryDetailDTO.categoryId}>
-                      <Text w="50%">
-                        {category.categoryDetailDTO.categoryName}
-                      </Text>
-                      <input
-                        type="color"
-                        value={selectedColors[index] || "#2F6EEA"}
-                        onChange={(e) => {
-                          const updated = [...selectedColors];
-                          updated[index] = e.target.value;
-                          setSelectedColors(updated);
-                        }}
-                      />
-                    </HStack>
-                  ))}
-                </VStack>
-              </Box>
+                  <Accordion.ItemContent>
+                    <input
+                      type="color"
+                      value={backgroundColor || "#ffffff"}
+                      onChange={(e) => setBackgroundColor(e.target.value)}
+                      defaultValue="#ffffff"
+                    />
+                  </Accordion.ItemContent>
+                </Accordion.Item>
+              </Accordion.Root>
+
+              <Accordion.Root collapsible>
+                <Accordion.Item value="b">
+                  <Accordion.ItemTrigger>
+                    <Span flex="1" fontWeight="medium" mb="1">
+                      차트 색상
+                    </Span>
+
+                    <Accordion.ItemIndicator />
+                  </Accordion.ItemTrigger>
+                  <Accordion.ItemContent>
+                    <VStack gap={2} align="stretch">
+                      {categorizedEsgDataList.map((category, index) => (
+                        <HStack key={category.categoryDetailDTO.categoryId}>
+                          <input
+                            type="color"
+                            value={selectedColors[index] || "#2F6EEA"}
+                            onChange={(e) => {
+                              const updated = [...selectedColors];
+                              updated[index] = e.target.value;
+                              setSelectedColors(updated);
+                            }}
+                            defaultValue="#2F6EEA"
+                          />
+                          <Text w="50%">
+                            {category.categoryDetailDTO.categoryName}
+                          </Text>
+                        </HStack>
+                      ))}
+                    </VStack>
+                  </Accordion.ItemContent>
+                </Accordion.Item>
+              </Accordion.Root>
             </Drawer.Body>
 
             <Drawer.Footer display="flex" justifyContent="flex-end" gap="2">

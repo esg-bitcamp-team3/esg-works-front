@@ -111,8 +111,8 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         )
       ).sort();
 
-      const datasets = categorizedEsgDataList.map((category) => {
-        const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+      const datasets = categorizedEsgDataList.map((category, index) => {
+        const color = selectedColors[index] || "#2F6EEA";
 
         return {
           type: selectedChartType,
@@ -135,7 +135,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         datasets: datasets,
       });
     }
-  }, [categorizedEsgDataList, selectedChartType]);
+  }, [categorizedEsgDataList, selectedChartType, selectedColors]);
 
   return (
     <Flex
@@ -217,7 +217,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             setBackgroundColor={setBackgroundColor}
           />
         </HStack>
-        {!chartData || !chartData.labels || !chartData.datasets ? (
+        {!chartData || chartData.datasets.length === 0 ? (
           <Text fontSize="sm" color="gray.500">
             차트를 불러올 수 없습니다.
           </Text>
@@ -230,6 +230,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             mt={4}
           >
             <Chart
+              key={JSON.stringify(selectedColors)} // 색상 바뀔 때마다 컴포넌트 강제 리마운트
               type={selectedChartType}
               data={chartData}
               // options={chartOptions}
