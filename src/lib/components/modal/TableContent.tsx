@@ -27,7 +27,7 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
     Promise.all(categoryIds.map((id) => getEsgData(id)))
       .then((results) => {
         const valid = results.filter(Boolean) as CategorizedESGDataList[];
-        // setCategorizedEsgData(valid);
+        setCategorizedEsgData(valid);
         setEditableData(valid); // ← 수정용 상태에도 저장
       })
       .catch((err) => console.error("ESG data fetch error:", err));
