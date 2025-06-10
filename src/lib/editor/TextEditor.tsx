@@ -14,7 +14,7 @@ const TextEditor = () => {
       width="100vw"
       height="100vh"
     >
-      <RichTextExample documentId="683d5922e4002e992e8c754b" />
+      <RichTextExample documentId="6847960bc34ca5458cf5161c" />
     </Flex>
   );
 };

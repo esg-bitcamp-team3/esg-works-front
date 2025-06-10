@@ -48,6 +48,7 @@ import {
 } from "../example";
 import TableSizeSelector from "./TableSizeSelector";
 import UrlDialog from "./UrlDialog";
+import { exportToPdf } from "./exportToPdf";
 
 const MenuButton = ({ label }: { label: string }) => (
   <Button
@@ -216,7 +217,7 @@ const FileMenu = ({ id, title, content }: FileBarProps) => {
 
   // Export as PDF (placeholder functionality)
   const handleExportPDF = () => {
-    alert("PDF 내보내기 기능은 개발 중입니다.");
+    exportToPdf(title, content);
   };
   return (
     <>
