@@ -123,7 +123,7 @@ const isKeyHotkey = (hotkey: string, event: KeyboardEvent): boolean => {
   return modifiersPressed && keyPressed;
 };
 
-const RichTextExample = ({ documentId }: { documentId: string }) => {
+const RichTextExample = ({ documentId }: { documentId?: string }) => {
   const renderElement = useCallback(
     (props: RenderElementProps) => <Element {...props} />,
     []

@@ -1,15 +1,20 @@
 "use client";
-import React from "react";
+import React, { use } from "react";
 import Subbar from "@/lib/components/SubBar";
 import TextEditor from "@/lib/editor/TextEditor";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
-const Page = () => {
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+const Page = ({ params }: Props) => {
+  const { id } = use(params);
   return (
     <div>
       <DndProvider backend={HTML5Backend}>
-        <TextEditor id="" />
+        {id && <TextEditor id={id} />}
         <Subbar />
       </DndProvider>
     </div>
