@@ -2,8 +2,10 @@ import {
   Box,
   Button,
   CloseButton,
+  ColorPicker,
   Drawer,
   HStack,
+  parseColor,
   Portal,
   Text,
   VStack,
@@ -72,13 +74,36 @@ const ChartColor = ({
                 <Text fontWeight="medium" mb="1">
                   차트 색상
                 </Text>
-                <VStack gap={2} align="stretch">
+                <VStack gap={3} align="stretch">
                   {categorizedEsgDataList.map((category, index) => (
                     <HStack key={category.categoryDetailDTO.categoryId}>
-                      <Text w="50%">
-                        {category.categoryDetailDTO.categoryName}
-                      </Text>
-                      <input
+                      <ColorPicker.Root
+                       size="xs"
+                        defaultValue={parseColor("#eb5e41")}
+                        maxW="200px"
+                      >
+                        <ColorPicker.HiddenInput />
+                        <ColorPicker.Control>
+                          <ColorPicker.Trigger  data-fit-content rounded="full">
+                           <ColorPicker.ValueSwatch rounded="inherit" />
+                           </ColorPicker.Trigger>
+                        </ColorPicker.Control>
+                        <Portal>
+                          <ColorPicker.Positioner>
+                            <ColorPicker.Content>
+                              <ColorPicker.Area />
+                              <HStack>
+                                <ColorPicker.EyeDropper
+                                  size="2xs"
+                                  variant="outline"
+                                />
+                                <ColorPicker.Sliders />
+                              </HStack>
+                            </ColorPicker.Content>
+                          </ColorPicker.Positioner>
+                        </Portal>
+                      </ColorPicker.Root>
+                      {/* <input
                         type="color"
                         value={selectedColors[index] || "#2F6EEA"}
                         onChange={(e) => {
@@ -86,7 +111,11 @@ const ChartColor = ({
                           updated[index] = e.target.value;
                           setSelectedColors(updated);
                         }}
-                      />
+                        style={{ width: '30px', background: 'white', height: '32px'}}
+                      /> */}
+                      <Text w="100%">
+                        {category.categoryDetailDTO.categoryName}
+                      </Text>
                     </HStack>
                   ))}
                 </VStack>

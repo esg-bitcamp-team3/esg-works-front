@@ -33,7 +33,7 @@ import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataL
 import { ChartOptions } from "chart.js";
 import ChartColor from "./chartColor";
 
-// Chart.js에 사용될 기본 옵션 설정 (축, 범례 위치 등)
+// Inside the ChartContent component, add this options configuration
 const chartOptions: ChartOptions = {
   responsive: true,
   scales: {
@@ -52,7 +52,6 @@ const chartOptions: ChartOptions = {
   },
 };
 
-// ESG 데이터를 받아와 차트를 렌더링하는 ChartContent 컴포넌트
 const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   const [chartData, setChartData] = useState<DataType>();
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
@@ -62,56 +61,31 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
     useState<DatasetType["type"]>("bar");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
-  // const [selectedYears, setSelectedYears] = useState<string[]>([]);
-  const [selectedYear, setSelectedYear] = useState<string>("");
-  const [years, setYears] = useState<string[]>([]);
 
-  // categoryId가 바뀔 때마다 각 ID에 해당하는 ESG 데이터를 불러오고 상태로 저장
   useEffect(() => {
-    if (categorizedEsgDataList.length > 0 && selectedYear) {
-      const datasets = categorizedEsgDataList.map((category, idx) => {
-        const color =
-          selectedColors[idx] ||
-          `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-        // 선택된 연도 데이터만 추출
-        const yearData = category.esgNumberDTOList.find(
-          (data) => data.year === selectedYear
+    Promise.all(categoryId.map((id) => getEsgData(id)))
+      .then((results) => {
+        const validResults = results.filter(
+          (result): result is CategorizedESGDataList => result !== null
         );
-        return {
-          type: selectedChartType,
-          label: category.categoryDetailDTO.categoryName,
-          data: [yearData ? yearData.value : 0], // 파이 차트는 여러 카테고리의 한 해 데이터로 구성됨
-          borderColor: selectedChartType === "line" ? color : undefined,
-          backgroundColor:
-            selectedChartType === "line" ? "rgba(255, 255, 255, 0.1)" : color,
-          fill: true,
-        };
+        setCategorizedEsgDataList(validResults);
+      })
+      .catch((error) => {
+        console.error("Error fetching ESG data:", error);
       });
+  }, [categoryId, selected]);
 
-      setChartData({
-        labels: categorizedEsgDataList.map(
-          (category) => category.categoryDetailDTO.categoryName
-        ),
-        datasets: datasets,
-      });
-    }
-  }, [categorizedEsgDataList, selectedChartType, selectedColors, selectedYear]);
-
-  // 불러온 ESG 데이터를 연도별로 정리하고 차트에 들어갈 datasets 형식으로 변환
   useEffect(() => {
     if (categorizedEsgDataList.length > 0) {
-      const extractedYears = Array.from(
+      const years = Array.from(
         new Set(
           categorizedEsgDataList.flatMap((category) =>
             category.esgNumberDTOList.map((data) => data.year)
           )
         )
       ).sort();
-      setYears(extractedYears);
-
 
       const datasets = categorizedEsgDataList.map((category, idx) => {
-        // 선택된 색상이 있다면 사용하고, 없다면 무작위 색상 생성
         const color =
           selectedColors[idx] ||
           `#${Math.floor(Math.random() * 16777215).toString(16)}`;
@@ -139,7 +113,6 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
     }
   }, [categorizedEsgDataList, selectedChartType, selectedColors]);
 
-  // 배경색 커스터마이징을 위한 옵션 확장
   const localChartOptions = {
     ...chartOptions,
     plugins: {
@@ -159,11 +132,18 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
       maxHeight={{ base: "50vh", md: "40vh", lg: "80vh" }}
       overflowY="auto"
       width="100%"
-      gap="4"
+      gap={4}
       p="1"
     >
-      <Stack direction="row" align="auto" width="100%" borderRadius="md">
-        {/* 차트 유형 버튼들 */}
+      <Stack
+        direction="row"
+        align="auto"
+        width="100%"
+        // maxHeight={{ base: "30vh", md: "45vh", lg: "35vh" }}
+        padding={3}
+        borderRadius="md"
+        outline={"1px solid #E2E8F0"}
+      >
         {[
           { type: "bar", icon: FcBarChart },
           { type: "line", icon: FcLineChart },
@@ -176,39 +156,16 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             onClick={() =>
               setSelectedChartType(type as typeof selectedChartType)
             }
-            variant={selectedChartType === type ? "solid" : "outline"}
+            variant="outline"
             colorScheme="blue"
+            // width="full"
             textAlign="left"
             justifyContent="flex-start"
             p={3}
-            bg={selectedChartType === type ? "blue.500" : "transparent"}
-            color={selectedChartType === type ? "white" : "inherit"}
           >
             <Icon as={icon} mr={2} /> {type.toUpperCase()}
           </Button>
         ))}
-        {/* 연도 선택 Select */}
-        <Box ml={4}>
-          <Text fontSize="sm" fontWeight="bold">
-            연도 선택
-          </Text>
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 4,
-              border: "1px solid #ccc",
-            }}
-          >
-            <option value="">연도 선택</option>
-            {years.map((year: string) => (
-              <option value={year} key={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </Box>
       </Stack>
       {/* 차트 및 차트 색상 커스텀 */}
       <Stack direction="row" width="100%" gap="4">
