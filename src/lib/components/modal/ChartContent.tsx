@@ -84,6 +84,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   const [selectedChartType, setSelectedChartType] =
     useState<DatasetType["type"]>("bar");
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
+
   const [backgroundColor, setBackgroundColor] = useState(parseColor("#ffffff"));
 
   useEffect(() => {
