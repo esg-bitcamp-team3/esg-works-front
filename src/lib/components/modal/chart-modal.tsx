@@ -26,12 +26,7 @@ import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories } from "@/lib/api/get";
 import ChartContent from "./ChartContent";
 
-interface Item {
-  id: string;
-  title: string;
-  icons: React.ComponentType<any>;
-  content: React.ReactNode;
-}
+// const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
 const chartType: ChartType[] = [
   { type: "Bar", label: "막대 차트", icons: FaChartPie },
@@ -43,19 +38,6 @@ const chartType: ChartType[] = [
   { type: "Bubble", label: "버블 차트", icons: FaPen },
   { type: "PolarArea", label: "폴라 영역 차트", icons: FaTable },
 ];
-
-interface ChartContentProps {
-  selected: string[];
-  charts: ChartType[];
-  chartData: {
-    labels: string[];
-    datasets: {
-      label: string;
-      data: number[];
-      backgroundColor: string;
-    }[];
-  };
-}
 
 export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
@@ -138,9 +120,9 @@ export default function ChartModal() {
               base: "90vh",
               sm: "85vh",
               md: "75vh",
-              lg: "65vh",
+              lg: "85vh",
             }}
-            width={{ base: "95%", sm: "85%", md: "60vw", lg: "40vw" }}
+            width={{ base: "95%", sm: "85%", md: "60vw", lg: "60vw" }}
             maxW="100%"
             display="flex"
             transition="all 0.3s ease-in-out"
@@ -250,8 +232,8 @@ export default function ChartModal() {
                     borderWidth="1px"
                     width="100%"
                     // minHeight={{base: "50vh", md: "40vh", lg: "30vh"}}
-                    minHeight={{ base: "45vh", md: "35vh", lg: "28vh" }}
-                    maxHeight={{ base: "50vh", md: "40vh", lg: "28vh" }}
+                    minHeight={{ base: "45vh", md: "35vh", lg: "40vh" }}
+                    maxHeight={{ base: "50vh", md: "40vh", lg: "45vh" }}
                     padding="4"
                     overflowY="auto"
                   >
@@ -299,25 +281,28 @@ export default function ChartModal() {
                   </Box>
                   {/* 태그 영역 */}
                   <Flex
-                    direction="row"
+                    // direction="row"
                     width="full"
-                    alignItems="start"
-                    minHeight={{ base: "50px", md: "25px", lg: "30px" }}
-                    maxHeight={{ base: "55px", md: "50px", lg: "65px" }}
+                    // alignItems="start"
+                    minHeight={{ base: "50px", md: "25px", lg: "100px" }}
+                    maxHeight={{ base: "55px", md: "50px", lg: "100px" }}
                     gapX="2"
                     paddingX="2"
                     wrap="wrap"
+                    // justifyContent="start"
                     overflowY="auto"
+                    borderWidth="1px"
+                    rounded="md"
                   >
                     {selected &&
                       selected.map((item, index) => (
                         <Flex
                           key={index}
-                          direction="row"
-                          justifyContent="left"
+                          // direction="row"
+                          // justifyContent="left"
                           alignItems="center"
-                          borderWidth="0"
-                          borderRadius="md"
+                          // borderWidth="0"
+                          // borderRadius="md"
                         >
                           <Text fontSize="sm" minWidth="fit-content">
                             {item}
@@ -361,7 +346,8 @@ export default function ChartModal() {
                     size="lg"
                     defaultValue={selectedTab}
                     onValueChange={(e) => setSelectedTab(e.value)}
-                    height="100%"
+                    // height="100%"
+
                     display="flex"
                     flexDirection="column"
                   >
@@ -388,7 +374,7 @@ export default function ChartModal() {
                       </Tabs.Trigger>
                     </Tabs.List>
 
-                    <Tabs.ContentGroup paddingTop="4">
+                    <Tabs.ContentGroup>
                       <Tabs.Content value="chart">
                         <ChartContent
                           selected={selected}

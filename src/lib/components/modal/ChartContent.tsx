@@ -1,16 +1,27 @@
 import {
   Box,
   Button,
+  CloseButton,
+  Drawer,
   Flex,
-  Icon,
-  SimpleGrid,
-  Stack,
+  HStack,
+  Portal,
   Text,
-  useEditable,
   VStack,
+  Stack,
+  Icon
 } from "@chakra-ui/react";
 
+import { Chart } from "react-chartjs-2";
+
 import { useEffect, useState } from "react";
+
+import {
+  FcBarChart,
+  FcDoughnutChart,
+  FcLineChart,
+  FcPieChart,
+} from "react-icons/fc";
 
 import {
   Chart as ChartJS,
@@ -25,17 +36,6 @@ import {
   Legend,
 } from "chart.js";
 
-import {
-  Bar,
-  Line,
-  Pie,
-  Radar,
-  Doughnut,
-  Scatter,
-  Bubble,
-  PolarArea,
-} from "react-chartjs-2";
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -49,19 +49,42 @@ ChartJS.register(
 );
 
 import { getEsgData } from "@/lib/api/get";
-import { ChartContentProps, DataType } from "@/lib/api/interfaces/chart";
+import {
+  ChartContentProps,
+  DatasetType,
+  DataType,
+} from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
+const chartOptionsBase = {
+  responsive: true,
+  scales: {
+    y: {
+      beginAtZero: true,
+    },
+  },
+  plugins: {
+    legend: {
+      position: "top" as const,
+    },
+    // title: {
+    //   display: true,
+    //   text: "데이터 시각화",
+    // },
+  },
+};
+
+
 const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
-  const [chartData, setChartData] = useState<DataType>(); // or import the correct ChartData type if preferred
-  const [selectedChartType, setSelectedChartType] = useState<string | null>(
-    null
-  );
+  const [chartData, setChartData] = useState<DataType>();
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
   >([]);
+  const [selectedChartType, setSelectedChartType] =
+    useState<DatasetType["type"]>("bar");
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
 
-  // ESG 데이터 가져오기
   useEffect(() => {
     Promise.all(categoryId.map((id) => getEsgData(id)))
       .then((results) => {
@@ -69,17 +92,14 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
           (result): result is CategorizedESGDataList => result !== null
         );
         setCategorizedEsgDataList(validResults);
-        console.log(validResults);
       })
       .catch((error) => {
         console.error("Error fetching ESG data:", error);
       });
   }, [categoryId, selected]);
 
-  // 차트용 데이터 구성 (Setting chartData)
   useEffect(() => {
     if (categorizedEsgDataList.length > 0) {
-      // 연도(year) 추출해서 labels로 사용
       const years = Array.from(
         new Set(
           categorizedEsgDataList.flatMap((category) =>
@@ -88,144 +108,130 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         )
       ).sort();
 
-      // 각각 카테고리에 대한 dataset 구성
-      const datasets = categorizedEsgDataList.map((category) => ({
-        type: "line",
-        label: category.categoryDetailDTO.categoryName,
-        data: years.map((year) => {
-          const yearData = category.esgNumberDTOList.find(
-            (data) => data.year === year
-          );
-          return yearData ? yearData.value : 0;
-        }),
-        borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-        backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(
-          16
-        )}`,
-      }));
+      const datasets = categorizedEsgDataList.map((category, idx) => {
+        const color =
+          selectedColors[idx] ||
+          `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+
+        return {
+          type: selectedChartType,
+          label: category.categoryDetailDTO.categoryName,
+          data: years.map((year) => {
+            const yearData = category.esgNumberDTOList.find(
+              (data) => data.year === year
+            );
+            return yearData ? yearData.value : 0;
+          }),
+          borderColor: selectedChartType === "line" ? color : undefined,
+          backgroundColor:
+            selectedChartType === "line" ? "rgba(255, 255, 255, 0.1)" : color,
+          fill: true,
+        };
+      });
 
       setChartData({
         labels: years.map((year) => year.toString()),
         datasets: datasets,
       });
     }
-  }, [categorizedEsgDataList]);
+  }, [categorizedEsgDataList, selectedChartType, selectedColors]);
+
+  const chartOptions = {
+    ...chartOptionsBase,
+    plugins: {
+      ...chartOptionsBase.plugins,
+      custom_canvas_background_color: {
+        color: backgroundColor,
+      },
+    },
+  };
 
   return (
     <Flex
-      direction={{ base: "column", md: "row" }}
+      direction={{ base: "column", md: "column" }}
       justifyContent={{ base: "center", md: "space-between" }}
       alignItems={{ base: "flex-start", md: "center" }}
+      minHeight={{ base: "45vh", md: "35vh", lg: "30vh" }}
+      maxHeight={{ base: "50vh", md: "40vh", lg: "80vh" }}
+      overflowY="auto"
       width="100%"
-      height="100%"
       gap={4}
       p="1"
     >
-      <VStack
-        gap={3}
+      <Stack
+        direction="row"
         align="auto"
         width="100%"
-        flex={{ base: "1", md: "1.2", lg: "1" }}
-        overflow="auto"
-        // maxHeight="310px"
-        // minHeight={{ base: "30vh", md: "45vh", lg: "36vh" }}
-        maxHeight={{ base: "30vh", md: "45vh", lg: "36vh" }}
-        marginLeft={1}
+        // maxHeight={{ base: "30vh", md: "45vh", lg: "35vh" }}
         padding={3}
         borderRadius="md"
         outline={"1px solid #E2E8F0"}
       >
-        {charts.map((chart) => (
+        {[
+          { type: "bar", icon: FcBarChart },
+          { type: "line", icon: FcLineChart },
+          { type: "pie", icon: FcPieChart },
+          { type: "doughnut", icon: FcDoughnutChart },
+          { type: "radar", icon: FcBarChart },
+          { type: "polarArea", icon: FcBarChart },
+          { type: "scatter", icon: FcBarChart },
+          { type: "bubble", icon: FcBarChart },
+        ].map(({ type, icon }) => (
           <Button
-            key={chart.type}
-            onClick={() => {
-              console.log("선택된 차트:", chart.type, "데이터:", selected);
-              setSelectedChartType(chart.type);
-            }}
+            key={type}
+            onClick={() =>
+              setSelectedChartType(type as typeof selectedChartType)
+            }
             variant="outline"
             colorScheme="blue"
-            width="full"
+            // width="full"
             textAlign="left"
             justifyContent="flex-start"
-            height="fit-content"
             p={3}
           >
-            <Flex alignItems="center" gap={2}>
-              <Icon
-                as={chart.icons}
-                // boxSize={{ base: "5", md: "4", lg: "5" }}
-                boxSize="4"
-              />
-              <Text
-                fontSize={{ base: "md", md: "sm", lg: "md" }}
-                // fontSize="md"
-                fontWeight="medium"
-                overflow="hidden"
-                textOverflow="ellipsis"
-                whiteSpace="nowrap"
-              >
-                {chart.label}
-              </Text>
-            </Flex>
+            <Icon as={icon} mr={2} /> {type.toUpperCase()}
           </Button>
         ))}
-      </VStack>
-
+      </Stack>
       <VStack
         align={{ base: "flex-start", md: "center", lg: "flex-start" }}
-        minHeight={{ base: "30vh", md: "45vh", lg: "36vh" }}
-        maxHeight={{ base: "30vh", md: "45vh", lg: "36vh" }}
+        minHeight={{ base: "30vh", md: "45vh", lg: "35vh" }}
+        maxHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
         flex="3"
         width="100%"
         textAlign={{ base: "left", md: "center" }}
         outline={"1px solid #E2E8F0"}
         padding={3}
-        // justifyContent='center'
-        // alignContent='center'
+        overflow="hidden"
       >
-        <Stack direction="row">
-          <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
+        <HStack
+          width="100%"
+          display="flex"
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          {/* <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
-          </Text>
-        </Stack>
-        {!selectedChartType ? (
+          </Text> */}
+        </HStack>
+        {!chartData || !chartData.labels || !chartData.datasets ? (
           <Text fontSize="sm" color="gray.500">
-            차트를 선택하여 해당 지표의 데이터를 시각화할 수 있습니다.
+            차트를 불러올 수 없습니다.
           </Text>
         ) : (
           <Box
             width="100%"
-            height="30vh"
-            justifyContent="center"
-            alignContent="center"
             mt={4}
+            overflow="hidden"
+            justifyContent="center"
+            justifyItems="center"
           >
-            {chartData && chartData.labels && chartData.datasets ? (
-              <>
-                {(() => {
-                  const filteredData = {
-                    labels: chartData.labels,
-                    datasets: chartData.datasets.filter(
-                      (ds: { label: string }) => selected.includes(ds.label)
-                    ),
-                  };
-
-                  if (filteredData.datasets.length === 0) {
-                    return (
-                      <Text fontSize="sm" color="red.500">
-                        선택된 지표에 해당하는 차트 데이터가 없습니다.
-                      </Text>
-                    );
-                  }
-
-                  return null;
-                })()}
-              </>
-            ) : (
-              <Text fontSize="sm" color="red.500">
-                차트 데이터를 불러올 수 없습니다.
-              </Text>
-            )}
+            <Chart
+              type={selectedChartType}
+              data={chartData}
+              options={chartOptions}
+            />
           </Box>
         )}
       </VStack>
