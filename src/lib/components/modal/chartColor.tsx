@@ -10,6 +10,7 @@ import {
   Text,
   VStack,
   Flex,
+  Color,
 } from "@chakra-ui/react";
 import {
   Chart as ChartJS,
@@ -55,10 +56,10 @@ ChartJS.register(backgroundPlugin);
 
 interface ChartSettingsDrawerProps {
   categorizedEsgDataList: CategorizedESGDataList[];
-  selectedColors: string[];
-  setSelectedColors: (colors: string[]) => void;
-  backgroundColor: string;
-  setBackgroundColor: (color: string) => void;
+  selectedColors: Color[];
+  setSelectedColors: (colors: Color[]) => void;
+  backgroundColor: Color;
+  setBackgroundColor: (color: Color) => void;
 }
 
 const Seperator = () => <Box h="1px" bg="gray.200" my="3" />;
@@ -98,8 +99,13 @@ const ChartColor = ({
               </Drawer.Header>
 
               <Drawer.Body display="flex" flexDirection="column" gap="4"> */}
-      <Accordion.Root collapsible defaultValue={["a"]} variant="enclosed">
-        <Accordion.Item value="b">
+      <Accordion.Root
+        collapsible
+        multiple
+        defaultValue={["a"]}
+        variant="enclosed"
+      >
+        <Accordion.Item value="background">
           <Accordion.ItemTrigger>
             <Span flex="1" fontWeight="medium" mb="1">
               차트 배경
@@ -109,18 +115,39 @@ const ChartColor = ({
           </Accordion.ItemTrigger>
 
           <Accordion.ItemContent marginBottom="2">
-            <input
+            {/* <input
               type="color"
               value={backgroundColor || "#ffffff"}
               onChange={(e) => setBackgroundColor(e.target.value)}
               defaultValue="#ffffff"
-            />
+            /> */}
+            <ColorPicker.Root
+              defaultValue={parseColor("#eb5e41")}
+              maxW="200px"
+              value={backgroundColor || "#ffffff"}
+              onValueChange={(e) => setBackgroundColor(e.value)}
+            >
+              <ColorPicker.HiddenInput />
+              <ColorPicker.Label>Color</ColorPicker.Label>
+              <ColorPicker.Control>
+                <ColorPicker.Input />
+                <ColorPicker.Trigger />
+              </ColorPicker.Control>
+
+              <ColorPicker.Positioner>
+                <ColorPicker.Content>
+                  <ColorPicker.Area />
+                  <HStack>
+                    <ColorPicker.EyeDropper size="xs" variant="outline" />
+                    <ColorPicker.Sliders />
+                  </HStack>
+                </ColorPicker.Content>
+              </ColorPicker.Positioner>
+            </ColorPicker.Root>
           </Accordion.ItemContent>
         </Accordion.Item>
-      </Accordion.Root>
 
-      <Accordion.Root collapsible variant="enclosed">
-        <Accordion.Item value="b">
+        <Accordion.Item value="chart">
           <Accordion.ItemTrigger>
             <Span flex="1" fontWeight="medium" mb="1">
               차트 색상
@@ -144,27 +171,36 @@ const ChartColor = ({
                             /> */}
                   <ColorPicker.Root
                     size="xs"
-                    defaultValue={parseColor("#eb5e41")}
                     maxW="200px"
+                    defaultValue={parseColor("#eb5e41")}
+                    value={selectedColors[index] || parseColor("#2F6EEA")}
+                    onValueChange={(e) => {
+                      const updated = [...selectedColors];
+                      updated[index] = e.value;
+                      setSelectedColors(updated);
+                    }}
                   >
                     <ColorPicker.HiddenInput />
                     <ColorPicker.Control>
-                      <ColorPicker.Trigger data-fit-content rounded="full">
-                        <ColorPicker.ValueSwatch rounded="inherit" />
+                      <ColorPicker.Trigger>
+                        <ColorPicker.ValueSwatch
+                          rounded="inherit"
+                          padding={2}
+                        />
                       </ColorPicker.Trigger>
                     </ColorPicker.Control>
-                      <ColorPicker.Positioner>
-                        <ColorPicker.Content>
-                          <ColorPicker.Area />
-                          <HStack>
-                            <ColorPicker.EyeDropper
-                              size="2xs"
-                              variant="outline"
-                            />
-                            <ColorPicker.Sliders />
-                          </HStack>
-                        </ColorPicker.Content>
-                      </ColorPicker.Positioner>
+                    <ColorPicker.Positioner>
+                      <ColorPicker.Content>
+                        <ColorPicker.Area />
+                        <HStack>
+                          <ColorPicker.EyeDropper
+                            size="2xs"
+                            variant="outline"
+                          />
+                          <ColorPicker.Sliders />
+                        </HStack>
+                      </ColorPicker.Content>
+                    </ColorPicker.Positioner>
                   </ColorPicker.Root>
                   <Text w="100%">
                     {category.categoryDetailDTO.categoryName}

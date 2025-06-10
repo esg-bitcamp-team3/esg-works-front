@@ -1,9 +1,11 @@
 import {
   Box,
   Button,
+  Color,
   Flex,
   HStack,
   Icon,
+  parseColor,
   Stack,
   Text,
   VStack,
@@ -30,7 +32,18 @@ import {
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
 // Add this import at the top with other imports
-import { ChartOptions } from "chart.js";
+import {
+  Chart as ChartJS,
+  LinearScale,
+  CategoryScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartOptions,
+} from "chart.js";
 import ChartColor from "./chartColor";
 
 // Inside the ChartContent component, add this options configuration
@@ -52,6 +65,17 @@ const chartOptions: ChartOptions = {
   },
 };
 
+ChartJS.register(
+  LinearScale,
+  CategoryScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   const [chartData, setChartData] = useState<DataType>();
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
@@ -59,8 +83,9 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   >([]);
   const [selectedChartType, setSelectedChartType] =
     useState<DatasetType["type"]>("bar");
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+  const [selectedColors, setSelectedColors] = useState<Color[]>([]);
+
+  const [backgroundColor, setBackgroundColor] = useState(parseColor("#ffffff"));
 
   useEffect(() => {
     Promise.all(categoryId.map((id) => getEsgData(id)))
@@ -87,7 +112,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
 
       const datasets = categorizedEsgDataList.map((category, idx) => {
         const color =
-          selectedColors[idx] ||
+          selectedColors[idx]?.toString("hex") ||
           `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
         return {
@@ -164,7 +189,7 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             justifyContent="flex-start"
             p={3}
           >
-            <Icon as={icon} /> 
+            <Icon as={icon} />
           </Button>
         ))}
       </Stack>
