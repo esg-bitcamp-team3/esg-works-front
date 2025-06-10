@@ -8,6 +8,7 @@ import {
   Button,
   Kbd,
   Box,
+  Flex,
 } from "@chakra-ui/react";
 
 import { useEffect, useState } from "react";
@@ -138,7 +139,7 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
 
   return (
     <>
-      <Box
+      {/* <Box
         overflowX="auto" // 반드시 X 방향 오토
         overflowY="auto"
         maxH="345px"
@@ -147,9 +148,8 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
         border="1px solid"
         borderColor="gray.200"
         borderRadius="lg"
-      >
-        <Box minW={`${200 + years.length * 100}px`}>
-          {" "}
+      > */}
+        <Box minW={`${200 + years.length * 100}px`} minHeight='300px' maxHeight='300px' overflow='auto'>
           {/* 테이블 넓이 계산해서 보장 */}
           <Table.Root size="md" variant="outline" showColumnBorder>
             <Table.Header>
@@ -179,7 +179,7 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
                     <Checkbox.Control />
                   </Checkbox.Root>
                 </Table.ColumnHeader> */}
-                <Table.ColumnHeader>지표</Table.ColumnHeader>
+                <Table.ColumnHeader >지표</Table.ColumnHeader>
                 <Table.ColumnHeader w={51}>단위</Table.ColumnHeader>
                 {years.map((year) => (
                   <Table.ColumnHeader key={year} textAlign="end">
@@ -196,10 +196,10 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
                 ))}
               </Table.Row>
             </Table.Header>
-            <Table.Body>{rows}</Table.Body>
+            <Table.Body >{rows}</Table.Body>
           </Table.Root>
         </Box>
-      </Box>
+      {/* </Box> */}
 
       {/* <ActionBar.Root open={selection.length > 0}>
         <Portal>

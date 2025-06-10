@@ -2,11 +2,14 @@ import {
   Box,
   Button,
   CloseButton,
+  ColorPicker,
   Drawer,
   HStack,
+  parseColor,
   Portal,
   Text,
   VStack,
+  Flex,
 } from "@chakra-ui/react";
 import {
   Chart as ChartJS,
@@ -68,99 +71,125 @@ const ChartColor = ({
   setBackgroundColor,
 }: ChartSettingsDrawerProps) => {
   return (
-    <Drawer.Root>
-      <Drawer.Trigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          color="#2F6EEA"
-          backgroundColor="white"
-          _hover={{ bg: "gray.300" }}
-        >
-          <Text fontSize="sm" color="#2F6EEA">
-            수정하기
-          </Text>
-        </Button>
-      </Drawer.Trigger>
+    <Flex direction="column" padding="10px">
+      {/* <Drawer.Root>
+        <Drawer.Trigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            color="#2F6EEA"
+            backgroundColor="white"
+            _hover={{ bg: "gray.300" }}
+          >
+            <Text fontSize="sm" color="#2F6EEA">
+              수정하기
+            </Text>
+          </Button>
+        </Drawer.Trigger> */}
 
-      <Portal>
-        <Drawer.Backdrop />
-        <Drawer.Positioner padding="4">
-          <Drawer.Content rounded="md" width="360px">
-            <Drawer.Header>
-              <Drawer.Title fontSize="lg" fontWeight="bold">
-                차트 설정
-              </Drawer.Title>
-            </Drawer.Header>
+      {/* <Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner padding="4">
+            <Drawer.Content rounded="md" width="360px">
+              <Drawer.Header>
+                <Drawer.Title fontSize="lg" fontWeight="bold">
+                  차트 설정
+                </Drawer.Title>
+              </Drawer.Header>
 
-            <Drawer.Body display="flex" flexDirection="column" gap="4">
-              <Accordion.Root collapsible defaultValue={["a"]}>
-                <Accordion.Item value="b">
-                  <Accordion.ItemTrigger>
-                    <Span flex="1" fontWeight="medium" mb="1">
-                      차트 배경
-                    </Span>
+              <Drawer.Body display="flex" flexDirection="column" gap="4"> */}
+      <Accordion.Root collapsible defaultValue={["a"]} variant="enclosed">
+        <Accordion.Item value="b">
+          <Accordion.ItemTrigger>
+            <Span flex="1" fontWeight="medium" mb="1">
+              차트 배경
+            </Span>
 
-                    <Accordion.ItemIndicator />
-                  </Accordion.ItemTrigger>
+            <Accordion.ItemIndicator />
+          </Accordion.ItemTrigger>
 
-                  <Accordion.ItemContent>
-                    <input
-                      type="color"
-                      value={backgroundColor || "#ffffff"}
-                      onChange={(e) => setBackgroundColor(e.target.value)}
-                      defaultValue="#ffffff"
-                    />
-                  </Accordion.ItemContent>
-                </Accordion.Item>
-              </Accordion.Root>
+          <Accordion.ItemContent marginBottom="2">
+            <input
+              type="color"
+              value={backgroundColor || "#ffffff"}
+              onChange={(e) => setBackgroundColor(e.target.value)}
+              defaultValue="#ffffff"
+            />
+          </Accordion.ItemContent>
+        </Accordion.Item>
+      </Accordion.Root>
 
-              <Accordion.Root collapsible>
-                <Accordion.Item value="b">
-                  <Accordion.ItemTrigger>
-                    <Span flex="1" fontWeight="medium" mb="1">
-                      차트 색상
-                    </Span>
+      <Accordion.Root collapsible variant="enclosed">
+        <Accordion.Item value="b">
+          <Accordion.ItemTrigger>
+            <Span flex="1" fontWeight="medium" mb="1">
+              차트 색상
+            </Span>
 
-                    <Accordion.ItemIndicator />
-                  </Accordion.ItemTrigger>
-                  <Accordion.ItemContent>
-                    <VStack gap={2} align="stretch">
-                      {categorizedEsgDataList.map((category, index) => (
-                        <HStack key={category.categoryDetailDTO.categoryId}>
-                          <input
-                            type="color"
-                            value={selectedColors[index] || "#2F6EEA"}
-                            onChange={(e) => {
-                              const updated = [...selectedColors];
-                              updated[index] = e.target.value;
-                              setSelectedColors(updated);
-                            }}
-                            defaultValue="#2F6EEA"
-                          />
-                          <Text w="50%">
-                            {category.categoryDetailDTO.categoryName}
-                          </Text>
-                        </HStack>
-                      ))}
-                    </VStack>
-                  </Accordion.ItemContent>
-                </Accordion.Item>
-              </Accordion.Root>
-            </Drawer.Body>
+            <Accordion.ItemIndicator />
+          </Accordion.ItemTrigger>
+          <Accordion.ItemContent marginBottom="2">
+            <VStack gap={2} align="stretch">
+              {categorizedEsgDataList.map((category, index) => (
+                <HStack key={category.categoryDetailDTO.categoryId}>
+                  {/* <input
+                              type="color"
+                              value={selectedColors[index] || "#2F6EEA"}
+                              onChange={(e) => {
+                                const updated = [...selectedColors];
+                                updated[index] = e.target.value;
+                                setSelectedColors(updated);
+                              }}
+                              defaultValue="#2F6EEA"
+                            /> */}
+                  <ColorPicker.Root
+                    size="xs"
+                    defaultValue={parseColor("#eb5e41")}
+                    maxW="200px"
+                  >
+                    <ColorPicker.HiddenInput />
+                    <ColorPicker.Control>
+                      <ColorPicker.Trigger data-fit-content rounded="full">
+                        <ColorPicker.ValueSwatch rounded="inherit" />
+                      </ColorPicker.Trigger>
+                    </ColorPicker.Control>
+                      <ColorPicker.Positioner>
+                        <ColorPicker.Content>
+                          <ColorPicker.Area />
+                          <HStack>
+                            <ColorPicker.EyeDropper
+                              size="2xs"
+                              variant="outline"
+                            />
+                            <ColorPicker.Sliders />
+                          </HStack>
+                        </ColorPicker.Content>
+                      </ColorPicker.Positioner>
+                  </ColorPicker.Root>
+                  <Text w="100%">
+                    {category.categoryDetailDTO.categoryName}
+                  </Text>
+                </HStack>
+              ))}
+            </VStack>
+          </Accordion.ItemContent>
+        </Accordion.Item>
+      </Accordion.Root>
+      {/* </Drawer.Body>
 
-            <Drawer.Footer display="flex" justifyContent="flex-end" gap="2">
-              <Button variant="outline">취소</Button>
-              <Button colorScheme="blue">적용</Button>
-            </Drawer.Footer>
+              <Drawer.Footer display="flex" justifyContent="flex-end" gap="2">
+                <Button variant="outline">취소</Button>
+                <Button colorScheme="blue">적용</Button>
+              </Drawer.Footer>
 
-            <Drawer.CloseTrigger asChild>
-              <CloseButton size="sm" position="absolute" top="2" right="2" />
-            </Drawer.CloseTrigger>
-          </Drawer.Content>
-        </Drawer.Positioner>
-      </Portal>
-    </Drawer.Root>
+              <Drawer.CloseTrigger asChild>
+                <CloseButton size="sm" position="absolute" top="2" right="2" />
+              </Drawer.CloseTrigger>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Portal>
+      </Drawer.Root> */}
+    </Flex>
   );
 };
 
