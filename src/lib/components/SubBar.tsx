@@ -22,11 +22,18 @@ import { Resizable } from "re-resizable";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import DraggableChartIcon from "./DraggableChartIcon";
-import { getChart, getChartByType, getInterestChart } from "../api/get";
+import {
+  getChart,
+  getChartByType,
+  getInterestChart,
+  getInterestChartByType,
+} from "../api/get";
 import { ChartDetail, InteresrtChartDetail } from "../api/interfaces/chart";
 import { Bar } from "react-chartjs-2";
-import ChartMake from "./chart/ChartMake";
+import ChartMake from "./chart/SingleChart";
 import cloneDeep from "lodash/cloneDeep";
+import MixedChart from "./chart/MixedChart";
+import SingleChart from "./chart/SingleChart";
 
 const items = [
   {
@@ -70,37 +77,81 @@ const Subbar = () => {
   );
   const [radarChart, setRadarChart] = useState<ChartDetail[] | null>([]);
   const [mixChart, setMixChart] = useState<ChartDetail[] | null>([]);
+
+  const [interestEntireChart, setInterestEntireChart] = useState<
+    InteresrtChartDetail[] | null
+  >([]);
+  const [interestLineChart, setInterestLineChart] = useState<
+    InteresrtChartDetail[] | null
+  >([]);
+  const [interestPieChart, setInterestPieChart] = useState<
+    InteresrtChartDetail[] | null
+  >([]);
+  const [interestBarChart, setInterestBarChart] = useState<
+    InteresrtChartDetail[] | null
+  >([]);
+  const [interestDoughnutChart, setInterestDoughnutChart] = useState<
+    InteresrtChartDetail[] | null
+  >([]);
+  const [interestPolarAreaChart, setInterestPolarAreaChart] = useState<
+    InteresrtChartDetail[] | null
+  >([]);
+  const [interestRadarChart, setInterestRadarChart] = useState<
+    InteresrtChartDetail[] | null
+  >([]);
+  const [interestMixChart, setInterestMixChart] = useState<
+    InteresrtChartDetail[] | null
+  >([]);
   const DEFAULT_SIDEBAR_WIDTH = 350;
-const [error, setError] = useState("");
-const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // 즐겨 찾기 차트 가져오기
   useEffect(() => {
     const fetchChart = async () => {
       setLoading(true);
       try {
-        const barData = await getChartByType("bar");
-        const lineData = await getChartByType("line");
-        // const pieData = await getChartByType("pie");
-        // const doughnutData = await getChartByType("doughnut");
-        // const polarAreaData = await getChartByType("polarArea");
-        // const radarData = await getChartByType("radar");
-        // const mixData = await getChartByType("mix");
-        // const entireData = await getChart();
+        const [
+          barData,
+          lineData,
+          pieData,
+          doughnutData,
+          mixData,
+          entireData,
+          interestBarData,
+          interestLineData,
+          interestPieData,
+          interestDoughnutData,
+          interestMixData,
+          interestEntireData,
+        ] = await Promise.all([
+          getChartByType("bar"),
+          getChartByType("line"),
+          getChartByType("pie"),
+          getChartByType("doughnut"),
+          getChartByType("mix"),
+          getChart(),
+          getInterestChartByType("bar"),
+          getInterestChartByType("line"),
+          getInterestChartByType("pie"),
+          getInterestChartByType("doughnut"),
+          getInterestChartByType("mix"),
+          getInterestChart(),
+        ]);
 
-        // if (entireData && entireData.length > 0) {
-        //   console.log("Fetched Entire data:", entireData);
-        //   setEntireChart(entireData);
-        // } else {
-        //   setError("전체 차트 데이터를 불러올 수 없습니다.");
-        // }
+        if (entireData && entireData.length > 0) {
+          console.log("Fetched Entire data:", entireData);
+          setEntireChart(entireData);
+        } else {
+          setError("전체 차트 데이터를 불러올 수 없습니다.");
+        }
 
-        // if (barData && barData.length > 0) {
-        //   console.log("Fetched Bar data:", barData);
-        //   setBarChart(barData);
-        // } else {
-        //   setError("Bar 차트 데이터를 불러올 수 없습니다.");
-        // }
+        if (barData && barData.length > 0) {
+          console.log("Fetched Bar data:", barData);
+          setBarChart(barData);
+        } else {
+          setError("Bar 차트 데이터를 불러올 수 없습니다.");
+        }
 
         if (lineData && lineData.length > 0) {
           console.log("Fetched Line data:", lineData);
@@ -109,40 +160,26 @@ const [loading, setLoading] = useState(false);
           setError("Line 차트 데이터를 불러올 수 없습니다.");
         }
 
-        // if (pieData && pieData.length > 0) {
-        //   console.log("Fetched Pie data:", pieData);
-        //   setPieChart(pieData);
-        // } else {
-        //   setError("Pie 차트 데이터를 불러올 수 없습니다.");
-        // }
+        if (pieData && pieData.length > 0) {
+          console.log("Fetched Pie data:", pieData);
+          setPieChart(pieData);
+        } else {
+          setError("Pie 차트 데이터를 불러올 수 없습니다.");
+        }
 
-        // if (doughnutData && doughnutData.length > 0) {
-        //   console.log("Fetched Doughnut data:", doughnutData);
-        //   setDoughnutChart(doughnutData);
-        // } else {
-        //   setError("Doughnut 차트 데이터를 불러올 수 없습니다.");
-        // }
+        if (doughnutData && doughnutData.length > 0) {
+          console.log("Fetched Doughnut data:", doughnutData);
+          setDoughnutChart(doughnutData);
+        } else {
+          setError("Doughnut 차트 데이터를 불러올 수 없습니다.");
+        }
 
-        // if (polarAreaData && polarAreaData.length > 0) {
-        //   console.log("Fetched PolarArea data:", polarAreaData);
-        //   setPolarAreaChart(polarAreaData);
-        // } else {
-        //   setError("PolarArea 차트 데이터를 불러올 수 없습니다.");
-        // }
-
-        // if (radarData && radarData.length > 0) {
-        //   console.log("Fetched Radar data:", radarData);
-        //   setRadarChart(radarData);
-        // } else {
-        //   setError("Radar 차트 데이터를 불러올 수 없습니다.");
-        // }
-
-        // if (mixData && mixData.length > 0) {
-        //   console.log("Fetched Mix data:", mixData);
-        //   setMixChart(mixData);
-        // } else {
-        //   setError("Mix 차트 데이터를 불러올 수 없습니다.");
-        // }
+        if (mixData && mixData.length > 0) {
+          console.log("Fetched Mix data:", mixData);
+          setMixChart(mixData);
+        } else {
+          setError("Mix 차트 데이터를 불러올 수 없습니다.");
+        }
       } catch (err) {
         setError("차트 데이터를 가져오는 중 오류가 발생했습니다.");
       } finally {
@@ -276,8 +313,11 @@ const [loading, setLoading] = useState(false);
                 <Button
                   bg="white"
                   _hover={{ bg: "gray.100", pl: "30px" }}
-                  gap={1} // 👈 아이콘과 텍스트 사이 간격
-                  onClick={() => setSelectedTab("star")}
+                  // 👈 아이콘과 텍스트 사이 간격
+                  onClick={() => {
+                    setSelectedTab("star");
+                    setActiveIndex(0);
+                  }}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
@@ -319,54 +359,172 @@ const [loading, setLoading] = useState(false);
               />
             </Box>
 
-            <Box mt={6} flex="1" overflowY="auto">
-              {activeIndex === 0 && (
-                <Flex flexDirection="column" gap={4}>
-                  <Box p={4}>
-                    <>
-                      {lineChart &&
-                        lineChart.map((data, index) => (
-                          <Flex key={index} flexDirection="column" gap={4}>
-                            <DraggableChartIcon chartType="line" data={data}>
-                              <ChartMake chartData={data || []} />
-                            </DraggableChartIcon>
-                          </Flex>
-                        ))}
-                    </>
-                  </Box>
-                </Flex>
-              )}
-              {/* {activeIndex === 1 && (
-                <Box p={4}>
-                  <DraggableChartIcon chartType="pie" data={pieChartData}>
-                    <canvas
-                      ref={canvasEl2}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </DraggableChartIcon>
-                </Box>
-              )}
-              {activeIndex === 2 && (
-                <Box p={4}>
-                  <DraggableChartIcon chartType="bar" data={barChartData}>
-                    <canvas
-                      ref={canvasEl1}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </DraggableChartIcon>
-                </Box>
-              )}
-              {activeIndex === 3 && (
-                <Box p={4}>
-                  <DraggableChartIcon chartType="line" data={lineChartData}>
-                    <canvas
-                      ref={canvasEl}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </DraggableChartIcon>
-                </Box>
-              )} */}
-            </Box>
+            {selectedTab === "all" && (
+              <Box mt={6} flex="1" overflowY="auto">
+                {activeIndex === 0 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {entireChart &&
+                          entireChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon chartType="line" data={data}>
+                                <SingleChart chartData={data || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+                {activeIndex === 1 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {pieChart &&
+                          pieChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon chartType="pie" data={data}>
+                                <SingleChart chartData={data || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+                {activeIndex === 2 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {barChart &&
+                          barChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon chartType="bar" data={data}>
+                                <SingleChart chartData={data || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+                {activeIndex === 3 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {lineChart &&
+                          lineChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon chartType="line" data={data}>
+                                <SingleChart chartData={data || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+                {activeIndex === 4 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {lineChart &&
+                          lineChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon chartType="line" data={data}>
+                                <MixedChart chartData={data || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+              </Box>
+            )}
+
+            {/* 즐겨찾기 차트 */}
+            {selectedTab === "star" && (
+              <Box mt={6} flex="1" overflowY="auto">
+                {activeIndex === 0 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {interestEntireChart &&
+                          interestEntireChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon
+                                chartType="line"
+                                data={data.chartDetail}
+                              >
+                                <ChartMake chartData={data.chartDetail || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+                {activeIndex === 1 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {interestPieChart &&
+                          interestPieChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon
+                                chartType="pie"
+                                data={data.chartDetail}
+                              >
+                                <ChartMake chartData={data.chartDetail || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+                {activeIndex === 2 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {interestBarChart &&
+                          interestBarChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon
+                                chartType="bar"
+                                data={data.chartDetail}
+                              >
+                                <ChartMake chartData={data.chartDetail || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+                {activeIndex === 3 && (
+                  <Flex flexDirection="column" gap={4}>
+                    <Box p={4}>
+                      <>
+                        {interestLineChart &&
+                          interestLineChart.map((data, index) => (
+                            <Flex key={index} flexDirection="column" gap={4}>
+                              <DraggableChartIcon
+                                chartType="line"
+                                data={data.chartDetail}
+                              >
+                                <ChartMake chartData={data.chartDetail || []} />
+                              </DraggableChartIcon>
+                            </Flex>
+                          ))}
+                      </>
+                    </Box>
+                  </Flex>
+                )}
+              </Box>
+            )}
           </Box>
         </Resizable>
       )}
@@ -375,4 +533,3 @@ const [loading, setLoading] = useState(false);
 };
 
 export default Subbar;
-

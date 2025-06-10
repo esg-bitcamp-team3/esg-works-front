@@ -144,21 +144,37 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CHART_ICON",
     drop: (item: { chartType: string; data: ChartDetail }) => {
-      const chartElement: ChartElement = {
-        type: "chart",
-        chartType: item.chartType,
-        data: {
-          labels: ["2020", "2021", "2022", "2023", "2024"],
+      let chartData;
+      if (item.chartType === "pie" || item.chartType === "doughnut") {
+        // For pie or doughnut charts, use dataset labels as chart labels
+        // and pick the first value from each dataset
+        chartData = {
+          labels: item.data.dataSets.map((dataset) => dataset.label),
+          datasets: item.data.dataSets.map((dataset) => ({
+            label: dataset.label,
+            data: dataset.esgDataList.map((item) => parseFloat(item.value)),
+          })),
+        };
+      } else {
+        // For other chart types, flatten years as labels and map all values
+        chartData = {
+          labels: item.data.dataSets
+            .map((data) => data.esgDataList.map((item) => item.year))
+            .flat(),
           datasets: item.data.dataSets.map((dataset) => ({
             label: dataset.label,
             data: dataset.esgDataList.map((item) => parseFloat(item.value)),
             backgroundColor: dataset.backgroundColor,
-          borderColor: dataset.borderColor,
-          borderWidth: parseFloat(dataset.borderWidth),
-          fill: dataset.fill === "true",
+            borderColor: dataset.borderColor,
+            borderWidth: parseFloat(dataset.borderWidth),
+            fill: dataset.fill === "true",
           })),
-        },
-        options: {},
+        };
+      }
+      const chartElement: ChartElement = {
+        type: "chart",
+        chartType: item.chartType,
+        data: chartData,
         children: [{ text: "" }],
       };
       const chartBlock: ChartBlockElement = {
@@ -1983,7 +1999,6 @@ const initialValue: Descendant[] = [
           labels: ["A", "B", "C"],
           datasets: [{ label: "Example", data: [10, 20, 30] }],
         },
-        options: {},
         children: [{ text: "" }],
       },
     ],

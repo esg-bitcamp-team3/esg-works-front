@@ -4,7 +4,7 @@ import { Box, Flex } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { ChartDetail } from "@/lib/api/interfaces/chart";
 import { getChart, getChartByType } from "@/lib/api/get";
-import ChartMake from "@/lib/components/chart/ChartMake";
+import ChartMake from "@/lib/components/chart/SingleChart";
 
 export default function Page() {
   const [chart, setChart] = useState<ChartDetail[] | null>(null);
