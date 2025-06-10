@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import imageExtensions from "image-extensions";
@@ -191,6 +192,50 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
   const [title, setTitle] = useState<string>("제목 없는 문서");
   const [value, setValue] = useState<Descendant[]>();
   const [isLoading, setIsLoading] = useState(documentId ? true : false);
+  // 페이지 관련 상태 추가
+  const [pageHeights, setPageHeights] = useState<number[]>([]);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+
+  // A4 페이지 크기 (mm 단위)
+  const A4_WIDTH_MM = 210;
+  const A4_HEIGHT_MM = 297;
+  // 화면 DPI에 따른 픽셀 변환 (96dpi 기준, 1mm = 3.78px)
+  const MM_TO_PX = 3.78;
+  const A4_WIDTH_PX = A4_WIDTH_MM * MM_TO_PX;
+  const A4_HEIGHT_PX = A4_HEIGHT_MM * MM_TO_PX;
+
+  // 페이지 높이 계산 함수
+  const calculatePageBreaks = useCallback(() => {
+    if (!editorContainerRef.current) return;
+
+    const container = editorContainerRef.current;
+    const containerHeight = container.scrollHeight;
+    const pageCount = Math.ceil(containerHeight / A4_HEIGHT_PX);
+
+    const heights = [];
+    for (let i = 0; i < pageCount; i++) {
+      heights.push(A4_HEIGHT_PX);
+    }
+
+    setPageHeights(heights);
+  }, [A4_HEIGHT_PX]);
+
+  // 편집기 내용이 변경될 때마다 페이지 계산
+  useEffect(() => {
+    if (value && !isLoading) {
+      // 내용이 변경되면 약간의 지연 후 페이지 계산 (렌더링 완료 후)
+      const timer = setTimeout(() => {
+        calculatePageBreaks();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [value, isLoading, calculatePageBreaks]);
+
+  // 창 크기가 변경될 때 페이지 계산
+  useEffect(() => {
+    window.addEventListener("resize", calculatePageBreaks);
+    return () => window.removeEventListener("resize", calculatePageBreaks);
+  }, [calculatePageBreaks]);
 
   // 문서 ID가 있으면 문서 불러오기
   useEffect(() => {
@@ -229,6 +274,7 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
   if (!value) {
     return null;
   }
+
   return (
     <Slate
       editor={editor}
@@ -325,24 +371,65 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
           height="100%"
           width="80%"
           overflow="auto"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
         >
           <Box
             ref={drop}
             justifyContent="center"
-            width="100%"
+            width="auto"
             height="100%"
             direction="column"
             bg="#fafafa"
             p={12}
           >
             <Box
+              ref={editorContainerRef}
               p={4}
               flex="1"
               bg="white"
               minH="100%"
+              width={`${A4_WIDTH_PX}px`}
               border={"1px solid #ddd"}
-              style={{ background: isOver ? "#E3F2FD" : "white" }}
+              style={{
+                background: isOver ? "#E3F2FD" : "white",
+                position: "relative",
+              }}
             >
+              {/* 페이지 구분선 렌더링 */}
+              {/* {pageHeights.map((height, index) =>
+                index > 0 ? (
+                  <Box
+                    key={`page-break-${index}`}
+                    position="absolute"
+                    left={0}
+                    top={`${index * A4_HEIGHT_PX}px`}
+                    width="100%"
+                    height="20px"
+                    zIndex={5}
+                    style={{
+                      borderTop: "1px dashed #aaa",
+                      marginTop: "-10px",
+                      pointerEvents: "none",
+                      background:
+                        "linear-gradient(180deg, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0) 100%)",
+                    }}
+                  >
+                    <Text
+                      position="absolute"
+                      right="10px"
+                      top="3px"
+                      fontSize="xs"
+                      color="gray.500"
+                    >
+                      Page {index + 1}
+                    </Text>
+                  </Box>
+                ) : null
+              )} */}
+
               {isLoading ? (
                 <EditorLoadingState />
               ) : (
@@ -352,6 +439,13 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
                   placeholder="Enter some rich text…"
                   spellCheck
                   autoFocus
+                  style={{
+                    width: "100%",
+                    maxWidth: "100%",
+                    minHeight: `${A4_HEIGHT_PX}px`,
+                    // 페이지 규격에 맞는 여백 설정
+                    padding: "25px",
+                  }}
                   onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
                     for (const hotkey in HOTKEYS) {
                       if (isKeyHotkey(hotkey, event)) {
