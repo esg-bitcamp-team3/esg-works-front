@@ -10,3 +10,12 @@ export const postESGData = async (data: PartialESGData) => {
     console.log("data post error");
   }
 };
+
+export const postInterestReports = async (reportId: string) => {
+  try {
+    const res = await apiClient.post(`/interest-reports/${reportId}`);
+    return res.data;
+  } catch (error) {
+    console.log("즐겨찾기 리포트 등록 실패", error);
+  }
+};
