@@ -1,15 +1,12 @@
 import {
   Box,
   Button,
-  CloseButton,
-  Drawer,
   Flex,
   HStack,
-  Portal,
+  Icon,
+  Stack,
   Text,
   VStack,
-  Stack,
-  Icon
 } from "@chakra-ui/react";
 
 import { Chart } from "react-chartjs-2";
@@ -18,35 +15,11 @@ import { useEffect, useState } from "react";
 
 import {
   FcBarChart,
+  FcComboChart,
   FcDoughnutChart,
   FcLineChart,
   FcPieChart,
 } from "react-icons/fc";
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  RadialLinearScale,
-  Tooltip,
-  Legend,
-} from "chart.js";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  RadialLinearScale,
-  Tooltip,
-  Legend
-);
 
 import { getEsgData } from "@/lib/api/get";
 import {
@@ -56,7 +29,12 @@ import {
 } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
-const chartOptionsBase = {
+// Add this import at the top with other imports
+import { ChartOptions } from "chart.js";
+import ChartColor from "./chartColor";
+
+// Inside the ChartContent component, add this options configuration
+const chartOptions: ChartOptions = {
   responsive: true,
   scales: {
     y: {
@@ -73,7 +51,6 @@ const chartOptionsBase = {
     // },
   },
 };
-
 
 const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
   const [chartData, setChartData] = useState<DataType>();
@@ -136,10 +113,10 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
     }
   }, [categorizedEsgDataList, selectedChartType, selectedColors]);
 
-  const chartOptions = {
-    ...chartOptionsBase,
+  const localChartOptions = {
+    ...chartOptions,
     plugins: {
-      ...chartOptionsBase.plugins,
+      ...chartOptions.plugins,
       custom_canvas_background_color: {
         color: backgroundColor,
       },
@@ -165,17 +142,15 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
         // maxHeight={{ base: "30vh", md: "45vh", lg: "35vh" }}
         padding={3}
         borderRadius="md"
-        outline={"1px solid #E2E8F0"}
+        // outline={"1px solid #E2E8F0"}
+        // justifyContent='end'
       >
         {[
           { type: "bar", icon: FcBarChart },
           { type: "line", icon: FcLineChart },
           { type: "pie", icon: FcPieChart },
           { type: "doughnut", icon: FcDoughnutChart },
-          { type: "radar", icon: FcBarChart },
-          { type: "polarArea", icon: FcBarChart },
-          { type: "scatter", icon: FcBarChart },
-          { type: "bubble", icon: FcBarChart },
+          { type: "mixed", icon: FcComboChart },
         ].map(({ type, icon }) => (
           <Button
             key={type}
@@ -189,52 +164,82 @@ const ChartContent = ({ categoryId, selected, charts }: ChartContentProps) => {
             justifyContent="flex-start"
             p={3}
           >
-            <Icon as={icon} mr={2} /> {type.toUpperCase()}
+            <Icon as={icon} /> 
           </Button>
         ))}
       </Stack>
-      <VStack
-        align={{ base: "flex-start", md: "center", lg: "flex-start" }}
-        minHeight={{ base: "30vh", md: "45vh", lg: "35vh" }}
-        maxHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
-        flex="3"
-        width="100%"
-        textAlign={{ base: "left", md: "center" }}
-        outline={"1px solid #E2E8F0"}
-        padding={3}
-        overflow="hidden"
-      >
-        <HStack
+      {/* 차트 및 차트 색상 커스텀 */}
+      <Stack direction="row" width="100%" gap="4">
+        <VStack
+          align={{ base: "flex-start", md: "center", lg: "flex-start" }}
+          minHeight={{ base: "30vh", md: "45vh", lg: "35vh" }}
+          maxHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
+          flex="3"
           width="100%"
-          display="flex"
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
+          textAlign={{ base: "left", md: "center" }}
+          outline={"1px solid #E2E8F0"}
+          padding={3}
+          overflow="hidden"
         >
+          {!chartData || !chartData.labels || !chartData.datasets ? (
+            <Text fontSize="sm" color="gray.500">
+              차트를 불러올 수 없습니다.
+            </Text>
+          ) : (
+            // 차트를 화면에 렌더링
+            <Box
+              width="100%"
+              mt={4}
+              overflow="hidden"
+              justifyContent="center"
+              justifyItems="center"
+            >
+              <Chart
+                type={selectedChartType}
+                data={chartData}
+                options={chartOptions}
+              />
+            </Box>
+          )}
+        </VStack>
+        <Box flex="2" outline={"1px solid #E2E8F0"}>
           {/* <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
             선택된 지표:
           </Text> */}
-        </HStack>
-        {!chartData || !chartData.labels || !chartData.datasets ? (
-          <Text fontSize="sm" color="gray.500">
-            차트를 불러올 수 없습니다.
-          </Text>
-        ) : (
-          <Box
-            width="100%"
-            mt={4}
-            overflow="hidden"
-            justifyContent="center"
-            justifyItems="center"
+          {/* 색상과 배경색 설정을 위한 사용자 정의 컴포넌트 */}
+          {/* <Flex gap='2' w='100%'>
+             {[
+          { type: "bar", icon: FcBarChart },
+          { type: "line", icon: FcLineChart },
+          { type: "pie", icon: FcPieChart },
+          { type: "doughnut", icon: FcDoughnutChart },
+          { type: "mixed", icon: FcComboChart },
+        ].map(({ type, icon }) => (
+          <Button
+            key={type}
+            onClick={() =>
+              setSelectedChartType(type as typeof selectedChartType)
+            }
+            variant="outline"
+            colorScheme="blue"
+            // width="full"
+            textAlign="left"
+            justifyContent="flex-start"
+            p={3}
           >
-            <Chart
-              type={selectedChartType}
-              data={chartData}
-              options={chartOptions}
-            />
-          </Box>
-        )}
-      </VStack>
+            <Icon as={icon} /> 
+          </Button>
+        ))}
+          </Flex> */}
+          <ChartColor
+            categorizedEsgDataList={categorizedEsgDataList}
+            selectedColors={selectedColors}
+            setSelectedColors={setSelectedColors}
+            backgroundColor={backgroundColor}
+            setBackgroundColor={setBackgroundColor}
+          />
+        </Box>
+      </Stack>
     </Flex>
   );
 };

@@ -1,3 +1,4 @@
+import ReportModal from "@/lib/components/modal/document-modal";
 import Sidebar from "@/lib/components/Sidebar";
 import { Flex } from "@chakra-ui/react";
 
@@ -12,6 +13,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     >
       <Sidebar />
       <main>{children}</main>
+       <ReportModal />
     </Flex>
   );
 };

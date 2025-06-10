@@ -17,8 +17,7 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
-import { use, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
@@ -32,30 +31,21 @@ const chartType: ChartType[] = [
   { type: "Bar", label: "막대 차트", icons: FaChartPie },
   { type: "Line", label: "선 차트", icons: FaPen },
   { type: "Pie", label: "파이 차트", icons: FaChartPie },
-  { type: "Radar", label: "레이더 차트", icons: FaTable },
   { type: "Doughnut", label: "도넛 차트", icons: FaChartPie },
-  { type: "Scatter", label: "산점도 차트", icons: FaSearch },
-  { type: "Bubble", label: "버블 차트", icons: FaPen },
-  { type: "PolarArea", label: "폴라 영역 차트", icons: FaTable },
+  { type: "Mixed", label: "믹스 차트", icons: FaTable },
 ];
 
 export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
   const [step, setStep] = useState<1 | 2>(1);
   const [charts, setCharts] = useState<ChartType[]>(chartType);
-  // Uncomment the line below if you want to use chartData as a state
-  // const [chartType, setChartType] = useState<ChartData[] | null>(chartData);
   const [selectedTab, setSelectedTab] = useState<string | null>("chart");
   const [sections, setSections] = useState<Section[]>([]);
-  // New states for categories and selectedSectionId
   const [categories, setCategories] = useState<CategoryDetail[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
 
-  // Fetch sections on component mount
-  // This will run once when the component mounts
-  // and fetch the sections from the API
   useEffect(() => {
     const fetchSections = async () => {
       try {
@@ -98,16 +88,16 @@ export default function ChartModal() {
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
       <Dialog.Trigger asChild>
         <Button
-          size="xl"
-          p="3"
+          size="2xs"
+          p="1"
           borderRadius="full"
           bg="#2F6EEA"
           color="white"
-          position="fixed"
-          top="4"
-          right="4"
+          // position="fixed"
+          // top="4"
+          // right="4"
         >
-          <FaPlus />
+          <FaPlus size='sm'/>
         </Button>
       </Dialog.Trigger>
 
@@ -157,11 +147,6 @@ export default function ChartModal() {
                     {/* GRI Standards Select ============================================== */}
                     <Select.Root
                       collection={gristandards}
-                      // value={selectedSectionId ? [selectedSectionId] : undefined}
-                      // onValueChange={(detailes) => {
-                      //   console.log("선택된 섹션 ID:", detailes.value);
-                      //   setSelectedSectionId(detailes.value[0] || null);
-                      // }}
                       h="100%"
                       w="100%"
                       flex={{ base: "1", md: "1", lg: "1" }}
@@ -231,7 +216,6 @@ export default function ChartModal() {
                     borderRadius="md"
                     borderWidth="1px"
                     width="100%"
-                    // minHeight={{base: "50vh", md: "40vh", lg: "30vh"}}
                     minHeight={{ base: "45vh", md: "35vh", lg: "40vh" }}
                     maxHeight={{ base: "50vh", md: "40vh", lg: "45vh" }}
                     padding="4"
@@ -281,29 +265,19 @@ export default function ChartModal() {
                   </Box>
                   {/* 태그 영역 */}
                   <Flex
-                    // direction="row"
                     width="full"
-                    // alignItems="start"
                     minHeight={{ base: "50px", md: "25px", lg: "100px" }}
                     maxHeight={{ base: "55px", md: "50px", lg: "100px" }}
                     gapX="2"
                     paddingX="2"
                     wrap="wrap"
-                    // justifyContent="start"
                     overflowY="auto"
                     borderWidth="1px"
                     rounded="md"
                   >
                     {selected &&
                       selected.map((item, index) => (
-                        <Flex
-                          key={index}
-                          // direction="row"
-                          // justifyContent="left"
-                          alignItems="center"
-                          // borderWidth="0"
-                          // borderRadius="md"
-                        >
+                        <Flex key={index} alignItems="center">
                           <Text fontSize="sm" minWidth="fit-content">
                             {item}
                           </Text>
@@ -346,18 +320,15 @@ export default function ChartModal() {
                     size="lg"
                     defaultValue={selectedTab}
                     onValueChange={(e) => setSelectedTab(e.value)}
-                    // height="100%"
-
                     display="flex"
                     flexDirection="column"
                   >
-                    {/* <Tabs.List flex="1 1 auto"> */}
                     <Tabs.List flexShrink={0}>
                       <Tabs.Trigger
                         value="chart"
                         key="chart"
-                        paddingLeft="5"
-                        paddingRight="5"
+                        // paddingLeft="5"
+                        // paddingRight="5"
                       >
                         <Icon as={FaChartPie} style={{ marginRight: 4 }} />
                         {"차트"}
@@ -382,6 +353,7 @@ export default function ChartModal() {
                           categoryId={selectedCategoryId}
                         />
                       </Tabs.Content>
+
                       <Tabs.Content value="table">
                         {/* 2번 탭 콘텐츠 */}
                         <TableContent categoryIds={selectedCategoryId} />
