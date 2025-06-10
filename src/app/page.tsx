@@ -1,6 +1,7 @@
 import { Box, Flex } from "@chakra-ui/react";
 import Link from "next/link";
 import Image from "next/image";
+import Navbar from "@/lib/components/NavBar";
 
 export default function Home() {
   return (
@@ -13,7 +14,7 @@ export default function Home() {
       spaceY={4}
     >
       <Flex direction="row" width="full" flexGrow={1}>
-        <Box
+        {/* <Box
           flex="1"
           padding={4}
           backgroundImage="linear-gradient(to right, #2196F3,rgb(0, 191, 255))"
@@ -26,8 +27,8 @@ export default function Home() {
           color="white"
         >
           ESG Works
-        </Box>
-        <Box
+        </Box> */}
+        {/* <Box
           flex="1"
           padding={4}
           fontSize="4xl"
@@ -41,11 +42,11 @@ export default function Home() {
             fill // 부모 Box 크기에 꽉 채움
             style={{ objectFit: "cover", borderRadius: "0 8px 8px 0" }} // roundedRight 적용
           />
-        </Box>
+        </Box> */}
       </Flex>
-      <Flex direction="row" width="100vw" spaceX={4} flexGrow={1}>
-        <Link href="/main">
-          <Box
+      {/* <Flex direction="row" width="100vw" spaceX={4} flexGrow={1}> */}
+      <Link href="/main">
+        {/* <Box
             flex="1"
             padding={4}
             bg="#f472b6"
@@ -62,10 +63,10 @@ export default function Home() {
               width={50}
               height={50}
             />
-          </Box>
-        </Link>
-        <Link href="/data">
-          <Box
+          </Box> */}
+      </Link>
+      <Link href="/data">
+        {/* <Box
             flex="1"
             padding={4}
             bg="#f472b6"
@@ -81,10 +82,10 @@ export default function Home() {
               width={50}
               height={50}
             />
-          </Box>
-        </Link>
-        <Link href="/report">
-          <Box
+          </Box> */}
+      </Link>
+      {/* <Link href="/report"> */}
+      {/* <Box
             flex="1"
             padding={4}
             bg="#f472b6"
@@ -100,9 +101,12 @@ export default function Home() {
               width={50}
               height={50}
             />
-          </Box>
-        </Link>
-      </Flex>
+          </Box> */}
+      <div>
+        <Navbar />
+      </div>
+      {/* </Link> */}
     </Flex>
+    // </Flex>
   );
 }
