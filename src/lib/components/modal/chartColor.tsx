@@ -56,9 +56,9 @@ ChartJS.register(backgroundPlugin);
 
 interface ChartSettingsDrawerProps {
   categorizedEsgDataList: CategorizedESGDataList[];
-  selectedColors: Color[];
+  selectedColors: string[];
   setSelectedColors: (colors: Color[]) => void;
-  backgroundColor: Color;
+  backgroundColor: string;
   setBackgroundColor: (color: Color) => void;
 }
 
@@ -99,13 +99,8 @@ const ChartColor = ({
               </Drawer.Header>
 
               <Drawer.Body display="flex" flexDirection="column" gap="4"> */}
-      <Accordion.Root
-        collapsible
-        multiple
-        defaultValue={["a"]}
-        variant="enclosed"
-      >
-        <Accordion.Item value="background">
+      <Accordion.Root collapsible defaultValue={["a"]} variant="enclosed">
+        <Accordion.Item value="b">
           <Accordion.ItemTrigger>
             <Span flex="1" fontWeight="medium" mb="1">
               차트 배경
@@ -121,33 +116,12 @@ const ChartColor = ({
               onChange={(e) => setBackgroundColor(e.target.value)}
               defaultValue="#ffffff"
             /> */}
-            <ColorPicker.Root
-              defaultValue={parseColor("#eb5e41")}
-              maxW="200px"
-              value={backgroundColor || "#ffffff"}
-              onValueChange={(e) => setBackgroundColor(e.value)}
-            >
-              <ColorPicker.HiddenInput />
-              <ColorPicker.Label>Color</ColorPicker.Label>
-              <ColorPicker.Control>
-                <ColorPicker.Input />
-                <ColorPicker.Trigger />
-              </ColorPicker.Control>
-
-              <ColorPicker.Positioner>
-                <ColorPicker.Content>
-                  <ColorPicker.Area />
-                  <HStack>
-                    <ColorPicker.EyeDropper size="xs" variant="outline" />
-                    <ColorPicker.Sliders />
-                  </HStack>
-                </ColorPicker.Content>
-              </ColorPicker.Positioner>
-            </ColorPicker.Root>
           </Accordion.ItemContent>
         </Accordion.Item>
+      </Accordion.Root>
 
-        <Accordion.Item value="chart">
+      <Accordion.Root collapsible variant="enclosed">
+        <Accordion.Item value="b">
           <Accordion.ItemTrigger>
             <Span flex="1" fontWeight="medium" mb="1">
               차트 색상
@@ -171,22 +145,13 @@ const ChartColor = ({
                             /> */}
                   <ColorPicker.Root
                     size="xs"
-                    maxW="200px"
                     defaultValue={parseColor("#eb5e41")}
-                    value={selectedColors[index] || parseColor("#2F6EEA")}
-                    onValueChange={(e) => {
-                      const updated = [...selectedColors];
-                      updated[index] = e.value;
-                      setSelectedColors(updated);
-                    }}
+                    maxW="200px"
                   >
                     <ColorPicker.HiddenInput />
                     <ColorPicker.Control>
-                      <ColorPicker.Trigger>
-                        <ColorPicker.ValueSwatch
-                          rounded="inherit"
-                          padding={2}
-                        />
+                      <ColorPicker.Trigger data-fit-content rounded="full">
+                        <ColorPicker.ValueSwatch rounded="inherit" />
                       </ColorPicker.Trigger>
                     </ColorPicker.Control>
                     <ColorPicker.Positioner>

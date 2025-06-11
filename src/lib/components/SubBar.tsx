@@ -25,6 +25,7 @@ import ChartModal from "./modal/chart-modal";
 import {
   PiChartPieSlice,
   PiFolder,
+  PiChartDonut,
   PiChartBar,
   PiChartLine,
   PiGridNine,
@@ -33,6 +34,7 @@ import {
   PiStar,
   PiStarBold,
 } from "react-icons/pi";
+import { LuChartNoAxesCombined } from "react-icons/lu";
 // import { GoFileDirectory } from "react-icons/go";
 // import { TfiPieChart } from "react-icons/tfi";
 // import { BsBarChartLine } from "react-icons/bs";
@@ -54,6 +56,11 @@ const items = [
     title: "원그래프",
   },
   {
+    icon: <PiChartDonut />,
+    titleIcon: <PiChartDonut size={30} color="#2F6EEA" />,
+    title: "도넛그래프",
+  },
+  {
     icon: <PiChartBar />,
     titleIcon: <PiChartBar size={30} color="#2F6EEA" />,
     title: "막대그래프",
@@ -62,6 +69,11 @@ const items = [
     icon: <PiChartLine />,
     titleIcon: <PiChartLine size={30} color="#2F6EEA" />,
     title: "꺾은선그래프",
+  },
+  {
+    icon: <LuChartNoAxesCombined />,
+    titleIcon: <LuChartNoAxesCombined size={30} color="#2F6EEA" />,
+    title: "혼합그래프",
   },
   {
     icon: <PiGridNine />,

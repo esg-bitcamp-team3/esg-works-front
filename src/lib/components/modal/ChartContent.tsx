@@ -1,6 +1,9 @@
+"use client";
+
 import {
   Box,
   Button,
+  CloseButton,
   Color,
   Flex,
   HStack,
@@ -9,11 +12,15 @@ import {
   Stack,
   Text,
   VStack,
+  type StackProps,
+  Drawer,
+  Portal,
+  ButtonGroup,
 } from "@chakra-ui/react";
 
 import { Chart } from "react-chartjs-2";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef, useRef } from "react";
 
 import {
   FcBarChart,
@@ -140,6 +147,8 @@ const ChartContent = ({
     },
   };
 
+  const portalRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <Flex
       direction={{ base: "column", md: "column" }}
@@ -152,6 +161,37 @@ const ChartContent = ({
       gap={4}
       p="1"
     >
+      {/* <Drawer.Root size="md">
+        <Drawer.Trigger asChild>
+          <Button variant="outline" size="sm">
+            Open Drawer
+          </Button>
+        </Drawer.Trigger>
+        <Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content>
+              <Drawer.Header>
+                <Drawer.CloseTrigger asChild pos="initial">
+                  <CloseButton />
+                </Drawer.CloseTrigger>
+                <Drawer.Title flex="1">Drawer Title</Drawer.Title>
+                <ButtonGroup>
+                  <Button variant="outline">Cancel</Button>
+                  <Button>Save</Button>
+                </ButtonGroup>
+              </Drawer.Header>
+              <Drawer.Body>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                </p>
+              </Drawer.Body>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Portal>
+      </Drawer.Root> */}
+
       <Stack
         direction="row"
         align="auto"
