@@ -77,6 +77,7 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
 
   return (
     <Box
+      w={"150%"}
       p={6}
       borderWidth="1px"
       borderRadius="xl"

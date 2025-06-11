@@ -19,7 +19,16 @@ const TableContent = ({ no, year }: Props) => {
     const fetchData = async () => {
       try {
         const dataList = await getCategories(no);
-        setCategoryList(dataList || []);
+        // Map dataList to Category type if necessary
+        setCategoryList(
+          (dataList || []).map((item: any) => ({
+            categoryId: item.categoryId,
+            sectionId: item.sectionId ?? "",
+            unit: item.unit,
+            categoryName: item.categoryName,
+            description: item.description,
+          }))
+        );
       } catch (error) {
         console.log(error);
       }
@@ -60,4 +69,4 @@ const TableContent = ({ no, year }: Props) => {
   );
 };
 
-export default TableContent;
+// export default TableContent;

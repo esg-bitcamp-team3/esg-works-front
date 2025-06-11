@@ -28,36 +28,32 @@ const CARD_STYLES = {
   overflow: "hidden",
 };
 
+// const yearList = [
+//   { label: "2020년", value: "2020" },
+//   { label: "2021년", value: "2021년" },
+//   { label: "2022년", value: "2022년" },
+//   { label: "2023년", value: "2023년" },
+//   { label: "2024년", value: "2024년" },
+//   { label: "2025년", value: "2025년" },
+// ];
 const yearList = [
-  { label: "2020년", value: "2020" },
-  { label: "2021년", value: "2021" },
-  { label: "2022년", value: "2022" },
-  { label: "2023년", value: "2023" },
-  { label: "2024년", value: "2024" },
-  { label: "2025년", value: "2025" },
+  { label: "2020", value: "2020" },
+  { label: "2021", value: "2021" },
+  { label: "2022", value: "2022" },
+  { label: "2023", value: "2023" },
+  { label: "2024", value: "2024" },
+  { label: "2025", value: "2025" },
 ];
 const sectionList = [
-  { label: "GRI 200: 경제", value: "200" },
-  { label: "GRI 300: 환경", value: "300" },
-  { label: "GRI 400: 사회", value: "400" },
+  { label: "GRI 200 : 경제", value: "GRI 200 : 경제" },
+  { label: "GRI 300 : 환경", value: "GRI 300 : 환경" },
+  { label: "GRI 400 : 사회", value: "GRI 400 : 사회" },
 ];
 
 const GriPage = () => {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("2050101");
   const [category, setCategory] = useState("200");
   const [year, setYear] = useState("2020");
-
-  const [isLoading, setIsLoading] = useState(true);
-
-  // 로딩 시뮬레이션 (데이터 fetch)
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 700); // 1초 후 로딩 종료 (예: fetch 완료)
-
-    return () => clearTimeout(timer);
-  }, [category, year]);
 
   return (
     <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
@@ -69,48 +65,20 @@ const GriPage = () => {
               text="GRI Standards"
               selected={setCategory}
             />
-            <HStack>
-              {/* <InputGroup
-                startElement={
-                  <Box pl="4" display="flex" alignItems="center">
-                    <FaSearch color="#2F6EEA" />
-                  </Box>
-                }
-                alignItems="start"
-                w="md"
-              >
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  flex={1}
-                  bg={"white"}
-                  borderWidth="1px" // 테두리 두께를 1px로 설정
-                  marginX={4}
-                />
-              </InputGroup> */}
-              <SearchBar searching={setSearch} />
-            </HStack>
+
+            <SearchBar searching={setSearch} />
 
             <HStack>
               <Selector
                 items={yearList}
                 text="연도"
                 selected={setYear}
-                width="100px"
+                width="80px"
               />
             </HStack>
           </HStack>
           <Box minW="100%" maxH="60vh" overflowY="auto" scrollbarWidth={"none"}>
-            {isLoading ? (
-              <VStack w="100%" gap={4}>
-                <Skeleton height="40px" w="100%" />
-                <Skeleton height="40px" w="100%" />
-                <Skeleton height="40px" w="100%" />
-                <Spinner size="lg" color="blue.500" />
-              </VStack>
-            ) : (
-              <Gri section={category} year={year} />
-            )}
+            <Gri section={category} year={year} search={search} />
           </Box>
         </VStack>
       </Container>

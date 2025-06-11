@@ -1,20 +1,24 @@
-import { Accordion, Box, Span, Icon, Text, Flex } from "@chakra-ui/react";
-import { FaChevronDown } from "react-icons/fa";
-import TableContent from "./TableContent";
+import { Accordion, Box, Text, VStack, Skeleton } from "@chakra-ui/react";
+// import TableContent from "./TableContent";
 import { useEffect, useState } from "react";
-import { Section, SectionList } from "@/lib/interface";
+import { Section } from "@/lib/interface";
 import { getSearchSectionId } from "@/lib/api/get";
+import SubsectionAccordian from "./SubsectionAccordian";
 
 interface GriProps {
   section: string;
   year: string;
+  search: string;
 }
 
-const Gri = ({ section, year }: GriProps) => {
+const Gri = ({ section, year, search }: GriProps) => {
   const [sectionList, setSectionList] = useState<Section[]>([]);
   const [value, setValue] = useState<string>("");
+  console.log("value", value);
 
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
+    setIsLoading(true);
     const fetchData = async () => {
       try {
         const searchSection = await getSearchSectionId(section);
@@ -24,11 +28,23 @@ const Gri = ({ section, year }: GriProps) => {
       }
     };
     fetchData();
-  }, [section]);
+    setIsLoading(false);
+    setValue(search.substring(0, 3));
+  }, [section, search]);
 
   useEffect(() => {
     console.log("sectionList updated:", sectionList);
   }, [sectionList]);
+
+  if (isLoading) {
+    return (
+      <VStack w="100%" gap={4}>
+        <Skeleton height="50px" w="100%" />
+        <Skeleton height="50px" w="100%" />
+        <Skeleton height="50px" w="100%" />
+      </VStack>
+    );
+  }
 
   return (
     <Accordion.Root
@@ -71,7 +87,13 @@ const Gri = ({ section, year }: GriProps) => {
           </Accordion.ItemTrigger>
           <Accordion.ItemContent>
             <Box p={6} bg="white">
-              {<TableContent no={item.sectionId} year={year} />}
+              {
+                <SubsectionAccordian
+                  no={item.sectionId}
+                  year={year}
+                  search={search}
+                />
+              }
             </Box>
           </Accordion.ItemContent>
         </Accordion.Item>

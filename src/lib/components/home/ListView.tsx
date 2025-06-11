@@ -12,34 +12,71 @@ import {
   Skeleton,
 } from "@chakra-ui/react";
 import { FaCopy } from "react-icons/fa6";
-import { listFilter } from "./ListFilter";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import { PiStar, PiStarFill } from "react-icons/pi";
 import { ReportDetail } from "@/lib/api/interfaces/report";
 import { deleteInterestReports } from "@/lib/api/delete";
 import { postInterestReports } from "@/lib/api/post";
+import { useRouter } from "next/navigation";
+import { getFavoriteReports, getReports } from "@/lib/api/get";
 
 interface viewProps {
-  filter1: string;
-  filter2: string;
+  filter: string;
+  view: string;
   asc: boolean;
 }
 
-const ListView = ({ filter1, filter2, asc }: viewProps) => {
-  const viewList = listFilter(filter1, asc) || [];
-
+const ListView = ({ filter, view, asc }: viewProps) => {
   const [page, setPage] = useState(1);
   const pageSize = 6;
   const startRange = (page - 1) * pageSize;
   const endRange = startRange + pageSize;
+
+  const [viewList, setViewList] = useState<ReportDetail[]>([]);
   const visibleItems = viewList?.slice(startRange, endRange);
 
-  const [localList, setLocalList] = useState<ReportDetail[]>(viewList);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const route = useRouter();
+  const goReport = (id: string) => {
+    route.push(`/editor/${id}`);
+  };
+
+  const fetchReports = async () => {
+    setIsLoading(true);
+    try {
+      let data: ReportDetail[] = [];
+      if (filter === "all") {
+        data =
+          (await getReports({
+            sortField: "createdAt",
+            direction: asc ? "ASC" : "DESC",
+          })) || [];
+      } else if (filter === "recent") {
+        data =
+          (await getReports({
+            sortField: "updatedAt",
+            direction: asc ? "ASC" : "DESC",
+          })) || [];
+      } else if (filter === "favorite") {
+        data =
+          (await getFavoriteReports({
+            sortField: "updatedAt",
+            direction: asc ? "ASC" : "DESC",
+          })) || [];
+      }
+      setViewList(data || []);
+    } catch (error) {
+      console.log("fetching error", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setLocalList(viewList); // filter1, asc 변경 시 업데이트
-  }, [viewList]);
+    fetchReports();
+  }, [filter, asc]);
 
   const clickFavorite = async (report: ReportDetail, index: number) => {
     try {
@@ -48,20 +85,33 @@ const ListView = ({ filter1, filter2, asc }: viewProps) => {
       } else {
         await postInterestReports(report.id);
       }
-      const newList = [...localList];
-      newList[startRange + index].isInterestedReport =
-        !report.isInterestedReport;
-      setLocalList(newList);
+      setViewList((prev) =>
+        prev.map((item) =>
+          item.id === report.id
+            ? { ...item, isInterestedReport: !item.isInterestedReport }
+            : item
+        )
+      );
     } catch (error) {
       console.log("즐겨찾기 실패", error);
     }
   };
 
+  if (isLoading) {
+    return (
+      <Box w="100%">
+        <Skeleton height="40px" mb={4} />
+        <Skeleton height="40px" mb={4} />
+        <Skeleton height="40px" mb={4} />
+      </Box>
+    );
+  }
+
   return (
     <VStack w={"100%"}>
-      {filter2 === "list" ? (
+      {view === "list" ? (
         <Stack gap={4} w="100%" h={"100%"}>
-          {localList?.map((report, index) => {
+          {visibleItems?.map((report, index) => {
             const date = new Date(report.updatedAt);
             const formatted =
               date.getFullYear() +
@@ -81,6 +131,7 @@ const ListView = ({ filter1, filter2, asc }: viewProps) => {
                 display="flex"
                 alignItems="center"
                 px={4}
+                _hover={{ bg: "gray.100" }}
               >
                 <HStack
                   padding={4}
@@ -88,7 +139,7 @@ const ListView = ({ filter1, filter2, asc }: viewProps) => {
                   justifyContent="space-between"
                   w="100%"
                 >
-                  <HStack>
+                  <HStack onClick={() => goReport(report.id)} cursor="pointer">
                     <FaCopy style={{ marginRight: 8 }} />
                     <Text>{report.title}</Text>
                   </HStack>
@@ -100,13 +151,13 @@ const ListView = ({ filter1, filter2, asc }: viewProps) => {
                       {formatted}
                     </Text>
                     <Button
-                      bg={"white"}
+                      backgroundColor={"transparent"}
                       onClick={() => clickFavorite(report, index)}
                     >
                       {report.isInterestedReport ? (
                         <PiStarFill color="gold" size={20} />
                       ) : (
-                        <PiStar color="black" size={20} />
+                        <PiStar color="gray.200" size={20} />
                       )}
                     </Button>
                   </HStack>

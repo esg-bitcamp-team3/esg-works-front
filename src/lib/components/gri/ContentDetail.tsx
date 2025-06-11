@@ -5,7 +5,6 @@ import { Category } from "@/lib/interface";
 import { tokenCheck } from "@/lib/api/auth/auth";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
-import { LuSave } from "react-icons/lu";
 
 interface Prop {
   row: string;

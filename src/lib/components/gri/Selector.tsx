@@ -1,4 +1,13 @@
-import { createListCollection, Flex, Portal, Select } from "@chakra-ui/react";
+import {
+  createListCollection,
+  Flex,
+  HStack,
+  Portal,
+  Select,
+  Span,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 
 interface Item {
   label: string;
@@ -18,51 +27,55 @@ const Selector = ({ items, text, selected, width }: Props) => {
   });
 
   return (
-    <Select.Root
-      collection={collection}
-      size={"md"}
-      defaultHighlightedValue={text}
-      onValueChange={(details) => {
-        const value = Array.isArray(details.value)
-          ? details.value[0]
-          : details.value;
-        selected(value);
-      }}
-    >
-      <Select.HiddenSelect />
+    <HStack gap={4}>
+      <Text whiteSpace="nowrap" width="fit-content">
+        {text}
+      </Text>
+      <Select.Root
+        collection={collection}
+        size={"md"}
+        // defaultHighlightedValue={text}
+        onValueChange={(details) => {
+          const value = Array.isArray(details.value)
+            ? details.value[0]
+            : details.value;
+          selected(value);
+        }}
+      >
+        <Select.HiddenSelect />
+        <Select.Control>
+          <Select.Trigger>
+            <Flex align="center" gap="4" minW={width || "170px"}>
+              <Select.IndicatorGroup position="start">
+                <Select.Indicator color="#2F6EEA" />
+              </Select.IndicatorGroup>
+              <Select.ValueText
+                padding={2}
+                placeholder={items[0].value}
+                style={{
+                  fontSize: "md",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              />
+            </Flex>
+          </Select.Trigger>
+        </Select.Control>
 
-      <Select.Control>
-        <Select.Trigger>
-          <Flex align="center" gap="4" minW={width || "170px"}>
-            <Select.IndicatorGroup position="start">
-              <Select.Indicator color="#2F6EEA" />
-            </Select.IndicatorGroup>
-            <Select.ValueText
-              padding={2}
-              placeholder={text}
-              style={{
-                fontSize: "md",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            />
-          </Flex>
-        </Select.Trigger>
-      </Select.Control>
-
-      <Portal>
-        <Select.Positioner>
-          <Select.Content>
-            {items.map((item) => (
-              <Select.Item key={item.value} item={item.value}>
-                {item.label}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Positioner>
-      </Portal>
-    </Select.Root>
+        <Portal>
+          <Select.Positioner>
+            <Select.Content>
+              {items.map((item) => (
+                <Select.Item key={item.value} item={item.value}>
+                  {item.label}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Positioner>
+        </Portal>
+      </Select.Root>
+    </HStack>
   );
 };
 

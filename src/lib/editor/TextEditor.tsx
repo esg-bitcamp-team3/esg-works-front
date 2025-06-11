@@ -2,10 +2,14 @@
 import React from "react";
 import { Flex } from "@chakra-ui/react";
 import RichTextExample from "./example";
-import { DndProvider } from "react-dnd";
-import { Transforms } from "slate";
+import { useParams } from "next/navigation";
 
 const TextEditor = () => {
+  const params = useParams();
+  const id = params.id;
+
+  if (!id || typeof id !== "string") return null;
+
   return (
     <Flex
       justifyContent={"center"}
@@ -14,7 +18,7 @@ const TextEditor = () => {
       width="100vw"
       height="100vh"
     >
-      <RichTextExample documentId="6847960bc34ca5458cf5161c" />
+      <RichTextExample documentId={id} />
     </Flex>
   );
 };
