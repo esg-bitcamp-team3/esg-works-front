@@ -56,9 +56,9 @@ ChartJS.register(backgroundPlugin);
 
 interface ChartSettingsDrawerProps {
   categorizedEsgDataList: CategorizedESGDataList[];
-  selectedColors: string[];
+  selectedColors: Color[];
   setSelectedColors: (colors: Color[]) => void;
-  backgroundColor: string;
+  backgroundColor: Color;
   setBackgroundColor: (color: Color) => void;
 }
 
@@ -72,34 +72,7 @@ const ChartColor = ({
   setBackgroundColor,
 }: ChartSettingsDrawerProps) => {
   return (
-    <Flex direction="column" padding="10px">
-      {/* <Drawer.Root>
-        <Drawer.Trigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            color="#2F6EEA"
-            backgroundColor="white"
-            _hover={{ bg: "gray.300" }}
-          >
-            <Text fontSize="sm" color="#2F6EEA">
-              수정하기
-            </Text>
-          </Button>
-        </Drawer.Trigger> */}
-
-      {/* <Portal>
-          <Drawer.Backdrop />
-          <Drawer.Positioner padding="4">
-            <Drawer.Content rounded="md" width="360px">
-              <Drawer.Header>
-                <Drawer.Title fontSize="lg" fontWeight="bold">
-                  차트 설정
-                </Drawer.Title>
-              </Drawer.Header>
-
-              <Drawer.Body display="flex" flexDirection="column" gap="4"> */}
-      <Accordion.Root collapsible defaultValue={["a"]} variant="enclosed">
+      <Accordion.Root collapsible defaultValue={["a"]} variant="enclosed" bg={"white"}>
         <Accordion.Item value="b">
           <Accordion.ItemTrigger>
             <Span flex="1" fontWeight="medium" mb="1">
@@ -118,9 +91,6 @@ const ChartColor = ({
             /> */}
           </Accordion.ItemContent>
         </Accordion.Item>
-      </Accordion.Root>
-
-      <Accordion.Root collapsible variant="enclosed">
         <Accordion.Item value="b">
           <Accordion.ItemTrigger>
             <Span flex="1" fontWeight="medium" mb="1">
@@ -176,21 +146,6 @@ const ChartColor = ({
           </Accordion.ItemContent>
         </Accordion.Item>
       </Accordion.Root>
-      {/* </Drawer.Body>
-
-              <Drawer.Footer display="flex" justifyContent="flex-end" gap="2">
-                <Button variant="outline">취소</Button>
-                <Button colorScheme="blue">적용</Button>
-              </Drawer.Footer>
-
-              <Drawer.CloseTrigger asChild>
-                <CloseButton size="sm" position="absolute" top="2" right="2" />
-              </Drawer.CloseTrigger>
-            </Drawer.Content>
-          </Drawer.Positioner>
-        </Portal>
-      </Drawer.Root> */}
-    </Flex>
   );
 };
 

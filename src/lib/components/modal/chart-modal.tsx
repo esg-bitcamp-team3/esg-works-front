@@ -23,8 +23,9 @@ import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories, getEsgData } from "@/lib/api/get";
-import ChartContent from "./ChartContent";
+import DrawerChart from "./ChartContent";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
+import ChartContent from "./ChartContent";
 
 // const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
@@ -334,7 +335,7 @@ export default function ChartModal() {
               {/* 다음 페이지 (차트 & 테이블) ======================================================================================= */}
               {step === 2 && (
                 <Flex direction="column" height="100%" width="100%">
-                  <Tabs.Root
+                  {/* <Tabs.Root
                     variant="outline"
                     size="lg"
                     defaultValue={selectedTab}
@@ -365,16 +366,17 @@ export default function ChartModal() {
                     </Tabs.List>
 
                     <Tabs.ContentGroup>
-                      <Tabs.Content value="chart">
+                      <Tabs.Content value="chart"> */}
                         <ChartContent
                           categorizedEsgDataList={categorizedEsgDataList}
                           charts={charts}
                         />
-                      </Tabs.Content>
+                        {/* <DrawerChart />
+                      </Tabs.Content> */}
 
-                      <Tabs.Content value="table">
+                      {/* <Tabs.Content value="table"> */}
                         {/* 2번 탭 콘텐츠 */}
-                        {dataLoading ? (
+                        {/* {dataLoading ? (
                           <Flex
                             justifyContent="center"
                             alignItems="center"
@@ -390,10 +392,10 @@ export default function ChartModal() {
                             }
                             categorizedEsgDataList={categorizedEsgDataList}
                           />
-                        )}
-                      </Tabs.Content>
+                        )} */}
+                      {/* </Tabs.Content>
                     </Tabs.ContentGroup>
-                  </Tabs.Root>
+                  </Tabs.Root> */}
                 </Flex>
               )}
             </Dialog.Body>

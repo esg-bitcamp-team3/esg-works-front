@@ -37,6 +37,17 @@ export interface DataType {
   backgroudColor?: string;
 }
 
+export interface ChartContentProps {
+  categoryId: string[];
+  selected: string[];
+  charts: {
+    type: string;
+    label: string;
+    icons: React.ElementType;
+  }[];
+  // chartData: any; // or import the correct ChartData type if preferred
+}
+
 export interface Chart {
   chartId: string;
   corporationId: string;
