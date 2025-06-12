@@ -8,8 +8,6 @@ import {
   Text,
   VStack,
   Pagination,
-  Button,
-  Skeleton,
 } from "@chakra-ui/react";
 import { FaCopy } from "react-icons/fa6";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
@@ -22,6 +20,7 @@ interface ListViewProps {
   filter: "all" | "recent" | "interest";
   filter2: "list" | "layout";
   keyword: string;
+  searchTrigger: number;
 }
 
 interface ReportDTO {
@@ -33,7 +32,12 @@ interface ReportDTO {
   updatedAt?: string;
 }
 
-export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
+export default function ListView({
+  keyword,
+  filter,
+  filter2,
+  searchTrigger,
+}: ListViewProps) {
   const [data, setData] = useState<ReportDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +50,7 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
       .then((res) => setData(res.data))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
-  }, [keyword, filter]);
+  }, [searchTrigger, filter]);
 
   if (loading) {
     return <div>로딩중...</div>;
@@ -126,8 +130,8 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
                   </Text>
                 </VStack>
               </Box>
-            );
-          })}
+            </Box>
+          ))}
         </SimpleGrid>
       )}
     </VStack>

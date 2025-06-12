@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  Flex,
-  Input,
-  InputGroup,
-  Skeleton,
-} from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { TbSearch, TbSortAscending, TbSortDescending } from "react-icons/tb";
+import { Box, Button, Flex, Input, InputGroup } from "@chakra-ui/react";
+import { useState } from "react";
+import { TbSearch } from "react-icons/tb";
 import { FaRegStar } from "react-icons/fa";
 import { FaRegClock } from "react-icons/fa6";
 import { FaRegFileWord } from "react-icons/fa";
@@ -20,7 +13,7 @@ import { FiAlignLeft } from "react-icons/fi";
 import { ButtonGroup } from "@chakra-ui/react";
 
 import ListView from "@/lib/components/home/ListView";
-import LiveFilter from "@/lib/components/home/ListFilter";
+// import LiveFilter from "@/lib/components/home/ListFilter";
 import SearchBar from "@/lib/components/home/SearchBar";
 import { on } from "events";
 
@@ -30,6 +23,11 @@ export default function Home() {
   >("all");
   const [activeFilter2, setActiveFilter2] = useState<"list" | "layout">("list");
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchTrigger, setSearchTrigger] = useState(0);
+
+  // const handleSearch = () => {
+  //   setSearchTrigger((prev) => prev + 1);
+  // };
 
   return (
     <Flex
@@ -47,7 +45,11 @@ export default function Home() {
       </h1>
 
       {/* 검색창 */}
-      <SearchBar keyword={searchKeyword} setKeyword={setSearchKeyword} />
+      <SearchBar
+        keyword={searchKeyword}
+        setKeyword={setSearchKeyword}
+        onSearch={() => setSearchTrigger((v) => v + 1)}
+      />
 
       <Stack>
         <Flex
@@ -124,9 +126,6 @@ export default function Home() {
               >
                 <TbLayoutGridFilled />
               </Button>
-              <Button variant="ghost" onClick={() => setSort((prev) => !prev)}>
-                {sort ? <TbSortAscending /> : <TbSortDescending />}
-              </Button>
             </Box>
           </ButtonGroup>
 
@@ -135,6 +134,7 @@ export default function Home() {
             keyword={searchKeyword}
             filter={activeFilter}
             filter2={activeFilter2}
+            searchTrigger={searchTrigger}
           />
         </Flex>
       </Stack>
