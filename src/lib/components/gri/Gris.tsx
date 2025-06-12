@@ -1,6 +1,5 @@
 import { Accordion, Box, Text, VStack, Skeleton } from "@chakra-ui/react";
-// import TableContent from "./TableContent";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Section } from "@/lib/interface";
 import { getSearchSectionId } from "@/lib/api/get";
 import SubsectionAccordian from "./SubsectionAccordian";
@@ -14,27 +13,24 @@ interface GriProps {
 const Gri = ({ section, year, search }: GriProps) => {
   const [sectionList, setSectionList] = useState<Section[]>([]);
   const [value, setValue] = useState<string>("");
-  console.log("value", value);
 
   const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    setIsLoading(true);
-    const fetchData = async () => {
-      try {
-        const searchSection = await getSearchSectionId(section);
-        setSectionList(searchSection || []);
-      } catch (error) {
-        console.log("error", error);
-      }
-    };
-    fetchData();
-    setIsLoading(false);
-    setValue(search.substring(0, 3));
-  }, [section, search]);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const searchSection = await getSearchSectionId(section);
+      setSectionList(searchSection || []);
+    } catch (error) {
+      console.log("error", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [section]);
 
   useEffect(() => {
-    console.log("sectionList updated:", sectionList);
-  }, [sectionList]);
+    fetchData();
+  }, [fetchData]);
 
   if (isLoading) {
     return (
@@ -53,9 +49,9 @@ const Gri = ({ section, year, search }: GriProps) => {
       value={[value]}
       onValueChange={(e) => setValue(e.value[0] || "")}
     >
-      {sectionList.map((item, index) => (
+      {sectionList.map((item) => (
         <Accordion.Item
-          key={index}
+          key={item.sectionId}
           value={item.sectionId}
           borderWidth="1px"
           borderColor="gray.200"
@@ -63,7 +59,6 @@ const Gri = ({ section, year, search }: GriProps) => {
           mb={4}
           overflow="hidden"
           _hover={{ borderColor: "blue.200" }}
-          transition="all 0.2s ease"
         >
           <Accordion.ItemTrigger
             p={6}
@@ -82,18 +77,16 @@ const Gri = ({ section, year, search }: GriProps) => {
             <Text textStyle={"md"} fontWeight="bold" color="gray.700">
               {item.sectionId + " : " + item.sectionName}
             </Text>
-
             <Accordion.ItemIndicator colorPalette="blue" />
           </Accordion.ItemTrigger>
+
           <Accordion.ItemContent>
             <Box p={6} bg="white">
-              {
-                <SubsectionAccordian
-                  no={item.sectionId}
-                  year={year}
-                  search={search}
-                />
-              }
+              <SubsectionAccordian
+                no={item.sectionId}
+                year={year}
+                search={search}
+              />
             </Box>
           </Accordion.ItemContent>
         </Accordion.Item>

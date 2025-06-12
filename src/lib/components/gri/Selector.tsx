@@ -17,13 +17,17 @@ interface Item {
 interface Props {
   items: Item[];
   text: string;
-  selected: (value: string) => void;
+  value: string;
+  onValueChange: (value: string) => void;
   width?: string;
 }
 
-const Selector = ({ items, text, selected, width }: Props) => {
+const Selector = ({ items, text, value, onValueChange, width }: Props) => {
   const collection = createListCollection({
-    items: items.map((item) => item.value),
+    items: items.map((item) => ({
+      value: item.value,
+      label: item.label,
+    })),
   });
 
   return (
@@ -34,13 +38,8 @@ const Selector = ({ items, text, selected, width }: Props) => {
       <Select.Root
         collection={collection}
         size={"md"}
-        // defaultHighlightedValue={text}
-        onValueChange={(details) => {
-          const value = Array.isArray(details.value)
-            ? details.value[0]
-            : details.value;
-          selected(value);
-        }}
+        value={[value]}
+        onValueChange={(e) => onValueChange(e.value[0])}
       >
         <Select.HiddenSelect />
         <Select.Control>
@@ -51,14 +50,15 @@ const Selector = ({ items, text, selected, width }: Props) => {
               </Select.IndicatorGroup>
               <Select.ValueText
                 padding={2}
-                placeholder={items[0].value}
                 style={{
                   fontSize: "md",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                 }}
-              />
+              >
+                {items.find((item) => item.value === value)?.label || value}
+              </Select.ValueText>
             </Flex>
           </Select.Trigger>
         </Select.Control>

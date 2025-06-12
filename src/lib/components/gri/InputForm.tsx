@@ -12,7 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 // Update the import path below to the correct relative path if needed
 import { ToggleTip } from "@/components/ui/toggle-tip";
 import { LuInfo } from "react-icons/lu";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getDataByCorpYear } from "@/lib/api/get";
 
 interface Props {
@@ -47,7 +47,7 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
   const [field, setField] = useState("");
   const [inputData, setInputData] = useState<PartialESGData>();
 
-  const fieldCheck = async () => {
+  const fieldCheck = useCallback(async () => {
     try {
       const data = await getDataByCorpYear({
         categoryId: category.categoryId,
@@ -67,13 +67,13 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [year]);
 
   const inputType = unitTypes[category.unit.unitId];
 
   useEffect(() => {
     fieldCheck();
-  }, [year]);
+  }, [fieldCheck]);
 
   return (
     <Box

@@ -1,21 +1,12 @@
 "use client";
-import {
-  Box,
-  Input,
-  Container,
-  VStack,
-  HStack,
-  InputGroup,
-  Skeleton,
-  Spinner,
-} from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import Selector from "./Selector";
-import { FaSearch } from "react-icons/fa";
+import { Box, Container, VStack, HStack, InputGroup } from "@chakra-ui/react";
+import { useCallback, useEffect, useState } from "react";
 import Gri from "./Gris";
-import { Category } from "@/lib/interface";
-import { getCategory } from "@/lib/api/get";
-import SearchBar from "./SearchBar";
+import { getCategoryByName, getGri } from "@/lib/api/get";
+import { FaSearch } from "react-icons/fa";
+import Selector from "./Selector";
+import SearchInput from "./SearchInput";
+import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
 
 const CARD_STYLES = {
   bg: "white",
@@ -28,14 +19,6 @@ const CARD_STYLES = {
   overflow: "hidden",
 };
 
-// const yearList = [
-//   { label: "2020년", value: "2020" },
-//   { label: "2021년", value: "2021년" },
-//   { label: "2022년", value: "2022년" },
-//   { label: "2023년", value: "2023년" },
-//   { label: "2024년", value: "2024년" },
-//   { label: "2025년", value: "2025년" },
-// ];
 const yearList = [
   { label: "2020", value: "2020" },
   { label: "2021", value: "2021" },
@@ -45,15 +28,51 @@ const yearList = [
   { label: "2025", value: "2025" },
 ];
 const sectionList = [
-  { label: "GRI 200 : 경제", value: "GRI 200 : 경제" },
-  { label: "GRI 300 : 환경", value: "GRI 300 : 환경" },
-  { label: "GRI 400 : 사회", value: "GRI 400 : 사회" },
+  { label: "GRI 200 : 경제", value: "200" },
+  { label: "GRI 300 : 환경", value: "300" },
+  { label: "GRI 400 : 사회", value: "400" },
 ];
 
 const GriPage = () => {
-  const [search, setSearch] = useState("2050101");
-  const [category, setCategory] = useState("200");
+  const [searchId, setSearchId] = useState("200");
+  const [section, setSection] = useState("200");
   const [year, setYear] = useState("2020");
+
+  const [search, setSearch] = useState<string>("");
+
+  const [griList, setGriList] = useState<SectionCategoryESGData[]>();
+  console.log("test", griList);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const data = await getGri({ year: "2020", categoryName: "" });
+      setGriList(data || []);
+      console.log("test0", data);
+    } catch (error) {
+      console.error("fetch 실패");
+    }
+  }, []);
+
+  // ✅ API 호출 함수 (useCallback)
+  const searchCategoryId = useCallback(async (name: string) => {
+    try {
+      const data = await getCategoryByName(name);
+      setSearchId(data?.categoryId ?? "");
+    } catch (error) {
+      console.error("fetch error", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    searchCategoryId(search);
+  }, [search, fetchData]);
+
+  useEffect(() => {
+    if (searchId.length > 3) {
+      setSection(searchId.substring(0, 3));
+    }
+  }, [searchId]);
 
   return (
     <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
@@ -63,22 +82,34 @@ const GriPage = () => {
             <Selector
               items={sectionList}
               text="GRI Standards"
-              selected={setCategory}
+              value={section}
+              onValueChange={setSection}
             />
-
-            <SearchBar searching={setSearch} />
-
+            <Box position="relative" w="md">
+              <InputGroup
+                startElement={
+                  <Box pl="4" display="flex" alignItems="center">
+                    <FaSearch color="#2F6EEA" />
+                  </Box>
+                }
+                alignItems="start"
+                w="100%"
+              >
+                <SearchInput searchCategoryId={setSearch} />
+              </InputGroup>
+            </Box>
             <HStack>
               <Selector
                 items={yearList}
                 text="연도"
-                selected={setYear}
+                value={year}
+                onValueChange={setYear}
                 width="80px"
               />
             </HStack>
           </HStack>
           <Box minW="100%" maxH="60vh" overflowY="auto" scrollbarWidth={"none"}>
-            <Gri section={category} year={year} search={search} />
+            {/* <Gri section={section} year={year} search={searchId} /> */}
           </Box>
         </VStack>
       </Container>

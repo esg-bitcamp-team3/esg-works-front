@@ -1,17 +1,7 @@
-import {
-  Accordion,
-  Box,
-  Button,
-  Flex,
-  HStack,
-  Table,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
-import ContentDetail from "./ContentDetail";
+import { Accordion, Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
 import subCategory from "@/lib/data/gri";
 import { Category } from "@/lib/interface";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getCategories } from "@/lib/api/get";
 import { tokenCheck } from "@/lib/api/auth/auth";
 import { patchESGData } from "@/lib/api/patch";
@@ -34,72 +24,80 @@ const SubsectionAccordian = ({ no, year, search }: Props) => {
 
   const [value, setValue] = useState<string>("");
 
+  const fetchData = useCallback(async () => {
+    try {
+      const dataList = await getCategories(no);
+      // Map dataList to Category type if necessary
+      setCategoryList(
+        (dataList || []).map((item: any) => ({
+          categoryId: item.categoryId,
+          sectionId: item.sectionId ?? "",
+          unit: item.unit,
+          categoryName: item.categoryName,
+          description: item.description,
+        }))
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }, [no]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const dataList = await getCategories(no);
-        // Map dataList to Category type if necessary
-        setCategoryList(
-          (dataList || []).map((item: any) => ({
-            categoryId: item.categoryId,
-            sectionId: item.sectionId ?? "",
-            unit: item.unit,
-            categoryName: item.categoryName,
-            description: item.description,
-          }))
-        );
-        setValue(search.substring(3, 5));
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchData();
-  }, [no, search]);
+  }, [fetchData]);
+
+  useEffect(() => {
+    setValue(search.substring(3, 5));
+  }, [search]);
 
   const [fieldValues, setFieldValues] = useState<FieldMap>({});
 
-  const handleFieldChange = (
-    categoryId: string,
-    value: string,
-    isExisting: boolean
-  ) => {
-    setFieldValues((prev) => ({
-      ...prev,
-      [categoryId]: { value, isExisting },
-    }));
-  };
+  const handleFieldChange = useCallback(
+    (categoryId: string, value: string, isExisting: boolean) => {
+      setFieldValues((prev) => ({
+        ...prev,
+        [categoryId]: { value, isExisting },
+      }));
+    },
+    []
+  );
 
-  const handleSaveAll = async () => {
+  const outputList = useMemo(() => {
+    return categoryList.map((category) => {
+      const { value, isExisting } = fieldValues[category.categoryId] || {
+        value: "",
+        isExisting: false,
+      };
+      return { ...category, value, isExisting };
+    });
+  }, [categoryList, fieldValues]);
+
+  const handleSaveAll = useCallback(async () => {
     const user = await tokenCheck();
     if (!user) {
       console.error("User not authenticated");
       return;
     }
 
-    for (const category of categoryList) {
-      const { value, isExisting } = fieldValues[category.categoryId] || {
-        value: "",
-        isExisting: false,
-      };
-
+    for (const item of outputList) {
       const outputData = {
-        categoryId: category.categoryId,
+        categoryId: item.categoryId,
         corpId: user.corpId,
         year,
-        value,
+        value: item.value,
       };
 
       try {
-        if (isExisting) {
+        if (item.isExisting) {
           await patchESGData(outputData);
         } else {
           await postESGData(outputData);
         }
       } catch (error) {
-        console.error(`Error saving category ${category.categoryId}`, error);
+        console.error(`Error saving category ${item.categoryId}`, error);
       }
     }
-  };
+  }, [outputList, year]);
 
   return (
     <Accordion.Root
