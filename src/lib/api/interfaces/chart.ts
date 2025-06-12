@@ -34,6 +34,7 @@ export interface DatasetType {
 export interface DataType {
   labels?: string[]; // year
   datasets: DatasetType[];
+  backgroudColor?: string;
 }
 
 export interface ChartContentProps {
