@@ -7,6 +7,7 @@ import {
   Flex,
   HStack,
   Separator,
+  Skeleton,
   Text,
 } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
@@ -37,12 +38,14 @@ import {
   PiStar,
   PiStarBold,
   PiStarFill,
+  PiChartDonut,
 } from "react-icons/pi";
 import SingleChart from "./chart/SingleChart";
 import { deleteInterestChart } from "../api/delete";
 import StarIcon from "../editor/components/StarIcon";
 import StarToggleIcon from "../editor/components/StarIcon";
 import { postInterestChart } from "../api/post";
+import { LuChartNoAxesCombined } from "react-icons/lu";
 // import { GoFileDirectory } from "react-icons/go";
 // import { TfiPieChart } from "react-icons/tfi";
 // import { BsBarChartLine } from "react-icons/bs";
@@ -57,126 +60,72 @@ const items = [
     icon: <PiFolder />,
     titleIcon: <PiFolder size={30} color="#2F6EEA" />,
     title: "전체파일",
+    type: "all",
   },
   {
     icon: <PiChartPieSlice />,
     titleIcon: <PiChartPieSlice size={30} color="#2F6EEA" />,
-    title: "원그래프",
+    title: "파이그래프",
+    type: "pie",
+  },
+  {
+    icon: <PiChartDonut />,
+    titleIcon: <PiChartDonut size={30} color="#2F6EEA" />,
+    title: "도넛그래프",
+    type: "doughnut",
   },
   {
     icon: <PiChartBar />,
     titleIcon: <PiChartBar size={30} color="#2F6EEA" />,
     title: "막대그래프",
+    type: "bar",
   },
   {
     icon: <PiChartLine />,
     titleIcon: <PiChartLine size={30} color="#2F6EEA" />,
     title: "꺾은선그래프",
+    type: "line",
+  },
+  {
+    icon: <LuChartNoAxesCombined />,
+    titleIcon: <LuChartNoAxesCombined size={30} color="#2F6EEA" />,
+    title: "혼합그래프",
+    type: "line",
   },
   {
     icon: <PiGridNine />,
     titleIcon: <PiGridNine size={30} color="#2F6EEA" />,
     title: "표",
+    type: "table",
   },
 ];
 
 const Subbar = () => {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | 0>(0);
   const [selectedTab, setSelectedTab] = useState<"all" | "star">("all");
   const [sidebarWidth, setSidebarWidth] = useState(350); // 👈 수정: 사이드바 너비 상태 추가
-  const [entireChart, setEntireChart] = useState<ChartDetail[] | null>([]);
-  const [lineChart, setLineChart] = useState<ChartDetail[] | null>([]);
-  const [pieChart, setPieChart] = useState<ChartDetail[] | null>([]);
-  const [barChart, setBarChart] = useState<ChartDetail[] | null>([]);
-  const [doughnutChart, setDoughnutChart] = useState<ChartDetail[] | null>([]);
-  const [interestEntireChart, setInterestEntireChart] = useState<
+  const [chartList, setChartList] = useState<ChartDetail[] | null>([]);
+  const [interestChartList, setInterestChartList] = useState<
     InteresrtChartDetail[] | null
   >([]);
-  const [interestLineChart, setInterestLineChart] = useState<
-    InteresrtChartDetail[] | null
-  >([]);
-  const [interestPieChart, setInterestPieChart] = useState<
-    InteresrtChartDetail[] | null
-  >([]);
-  const [interestBarChart, setInterestBarChart] = useState<
-    InteresrtChartDetail[] | null
-  >([]);
-  const [interestDoughnutChart, setInterestDoughnutChart] = useState<
-    InteresrtChartDetail[] | null
-  >([]);
+  const [isOpne, setIsOpen] = useState(false);
+  const [type, setType] = useState<string>("pie");
   const DEFAULT_SIDEBAR_WIDTH = 350;
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   // 즐겨 찾기 차트 가져오기
-  const fetchChart = async () => {
+  const fetchChart = async (chartType?: string) => {
     setLoading(true);
     try {
-      const [
-        barData,
-        lineData,
-        pieData,
-        doughnutData,
-        // entireData,
-        interestBarData,
-        interestLineData,
-        interestPieData,
-        interestDoughnutData,
-        // interestEntireData,
-      ] = await Promise.all([
-        getChartByType("bar"),
-        getChartByType("line"),
-        getChartByType("pie"),
-        getChartByType("doughnut"),
-        // getChart(),
-        getInterestChartByType("bar"),
-        getInterestChartByType("line"),
-        getInterestChartByType("pie"),
-        getInterestChartByType("doughnut"),
-        // getInterestChart(),
-      ]);
-
-      // 🟢 전체 차트
-      // entireData && entireData.length > 0
-      //   ? setEntireChart(entireData)
-      //   : setError("전체 차트 데이터를 불러올 수 없습니다.");
-
-      barData && barData.length > 0
-        ? setBarChart(barData)
-        : setError("Bar 차트 데이터를 불러올 수 없습니다.");
-
-      lineData && lineData.length > 0
-        ? setLineChart(lineData)
-        : setError("Line 차트 데이터를 불러올 수 없습니다.");
-
-      pieData && pieData.length > 0
-        ? setPieChart(pieData)
-        : setError("Pie 차트 데이터를 불러올 수 없습니다.");
-
-      doughnutData && doughnutData.length > 0
-        ? setDoughnutChart(doughnutData)
-        : setError("Doughnut 차트 데이터를 불러올 수 없습니다.");
-
-      // 🟢 관심 차트
-      // interestEntireData && interestEntireData.length > 0
-      //   ? setInterestEntireChart(interestEntireData)
-      //   : setInterestEntireChart([]); // 또는 에러 처리
-
-      interestBarData && interestBarData.length > 0
-        ? setInterestBarChart(interestBarData)
-        : setInterestBarChart([]);
-
-      interestLineData && interestLineData.length > 0
-        ? setInterestLineChart(interestLineData)
-        : setInterestLineChart([]);
-
-      interestPieData && interestPieData.length > 0
-        ? setInterestPieChart(interestPieData)
-        : setInterestPieChart([]);
-
-      interestDoughnutData && interestDoughnutData.length > 0
-        ? setInterestDoughnutChart(interestDoughnutData)
-        : setInterestDoughnutChart([]);
+      const response = chartType
+        ? await getChartByType(chartType)
+        : await getChart();
+      setChartList(response || []);
+      const interestResponse = chartType
+        ? await getInterestChartByType(chartType)
+        : await getInterestChart();
+      setInterestChartList(interestResponse || []);
     } catch (err) {
       setError("차트 데이터를 가져오는 중 오류가 발생했습니다.");
     } finally {
@@ -184,33 +133,51 @@ const Subbar = () => {
     }
   };
 
-  const handleDelete = async (chartId: string) => {
-    try {
-      await deleteInterestChart(chartId);
-      await fetchChart(); // 삭제 후 상태 일괄 갱신
-    } catch (e) {
-      console.error("❌ 관심 차트 삭제 중 오류:", e);
-    }
+  const refreshChart = async (chartType?: string) => {
+    await fetchChart(chartType);
   };
 
-  const handleAdd = async (chartId: string) => {
+  const handleAdd = async (chartId: string, chartType?: string) => {
     try {
       await postInterestChart(chartId);
-      await fetchChart(); // 등록 후 상태 일괄 갱신
+
+      if (chartType === "all") {
+        const updatedInterest = await getInterestChart(); // 전체 관심 차트만 새로 불러오기
+        setInterestChartList(updatedInterest || []);
+      } else {
+        await refreshChart(chartType); // 기존 로직
+      }
     } catch (e) {
       console.error("❌ 관심 차트 등록 중 오류:", e);
     }
   };
 
+  const handleDelete = async (chartId: string, chartType?: string) => {
+    try {
+      await deleteInterestChart(chartId);
+
+      if (chartType === "all") {
+        const updatedInterest = await getInterestChart(); // 전체 관심 차트만 새로 불러오기
+        setInterestChartList(updatedInterest || []);
+      } else {
+        await refreshChart(chartType); // 기존 로직
+      }
+    } catch (e) {
+      console.error("❌ 관심 차트 삭제 중 오류:", e);
+    }
+  };
+
   useEffect(() => {
-    fetchChart(); // ✅ 페이지 로딩 시 한 번 실행됨
-  }, []);
+    fetchChart(
+      items[activeIndex]?.type === "all" ? undefined : items[activeIndex]?.type
+    );
+  }, [activeIndex]);
 
   return (
     <>
       <Box
         position="fixed"
-        right={activeIndex !== null ? `${sidebarWidth}px` : "0px"} // ❗사이드바 너비에 따라 이동
+        right={isOpne === true ? `${sidebarWidth}px` : "0px"} // ❗사이드바 너비에 따라 이동
         top="10"
         zIndex={1000}
       >
@@ -230,7 +197,11 @@ const Subbar = () => {
               key={idx}
               variant="ghost"
               color="#2F6EEA"
-              onClick={() => setActiveIndex(idx)}
+              onClick={() => {
+                setActiveIndex(idx);
+                setIsOpen(true);
+                setType(item.type || "pie");
+              }}
               w={"100%"}
             >
               {item.icon}
@@ -239,7 +210,7 @@ const Subbar = () => {
         </Box>
       </Box>
 
-      {activeIndex !== null && (
+      {isOpne !== false && (
         <Resizable
           defaultSize={{ width: 350, height: window.innerHeight }}
           minWidth={350}
@@ -287,7 +258,7 @@ const Subbar = () => {
               </HStack>
               <CloseButton
                 onClick={() => {
-                  setActiveIndex(null);
+                  setIsOpen(false);
                   setSidebarWidth(DEFAULT_SIDEBAR_WIDTH); // 👈 유지보수성 굿
                 }}
               />
@@ -382,623 +353,175 @@ const Subbar = () => {
 
             {selectedTab === "all" && (
               <Box mt={6} flex="1" overflowY="auto">
-                {activeIndex === 0 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {pieChart &&
-                          pieChart.map((data, index) => (
-                            <Flex key={index} flexDirection="low" gap={5}>
-                              <DraggableChartIcon chartType="pie" data={data}>
-                                <SingleChart chartData={data || []} />
-                              </DraggableChartIcon>
-                              <StarToggleIcon
-                                initialFilled={interestPieChart
-                                  ?.map((id) => id.chartId)
-                                  .includes(data.chartId)}
-                                onToggle={async (filled) => {
-                                  if (filled) {
-                                    try {
-                                      await handleAdd(data.chartId); // data.chartId는 실제 차트 ID
-                                      console.log(
-                                        `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                        "⭐ 관심 차트로 등록되었습니다."
-                                      );
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 등록 실패:",
-                                        e
-                                      );
-                                    }
-                                  } else {
-                                    try {
-                                      await handleDelete(data.chartId); // 관심 등록된 ID로 해제
-                                      console.log("💔 관심 차트 해제됨");
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 해제 실패:",
-                                        e
-                                      );
-                                    }
+                <Flex flexDirection="column" gap={5}>
+                  <Box py={4}>
+                    {loading ? (
+                      Array(5)
+                        .fill(0)
+                        .map((_, index) => (
+                          <Skeleton
+                            key={index}
+                            height="150px"
+                            mb={4}
+                            borderRadius="md"
+                          />
+                        ))
+                    ) : chartList && chartList.length === 0 ? (
+                      <Text
+                        textAlign="center"
+                        mt={10}
+                        color="gray.500"
+                        fontSize="lg"
+                      >
+                        차트가 없습니다.
+                      </Text>
+                    ) : (
+                      chartList &&
+                      chartList.map((data, index) => {
+                        const isFilled =
+                          interestChartList?.some(
+                            (item) => item.chartId === data.chartId
+                          ) ?? false;
+                        return (
+                          <Flex
+                            key={index}
+                            flexDirection="row"
+                            gap={5}
+                            marginBottom={5}
+                          >
+                            <DraggableChartIcon
+                              chartType={
+                                activeIndex === 0
+                                  ? data.dataSets[0].type
+                                  : items[activeIndex].type
+                              } // 동적으로 타입 전달
+                              data={data}
+                            >
+                              <SingleChart chartData={data || []} />
+                            </DraggableChartIcon>
+                            <StarToggleIcon
+                              filled={isFilled}
+                              onToggle={async (filled) => {
+                                if (filled) {
+                                  try {
+                                    await handleAdd(
+                                      data.chartId,
+                                      items[activeIndex].type
+                                    );
+                                    console.log(
+                                      `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
+                                      "⭐ 관심 차트로 등록되었습니다."
+                                    );
+                                  } catch (e) {
+                                    console.error("❌ 관심 차트 등록 실패:", e);
                                   }
-                                }}
-                              />
-                            </Flex>
-                          ))}
-                        {lineChart &&
-                          lineChart.map((data, index) => (
-                            <Flex key={index} flexDirection="row" gap={5}>
-                              <DraggableChartIcon chartType="line" data={data}>
-                                <SingleChart chartData={data || []} />
-                              </DraggableChartIcon>
-                              <StarToggleIcon
-                                initialFilled={interestLineChart
-                                  ?.map((id) => id.chartId)
-                                  .includes(data.chartId)}
-                                onToggle={async (filled) => {
-                                  if (filled) {
-                                    // ⭐ 관심 차트 등록
-                                    try {
-                                      await handleAdd(data.chartId); // data.chartId는 실제 차트 ID
-                                      console.log(
-                                        "⭐ 관심 차트로 등록되었습니다."
-                                      );
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 등록 실패:",
-                                        e
-                                      );
-                                    }
-                                  } else {
-                                    // 💔 관심 차트 해제
-                                    try {
-                                      await handleDelete(data.chartId); // 관심 등록된 ID로 해제
-                                      console.log("💔 관심 차트 해제됨");
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 해제 실패:",
-                                        e
-                                      );
-                                    }
+                                } else {
+                                  try {
+                                    await handleDelete(
+                                      data.chartId,
+                                      items[activeIndex].type
+                                    );
+                                    console.log("💔 관심 차트 해제됨");
+                                  } catch (e) {
+                                    console.error("❌ 관심 차트 해제 실패:", e);
                                   }
-                                }}
-                              />
-                            </Flex>
-                          ))}
-                        {doughnutChart &&
-                          doughnutChart.map((data, index) => (
-                            <Flex key={index} flexDirection="row" gap={5}>
-                              <DraggableChartIcon
-                                chartType="dougnut"
-                                data={data}
-                              >
-                                <SingleChart chartData={data || []} />
-                              </DraggableChartIcon>
-                              <StarToggleIcon
-                                initialFilled={interestDoughnutChart
-                                  ?.map((id) => id.chartId)
-                                  .includes(data.chartId)}
-                                onToggle={async (filled) => {
-                                  if (filled) {
-                                    // ⭐ 관심 차트 등록
-                                    try {
-                                      await handleAdd(data.chartId); // data.chartId는 실제 차트 ID
-                                      console.log(
-                                        "⭐ 관심 차트로 등록되었습니다."
-                                      );
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 등록 실패:",
-                                        e
-                                      );
-                                    }
-                                  } else {
-                                    // 💔 관심 차트 해제
-                                    try {
-                                      await handleDelete(data.chartId); // 관심 등록된 ID로 해제
-                                      console.log("💔 관심 차트 해제됨");
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 해제 실패:",
-                                        e
-                                      );
-                                    }
-                                  }
-                                }}
-                              />
-                            </Flex>
-                          ))}
-                        {barChart &&
-                          barChart.map((data, index) => (
-                            <Flex key={index} flexDirection="row" gap={5}>
-                              <DraggableChartIcon chartType="bar" data={data}>
-                                <SingleChart chartData={data || []} />
-                              </DraggableChartIcon>
-                              <StarToggleIcon
-                                initialFilled={interestBarChart
-                                  ?.map((id) => id.chartId)
-                                  .includes(data.chartId)}
-                                onToggle={async (filled) => {
-                                  if (filled) {
-                                    // ⭐ 관심 차트 등록
-                                    try {
-                                      await handleAdd(data.chartId); // data.chartId는 실제 차트 ID
-                                      console.log(
-                                        "⭐ 관심 차트로 등록되었습니다."
-                                      );
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 등록 실패:",
-                                        e
-                                      );
-                                    }
-                                  } else {
-                                    // 💔 관심 차트 해제
-                                    try {
-                                      await handleDelete(data.chartId); // 관심 등록된 ID로 해제
-                                      console.log("💔 관심 차트 해제됨");
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 해제 실패:",
-                                        e
-                                      );
-                                    }
-                                  }
-                                }}
-                              />
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
-                {activeIndex === 1 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {pieChart &&
-                          pieChart.map((data, index) => (
-                            <Flex key={index} flexDirection="low" gap={5}>
-                              <DraggableChartIcon chartType="pie" data={data}>
-                                <SingleChart chartData={data || []} />
-                              </DraggableChartIcon>
-                              <StarToggleIcon
-                                initialFilled={interestPieChart
-                                  ?.map((id) => id.chartId)
-                                  .includes(data.chartId)}
-                                onToggle={async (filled) => {
-                                  if (filled) {
-                                    try {
-                                      await handleAdd(data.chartId); // data.chartId는 실제 차트 ID
-                                      console.log(
-                                        `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                        "⭐ 관심 차트로 등록되었습니다."
-                                      );
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 등록 실패:",
-                                        e
-                                      );
-                                    }
-                                  } else {
-                                    try {
-                                      await handleDelete(data.chartId); // 관심 등록된 ID로 해제
-                                      console.log("💔 관심 차트 해제됨");
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 해제 실패:",
-                                        e
-                                      );
-                                    }
-                                  }
-                                }}
-                              />
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
-                {activeIndex === 2 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {barChart &&
-                          barChart.map((data, index) => (
-                            <Flex key={index} flexDirection="row" gap={4}>
-                              <DraggableChartIcon chartType="bar" data={data}>
-                                <SingleChart chartData={data || []} />
-                              </DraggableChartIcon>
-                              <StarToggleIcon
-                                initialFilled={false}
-                                onToggle={async (filled) => {
-                                  if (filled) {
-                                    // ⭐ 관심 차트 등록
-                                    try {
-                                      await handleAdd(data.chartId); // data.chartId는 실제 차트 ID
-                                      console.log(
-                                        "⭐ 관심 차트로 등록되었습니다."
-                                      );
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 등록 실패:",
-                                        e
-                                      );
-                                    }
-                                  } else {
-                                    // 💔 관심 차트 해제
-                                    try {
-                                      await handleDelete(data.chartId); // 관심 등록된 ID로 해제
-                                      console.log("💔 관심 차트 해제됨");
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 해제 실패:",
-                                        e
-                                      );
-                                    }
-                                  }
-                                }}
-                              />
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
-                {activeIndex === 3 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {lineChart &&
-                          lineChart.map((data, index) => (
-                            <Flex key={index} flexDirection="row" gap={4}>
-                              <DraggableChartIcon chartType="line" data={data}>
-                                <SingleChart chartData={data || []} />
-                              </DraggableChartIcon>
-                              <StarToggleIcon
-                                initialFilled={false}
-                                onToggle={async (filled) => {
-                                  if (filled) {
-                                    // ⭐ 관심 차트 등록
-                                    try {
-                                      await handleAdd(data.chartId); // data.chartId는 실제 차트 ID
-                                      console.log(
-                                        "⭐ 관심 차트로 등록되었습니다."
-                                      );
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 등록 실패:",
-                                        e
-                                      );
-                                    }
-                                  } else {
-                                    // 💔 관심 차트 해제
-                                    try {
-                                      await handleDelete(data.chartId); // 관심 등록된 ID로 해제
-                                      console.log("💔 관심 차트 해제됨");
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 해제 실패:",
-                                        e
-                                      );
-                                    }
-                                  }
-                                }}
-                              />
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
-                {activeIndex === 4 && (
-                  <Flex flexDirection="column" gap={4}>
-                    <Box p={4}>
-                      <>
-                        {lineChart &&
-                          lineChart.map((data, index) => (
-                            <Flex key={index} flexDirection="row" gap={4}>
-                              <DraggableChartIcon chartType="mix" data={data}>
-                                <SingleChart chartData={data || []} />
-                              </DraggableChartIcon>
-                              <StarToggleIcon
-                                initialFilled={false}
-                                onToggle={async (filled) => {
-                                  if (filled) {
-                                    // ⭐ 관심 차트 등록
-                                    try {
-                                      await handleAdd(data.chartId); // data.chartId는 실제 차트 ID
-                                      console.log(
-                                        "⭐ 관심 차트로 등록되었습니다."
-                                      );
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 등록 실패:",
-                                        e
-                                      );
-                                    }
-                                  } else {
-                                    // 💔 관심 차트 해제
-                                    try {
-                                      await handleDelete(data.chartId); // 관심 등록된 ID로 해제
-                                      console.log("💔 관심 차트 해제됨");
-                                    } catch (e) {
-                                      console.error(
-                                        "❌ 관심 차트 해제 실패:",
-                                        e
-                                      );
-                                    }
-                                  }
-                                }}
-                              />
-                            </Flex>
-                          ))}
-                      </>
-                    </Box>
-                  </Flex>
-                )}
+                                }
+                              }}
+                            />
+                          </Flex>
+                        );
+                      })
+                    )}
+                  </Box>
+                </Flex>
               </Box>
             )}
 
-            {/* 즐겨찾기 차트 */}
-            {selectedTab === "star" &&
-              (console.log("interestEntireChart", interestEntireChart),
-              console.log("interestLineChart", interestLineChart),
-              console.log("interestPieChart", interestPieChart),
-              console.log("interestBarChart", interestBarChart),
-              console.log("interestDoughnutChart", interestDoughnutChart),
-              (
-                <Box mt={6} flex="1" overflowY="auto">
-                  {activeIndex === 0 && (
-                    <Flex flexDirection="column" gap={10}>
-                      <Box p={4}>
-                        <>
-                          {interestPieChart &&
-                            interestPieChart.map((data, index) => (
-                              <Flex key={index} flexDirection="row">
-                                <DraggableChartIcon
-                                  chartType="pie"
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-
-                                <StarToggleIcon
-                                  initialFilled={true}
-                                  onToggle={(filled) => {
-                                    if (!filled) {
-                                      // 관심 해제 시 호출
-                                      handleDelete(data.chartId);
-                                    } else {
-                                      // 필요시 관심 등록 로직도 여기에
-                                      console.log("⭐ 관심 등록됨");
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            ))}
-                          {interestBarChart &&
-                            interestBarChart.map((data, index) => (
-                              <Flex key={index} flexDirection="row" gap={5}>
-                                <DraggableChartIcon
-                                  chartType="bar"
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-
-                                <StarToggleIcon
-                                  initialFilled={true}
-                                  onToggle={(filled) => {
-                                    if (!filled) {
-                                      // 관심 해제 시 호출
-                                      handleDelete(data.chartId);
-                                    } else {
-                                      // 필요시 관심 등록 로직도 여기에
-                                      console.log("⭐ 관심 등록됨");
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            ))}
-                          {interestLineChart &&
-                            interestLineChart.map((data, index) => (
-                              <Flex key={index} flexDirection="row" gap={5}>
-                                <DraggableChartIcon
-                                  chartType="line"
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-
-                                <StarToggleIcon
-                                  initialFilled={true}
-                                  onToggle={(filled) => {
-                                    if (!filled) {
-                                      // 관심 해제 시 호출
-                                      handleDelete(data.chartId);
-                                    } else {
-                                      // 필요시 관심 등록 로직도 여기에
-                                      console.log("⭐ 관심 등록됨");
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            ))}
-                          {interestDoughnutChart &&
-                            interestDoughnutChart.map((data, index) => (
-                              <Flex key={index} flexDirection="row" gap={5}>
-                                <DraggableChartIcon
-                                  chartType="doughnut"
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-
-                                <StarToggleIcon
-                                  initialFilled={true}
-                                  onToggle={(filled) => {
-                                    if (!filled) {
-                                      // 관심 해제 시 호출
-                                      handleDelete(data.chartId);
-                                    } else {
-                                      // 필요시 관심 등록 로직도 여기에
-                                      console.log("⭐ 관심 등록됨");
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            ))}
-                        </>
-                      </Box>
-                    </Flex>
-                  )}
-                  {activeIndex === 1 && (
-                    <Flex flexDirection="column" gap={4}>
-                      <Box p={4}>
-                        <>
-                          {interestEntireChart &&
-                            interestEntireChart.map((data, index) => (
-                              <Flex key={index} flexDirection="row" gap={4}>
-                                <DraggableChartIcon
-                                  chartType="line"
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-
-                                <StarToggleIcon
-                                  initialFilled={true}
-                                  onToggle={(filled) => {
-                                    if (!filled) {
-                                      // 관심 해제 시 호출
-                                      handleDelete(data.chartId);
-                                    } else {
-                                      // 필요시 관심 등록 로직도 여기에
-                                      console.log("⭐ 관심 등록됨");
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            ))}
-                        </>
-                      </Box>
-                    </Flex>
-                  )}
-                  {activeIndex === 2 && (
-                    <Flex flexDirection="column" gap={4}>
-                      <Box p={4}>
-                        <>
-                          {interestBarChart &&
-                            interestBarChart.map((data, index) => (
-                              <Flex key={index} flexDirection="row" gap={5}>
-                                <DraggableChartIcon
-                                  chartType="bar"
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-
-                                <StarToggleIcon
-                                  initialFilled={true}
-                                  onToggle={(filled) => {
-                                    if (!filled) {
-                                      // 관심 해제 시 호출
-                                      handleDelete(data.chartId);
-                                    } else {
-                                      // 필요시 관심 등록 로직도 여기에
-                                      console.log("⭐ 관심 등록됨");
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            ))}
-                        </>
-                      </Box>
-                    </Flex>
-                  )}
-                  {activeIndex === 3 && (
-                    <Flex flexDirection="column" gap={4}>
-                      <Box p={4}>
-                        <>
-                          {interestLineChart &&
-                            interestLineChart.map((data, index) => (
-                              <Flex key={index} flexDirection="row" gap={5}>
-                                <DraggableChartIcon
-                                  chartType="line"
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-
-                                <StarToggleIcon
-                                  initialFilled={true}
-                                  onToggle={(filled) => {
-                                    if (!filled) {
-                                      // 관심 해제 시 호출
-                                      handleDelete(data.chartId);
-                                    } else {
-                                      // 필요시 관심 등록 로직도 여기에
-                                      console.log("⭐ 관심 등록됨");
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            ))}
-                        </>
-                      </Box>
-                    </Flex>
-                  )}
-                  {activeIndex === 4 && (
-                    <Flex flexDirection="column" gap={4}>
-                      <Box p={4}>
-                        <>
-                          {interestLineChart &&
-                            interestLineChart.map((data, index) => (
-                              <Flex key={index} flexDirection="row" gap={5}>
-                                <DraggableChartIcon
-                                  chartType="doughnut"
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-
-                                <StarToggleIcon
-                                  initialFilled={true}
-                                  onToggle={(filled) => {
-                                    if (!filled) {
-                                      // 관심 해제 시 호출
-                                      handleDelete(data.chartId);
-                                    } else {
-                                      // 필요시 관심 등록 로직도 여기에
-                                      console.log("⭐ 관심 등록됨");
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            ))}
-                        </>
-                      </Box>
-                    </Flex>
-                  )}
-                </Box>
-              ))}
+            {selectedTab === "star" && (
+              <Box mt={6} flex="1" overflowY="auto">
+                <Flex flexDirection="column" gap={4}>
+                  <Box p={4}>
+                    {loading ? (
+                      Array(5)
+                        .fill(0)
+                        .map((_, index) => (
+                          <Skeleton
+                            key={index}
+                            height="150px"
+                            mb={4}
+                            borderRadius="md"
+                          />
+                        ))
+                    ) : chartList && chartList.length === 0 ? (
+                      <Text
+                        textAlign="center"
+                        mt={10}
+                        color="gray.500"
+                        fontSize="lg"
+                      >
+                        차트가 없습니다.
+                      </Text>
+                    ) : (
+                      interestChartList &&
+                      interestChartList.map((data, index) => {
+                        const isFilled =
+                          interestChartList?.some(
+                            (item) => item.chartId === data.chartId
+                          ) ?? false;
+                        return (
+                          <Flex
+                            key={index}
+                            flexDirection="row"
+                            gap={5}
+                            minH={200}
+                          >
+                            <DraggableChartIcon
+                              chartType={
+                                activeIndex === 0
+                                  ? data.chartDetail.dataSets[0].type
+                                  : items[activeIndex].type
+                              } // 동적으로 타입 전달
+                              data={data.chartDetail}
+                            >
+                              <SingleChart chartData={data.chartDetail || []} />
+                            </DraggableChartIcon>
+                            <StarToggleIcon
+                              filled={isFilled}
+                              onToggle={async (filled) => {
+                                if (filled) {
+                                  try {
+                                    await handleAdd(
+                                      data.chartId,
+                                      items[activeIndex].type
+                                    );
+                                    console.log(
+                                      `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
+                                      "⭐ 관심 차트로 등록되었습니다."
+                                    );
+                                  } catch (e) {
+                                    console.error("❌ 관심 차트 등록 실패:", e);
+                                  }
+                                } else {
+                                  try {
+                                    await handleDelete(
+                                      data.chartId,
+                                      items[activeIndex].type
+                                    );
+                                    console.log("💔 관심 차트 해제됨");
+                                  } catch (e) {
+                                    console.error("❌ 관심 차트 해제 실패:", e);
+                                  }
+                                }
+                              }}
+                            />
+                          </Flex>
+                        );
+                      })
+                    )}
+                  </Box>
+                </Flex>
+              </Box>
+            )}
           </Box>
         </Resizable>
       )}

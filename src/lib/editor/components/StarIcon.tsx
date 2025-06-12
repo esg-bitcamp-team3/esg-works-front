@@ -1,28 +1,21 @@
-"use client";
-
-import { useState } from "react";
 import { PiStar, PiStarFill } from "react-icons/pi";
 
 interface StarToggleIconProps {
-  initialFilled?: boolean;
+  filled: boolean; // 부모가 상태 직접 관리
   onToggle?: (filled: boolean) => void;
   size?: number | string;
   title?: string;
 }
 
 export default function StarToggleIcon({
-  initialFilled = false,
+  filled,
   onToggle,
   size = 20,
   title = "관심 설정",
 }: StarToggleIconProps) {
-  const [filled, setFilled] = useState(initialFilled);
-
   const handleClick = () => {
-    const newFilled = !filled;
-    setFilled(newFilled);
     if (onToggle) {
-      onToggle(newFilled);
+      onToggle(!filled);
     }
   };
 
@@ -31,7 +24,7 @@ export default function StarToggleIcon({
     title,
     onClick: handleClick,
     style: {
-      color: filled ? "#FFD700" : "#ccc", // 노란색 or 회색
+      color: filled ? "#FFD700" : "#ccc",
       cursor: "pointer",
       transition: "transform 0.2s",
     },

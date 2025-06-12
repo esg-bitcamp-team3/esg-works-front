@@ -16,6 +16,7 @@ import {
   ChartType,
   ChartTypeRegistry,
 } from "chart.js";
+import { Box } from "@chakra-ui/react";
 
 Chart.register(
   LineController,
@@ -66,6 +67,15 @@ export default function SingleChart({ chartData }: Props) {
             fill: data.fill === "true",
           })),
         },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "top",
+            },
+          },
+        },
       });
     } else if (chartData.dataSets[0].type === "line") {
       chartInstance.current = new Chart(ctx, {
@@ -113,5 +123,9 @@ export default function SingleChart({ chartData }: Props) {
     };
   }, [chartData]);
 
-  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />;
+  return (
+    <Box height={"200px"}>
+      <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
+    </Box>
+  );
 }
