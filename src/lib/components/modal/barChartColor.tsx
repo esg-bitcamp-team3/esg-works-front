@@ -1,9 +1,6 @@
 import {
   Box,
-  Button,
-  CloseButton,
   ColorPicker,
-  Drawer,
   HStack,
   parseColor,
   Portal,
