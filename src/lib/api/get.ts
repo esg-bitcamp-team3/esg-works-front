@@ -70,7 +70,7 @@ export const getEsgData = async (categoryId: string) => {
 
 export const getChart = async () => {
   try {
-    const res = await apiClient.get<ChartDetail[]>(`/charts/my/`);
+    const res = await apiClient.get<ChartDetail[]>(`/charts/my`);
     console.log("Chart data:", res.data);
     return res.data;
   } catch (error) {
@@ -82,7 +82,7 @@ export const getChart = async () => {
 export const getInterestChart = async () => {
   try {
     const res = await apiClient.get<InteresrtChartDetail[]>(
-      `/interest-charts/my/`
+      `/interest-charts/my`
     );
     console.log("Interest Chart data:", res.data);
     return res.data;

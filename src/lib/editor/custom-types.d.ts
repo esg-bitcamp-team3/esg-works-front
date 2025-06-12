@@ -75,9 +75,6 @@ export type ChartElement = {
   type: "chart";
   chartType: string;
   data: ChartData;
-  options?: ChartOptions;
-  width?: number;
-  height?: number;
   children: EmptyText[];
 };
 

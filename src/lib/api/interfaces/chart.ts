@@ -24,7 +24,7 @@ export interface ChartType {
 //     };
 
 export interface DatasetType {
-  type: "bar" | "line" | "pie" | "doughnut";
+  type: "bar" | "line" | "pie" | "doughnut" | "mix";
   label: string;
   data: number[];
   // backgroundColor?: string | string[];
