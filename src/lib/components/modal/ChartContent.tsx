@@ -48,7 +48,6 @@ import {
   ChartOptions,
 } from "chart.js";
 import ChartColor from "./chartColor";
-import BarChartColor from "./barChartColor";
 
 // Inside the ChartContent component, add this options configuration
 const chartOptions: ChartOptions = {
@@ -93,7 +92,7 @@ const ChartContent = forwardRef<HTMLDivElement, ChartContentProps>(
   ({ categorizedEsgDataList, charts, children }, ref) => {
     const [chartData, setChartData] = useState<DataType>();
     const [selectedChartType, setSelectedChartType] =
-      useState<DatasetType["type"]>("bar");
+      useState<'line' | 'bar' | 'pie' | 'doughnut'>('bar');
     const [selectedColors, setSelectedColors] = useState<Color[]>([]);
 
     const [backgroundColor, setBackgroundColor] = useState(
@@ -327,7 +326,7 @@ const ChartContent = forwardRef<HTMLDivElement, ChartContentProps>(
           >
             <Box w="100%" padding={3}>
               {chartAreaOpen && (
-                <BarChartColor
+                <ChartColor
                   categorizedEsgDataList={categorizedEsgDataList}
                   selectedColors={selectedColors}
                   setSelectedColors={setSelectedColors}

@@ -35,14 +35,6 @@ import {
   PiStarBold,
 } from "react-icons/pi";
 import { LuChartNoAxesCombined } from "react-icons/lu";
-// import { GoFileDirectory } from "react-icons/go";
-// import { TfiPieChart } from "react-icons/tfi";
-// import { BsBarChartLine } from "react-icons/bs";
-// import { RiLineChartLine } from "react-icons/ri";
-// import { CiViewTable } from "react-icons/ci";
-// import { RxLayout } from "react-icons/rx";
-// import { FaRegStar } from "react-icons/fa";
-// import { FaRegFolder } from "react-icons/fa";
 
 const items = [
   {
