@@ -356,7 +356,7 @@ const Subbar = () => {
                 <Flex flexDirection="column" gap={5}>
                   <Box py={4}>
                     {loading ? (
-                      Array(5)
+                      Array(2)
                         .fill(0)
                         .map((_, index) => (
                           <Skeleton
@@ -387,6 +387,7 @@ const Subbar = () => {
                             key={index}
                             flexDirection="row"
                             gap={5}
+                            minH={200}
                             marginBottom={5}
                           >
                             <DraggableChartIcon
@@ -452,7 +453,7 @@ const Subbar = () => {
                             borderRadius="md"
                           />
                         ))
-                    ) : chartList && chartList.length === 0 ? (
+                    ) : interestChartList && interestChartList.length === 0 ? (
                       <Text
                         textAlign="center"
                         mt={10}
@@ -474,6 +475,7 @@ const Subbar = () => {
                             flexDirection="row"
                             gap={5}
                             minH={200}
+                            marginBottom={5}
                           >
                             <DraggableChartIcon
                               chartType={

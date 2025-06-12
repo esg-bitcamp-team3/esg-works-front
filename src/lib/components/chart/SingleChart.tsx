@@ -123,9 +123,5 @@ export default function SingleChart({ chartData }: Props) {
     };
   }, [chartData]);
 
-  return (
-    <Box height={"200px"}>
-      <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
-    </Box>
-  );
+  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />;
 }
