@@ -22,7 +22,7 @@ import {
   FcLineChart,
   FcPieChart,
 } from "react-icons/fc";
-
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import { getEsgData } from "@/lib/api/get";
 import { ChartType, DatasetType, DataType } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
@@ -45,6 +45,7 @@ import {
 import ChartColor from "./chartColor";
 import { get } from "http";
 import PieChartColor from "./PieChartColor";
+import { display } from "html2canvas/dist/types/css/property-descriptors/display";
 
 ChartJS.register(
   LinearScale,
@@ -55,7 +56,8 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels // Register the ChartDataLabels plugin
 );
 
 export interface ChartContentProps {
@@ -102,7 +104,20 @@ const PieChartContent = ({
           },
         },
         tooltip: {
-          enabled: true,
+          enabled: false,
+        },
+        datalabels: {
+          display: true,
+          formatter: (value: number, context: any) => {
+            // Display the value with a comma as a thousands separator
+            return value.toLocaleString();
+          },
+          anchor: "end" as const,
+          align: "center" as const,
+          font: {
+            weight: "bold" as const,
+          },
+          color: "#fff",
         },
       },
     };
