@@ -33,7 +33,7 @@ interface Props {
   chartData: ChartDetail;
 }
 
-export default function ChartMake({ chartData }: Props) {
+export default function MixedChart({ chartData }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstance = useRef<Chart<keyof ChartTypeRegistry> | null>(null);
 
@@ -48,13 +48,15 @@ export default function ChartMake({ chartData }: Props) {
     chartInstance.current?.destroy();
 
     console.log("data", chartData);
+    const labels = chartData.dataSets.map((data) =>
+      data.esgDataList.map((item) => item.year)
+    );
 
-    // create new chart
     chartInstance.current = new Chart(ctx, {
       data: {
-        labels: ["2020", "2021", "2022", "2023", "2024"],
+        labels: labels.flat(),
         datasets: chartData.dataSets.map((data) => ({
-          type: (data.type || "line") as ChartType,
+          type: data.type as ChartType,
           data: data.esgDataList.map((item) => parseFloat(item.value)),
           backgroundColor: data.backgroundColor,
           borderColor: data.borderColor,
@@ -63,6 +65,8 @@ export default function ChartMake({ chartData }: Props) {
         })),
       },
     });
+
+    // create new chart
 
     return () => {
       chartInstance.current?.destroy();

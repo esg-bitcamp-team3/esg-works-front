@@ -24,7 +24,7 @@ export interface ChartType {
 //     };
 
 export interface DatasetType {
-  type: "bar" | "line" | "pie" | "doughnut";
+  type: "bar" | "line" | "pie" | "doughnut" | "mix";
   label: string;
   data: number[];
   // backgroundColor?: string | string[];
@@ -32,8 +32,9 @@ export interface DatasetType {
 }
 
 export interface DataType {
-  labels?: string[];  // year
+  labels?: string[]; // year
   datasets: DatasetType[];
+  backgroudColor?: string;
 }
 
 export interface ChartContentProps {
@@ -85,10 +86,9 @@ export interface ChartDetail {
   updatedBy: string;
   createdAt: Date;
   createBy: string;
-    esgNumberDTOList?: Array<{
+  esgNumberDTOList?: Array<{
     year: string;
   }>;
-  
 }
 
 export interface InteresrtChartDetail {

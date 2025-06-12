@@ -327,8 +327,8 @@ export default function ChartModal() {
                       <Tabs.Trigger
                         value="chart"
                         key="chart"
-                        paddingLeft="5"
-                        paddingRight="5"
+                        // paddingLeft="5"
+                        // paddingRight="5"
                       >
                         <Icon as={FaChartPie} style={{ marginRight: 4 }} />
                         {"차트"}

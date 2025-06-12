@@ -1,8 +1,15 @@
 "use client";
 
-import { Box, Button, Flex, Input, InputGroup } from "@chakra-ui/react";
-import { useState } from "react";
-import { TbSearch } from "react-icons/tb";
+import {
+  Box,
+  Button,
+  Flex,
+  Input,
+  InputGroup,
+  Skeleton,
+} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { TbSearch, TbSortAscending, TbSortDescending } from "react-icons/tb";
 import { FaRegStar } from "react-icons/fa";
 import { FaRegClock } from "react-icons/fa6";
 import { FaRegFileWord } from "react-icons/fa";
@@ -116,6 +123,9 @@ export default function Home() {
                 color={activeFilter2 === "layout" ? "#2F6EEA" : "gray.600"}
               >
                 <TbLayoutGridFilled />
+              </Button>
+              <Button variant="ghost" onClick={() => setSort((prev) => !prev)}>
+                {sort ? <TbSortAscending /> : <TbSortDescending />}
               </Button>
             </Box>
           </ButtonGroup>

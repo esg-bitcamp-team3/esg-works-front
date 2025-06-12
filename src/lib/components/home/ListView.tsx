@@ -8,6 +8,8 @@ import {
   Text,
   VStack,
   Pagination,
+  Button,
+  Skeleton,
 } from "@chakra-ui/react";
 import { FaCopy } from "react-icons/fa6";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
@@ -124,8 +126,8 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
                   </Text>
                 </VStack>
               </Box>
-            </Box>
-          ))}
+            );
+          })}
         </SimpleGrid>
       )}
     </VStack>
