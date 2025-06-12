@@ -211,11 +211,13 @@ const ChartContent = ({
               justifyContent="center"
               justifyItems="center"
             >
-              <Chart
-                type={selectedChartType}
-                data={chartData}
-                options={chartOptions}
-              />
+              {selectedChartType && (
+                <Chart
+                  type={selectedChartType}
+                  data={chartData}
+                  options={chartOptions}
+                />
+              )}
             </Box>
           )}
         </VStack>

@@ -25,15 +25,16 @@ import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories, getEsgData } from "@/lib/api/get";
 import ChartContent from "./ChartContent";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
+import PieChartContent from "./PieChartContent";
 
 // const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
 const chartType: ChartType[] = [
-  { type: "Bar", label: "막대 차트", icons: FaChartPie },
-  { type: "Line", label: "선 차트", icons: FaPen },
-  { type: "Pie", label: "파이 차트", icons: FaChartPie },
-  { type: "Doughnut", label: "도넛 차트", icons: FaChartPie },
-  { type: "Mixed", label: "믹스 차트", icons: FaTable },
+  { type: "bar", label: "막대 차트", icons: FaChartPie },
+  { type: "line", label: "선 차트", icons: FaPen },
+  { type: "pie", label: "파이 차트", icons: FaChartPie },
+  { type: "doughnut", label: "도넛 차트", icons: FaChartPie },
+  { type: "mixed", label: "믹스 차트", icons: FaTable },
 ];
 
 export default function ChartModal() {
@@ -366,7 +367,7 @@ export default function ChartModal() {
 
                     <Tabs.ContentGroup>
                       <Tabs.Content value="chart">
-                        <ChartContent
+                        <PieChartContent
                           categorizedEsgDataList={categorizedEsgDataList}
                           charts={charts}
                         />
