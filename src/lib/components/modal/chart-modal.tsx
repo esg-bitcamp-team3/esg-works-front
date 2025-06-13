@@ -26,6 +26,7 @@ import { getSections, getCategories, getEsgData } from "@/lib/api/get";
 import ChartContent from "./ChartContent";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 import PieChartContent from "./PieChartContent";
+import MixedChartContent from "./MixedChartContent";
 
 // const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
@@ -367,7 +368,7 @@ export default function ChartModal() {
 
                     <Tabs.ContentGroup>
                       <Tabs.Content value="chart">
-                        <PieChartContent
+                        <MixedChartContent
                           categorizedEsgDataList={categorizedEsgDataList}
                           charts={charts}
                         />
