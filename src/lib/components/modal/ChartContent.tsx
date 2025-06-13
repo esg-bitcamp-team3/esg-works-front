@@ -22,7 +22,7 @@ import {
   FcLineChart,
   FcPieChart,
 } from "react-icons/fc";
-
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import { getEsgData } from "@/lib/api/get";
 import { ChartType, DatasetType, DataType } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
@@ -42,7 +42,7 @@ import {
   ChartOptions,
   ChartData,
 } from "chart.js";
-import BarChartColor from "./BarChartColor";
+import BarChartColor from "./barChartColor";
 import LineChartColor from "./LineChartColor";
 import PieChartColor from "./PieChartColor";
 import MixedChartColor from "./MixedChartColor";
@@ -56,7 +56,8 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels
 );
 
 export interface ChartContentProps {
