@@ -37,12 +37,17 @@ export const getSections = async () => {
   }
 };
 
-export const getCategories = async (sectionId: string) => {
+export const getCategories = async (sectionId?: string) => {
   try {
+    if(sectionId){
     const res = await apiClient.get<CategoryDetail[]>(
       `/categories/by-section/${sectionId}`
     );
     return res.data;
+    } else {
+      const res = await apiClient.get<CategoryDetail[]>(`/categories`);
+      return res.data;
+    }
   } catch (error) {
     console.error("카테고리 가져오기 실패:", error);
     return [];
