@@ -16,80 +16,48 @@ import { getEsgData } from "@/lib/api/get";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 
 interface TableContentProps {
-  categoryIds: string[];
+  categorizedEsgDataList: CategorizedESGDataList[];
+  setCategorizedEsgDataList: (data: CategorizedESGDataList[]) => void;
+  resetData: () => void; // 초기화 함수
 }
 
-const TableContent = ({ categoryIds }: TableContentProps) => {
+const TableContent = ({
+  categorizedEsgDataList,
+  setCategorizedEsgDataList,
+  resetData,
+}: TableContentProps) => {
   // const [selection, setSelection] = useState<string[]>([]);
-  const [editableData, setEditableData] = useState<CategorizedESGDataList[]>(
-    []
-  );
-  useEffect(() => {
-    Promise.all(categoryIds.map((id) => getEsgData(id)))
-      .then((results) => {
-        const valid = results.filter(Boolean) as CategorizedESGDataList[];
-        setCategorizedEsgData(valid);
-        setEditableData(valid); // ← 수정용 상태에도 저장
-      })
-      .catch((err) => console.error("ESG data fetch error:", err));
-  }, [categoryIds]);
-  const [categorizedEsgData, setCategorizedEsgData] = useState<
-    CategorizedESGDataList[]
-  >([]);
-
   // 작년 기준으로 현재 연도 설정
   const currentYear = new Date().getFullYear() - 1;
   const [years, setYears] = useState<string[]>(
     Array.from({ length: 5 }, (_, i) => String(currentYear - i))
   );
-  const handleAddColumn = () => {
-    const nextYear = (Math.min(...years.map(Number)) - 1).toString(); // 가장 작은 연도보다 하나 더 이전
-    if (years.includes(nextYear)) return; // 중복 방지
 
-    // 모든 row의 데이터에도 해당 연도 추가
-    const updatedData = editableData.map((item) => {
-      const alreadyExists = item.esgNumberDTOList.some(
-        (e) => e.year === nextYear
-      );
-      if (!alreadyExists) {
-        item.esgNumberDTOList.push({
-          categoryId: item.categoryDetailDTO.categoryId,
-          corpId: "", // 필요하면 수정
-          year: nextYear,
-          value: 0,
-        });
-      }
-      return item;
-    });
-
-    setYears([...years, nextYear]); // 연도 추가
-    setEditableData([...updatedData]); // 데이터 업데이트
-  };
   const handleRemoveColumn = (yearToRemove: string) => {
     const updatedYears = years.filter((y) => y !== yearToRemove);
-    const updatedData = editableData.map((item) => {
-      const newList = item.esgNumberDTOList.filter(
-        (e) => e.year !== yearToRemove
-      );
-      return {
-        ...item,
-        esgNumberDTOList: newList,
-      };
-    });
+
+    // Also update categorizedEsgDataList to remove data for this year
+    const updatedList = categorizedEsgDataList.map((item) => ({
+      ...item,
+      esgNumberDTOList: item.esgNumberDTOList.filter(
+        (entry) => entry.year !== yearToRemove
+      ),
+    }));
 
     setYears(updatedYears);
-    setEditableData(updatedData);
+    setCategorizedEsgDataList(updatedList);
   };
-  useEffect(() => {
-    Promise.all(categoryIds.map((id) => getEsgData(id)))
-      .then((results) => {
-        const valid = results.filter(Boolean) as CategorizedESGDataList[];
-        setCategorizedEsgData(valid);
-      })
-      .catch((err) => console.error("ESG data fetch error:", err));
-  }, [categoryIds]);
 
-  const rows = editableData.map((item, i) => {
+  const handleRemoveRow = async (categoryId: string) => {
+    // 선택된 카테고리 ID로 필터링하여 데이터 제거
+    const updatedData = categorizedEsgDataList.filter(
+      (item) => item.categoryDetailDTO.categoryId !== categoryId
+    );
+
+    setCategorizedEsgDataList(updatedData);
+  };
+
+  const rows = categorizedEsgDataList.map((item, i) => {
     const categoryId = item.categoryDetailDTO.categoryId;
     const categoryName = item.categoryDetailDTO.categoryName;
     const unitName = item.categoryDetailDTO.unit?.unitName ?? "-";
@@ -102,24 +70,24 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
 
     return (
       <Table.Row key={categoryId}>
-        {/* <Table.Cell>
-          <Checkbox.Root
-            size="sm"
-            aria-label="Select row"
-            checked={selection.includes(categoryId)}
-            onCheckedChange={(changes) => {
-              setSelection((prev) =>
-                changes.checked
-                  ? [...prev, categoryId]
-                  : prev.filter((id) => id !== categoryId)
-              );
-            }}
-          >
-            <Checkbox.HiddenInput />
-            <Checkbox.Control />
-          </Checkbox.Root>
-        </Table.Cell> */}
-        <Table.Cell>{categoryName}</Table.Cell>
+        <Table.Cell>
+          <Flex alignItems="center" justifyContent="space-between">
+            <Box>{categoryName}</Box>
+            <Button
+              size="xs"
+              variant="ghost"
+              colorScheme="gray"
+              ml={1}
+              onClick={() => handleRemoveRow(categoryId)}
+              aria-label={`Remove ${categoryName} row`}
+              minW="auto"
+              p={0}
+              h="auto"
+            >
+              ✕
+            </Button>
+          </Flex>
+        </Table.Cell>
         <Table.Cell textAlign={"center"}>{unitName}</Table.Cell>
         {years.map((year) => {
           const yearIndex = item.esgNumberDTOList.findIndex(
@@ -149,12 +117,22 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
         borderColor="gray.200"
         borderRadius="lg"
       > */}
-        <Box minW={`${200 + years.length * 100}px`} minHeight='300px' maxHeight='300px' overflow='auto'>
-          {/* 테이블 넓이 계산해서 보장 */}
-          <Table.Root size="md" variant="outline" showColumnBorder>
-            <Table.Header>
-              <Table.Row>
-                {/* <Table.ColumnHeader w="6">
+      <Box
+        minW={`${200 + years.length * 100}px`}
+        minHeight="300px"
+        maxHeight="300px"
+        overflow="auto"
+      >
+        <Flex justify="flex-end" mb={2}>
+          <Button size="sm" colorScheme="blue" onClick={resetData}>
+            초기화
+          </Button>
+        </Flex>
+        {/* 테이블 넓이 계산해서 보장 */}
+        <Table.Root size="md" variant="outline" showColumnBorder>
+          <Table.Header>
+            <Table.Row>
+              {/* <Table.ColumnHeader w="6">
                   <Checkbox.Root
                     size="sm"
                     aria-label="Select all rows"
@@ -179,26 +157,39 @@ const TableContent = ({ categoryIds }: TableContentProps) => {
                     <Checkbox.Control />
                   </Checkbox.Root>
                 </Table.ColumnHeader> */}
-                <Table.ColumnHeader >지표</Table.ColumnHeader>
-                <Table.ColumnHeader w={51}>단위</Table.ColumnHeader>
-                {years.map((year) => (
-                  <Table.ColumnHeader key={year} textAlign="end">
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="flex-end"
-                      gap="1"
-                      w="100%"
+              <Table.ColumnHeader>지표</Table.ColumnHeader>
+              <Table.ColumnHeader w={51}>단위</Table.ColumnHeader>
+              {years.map((year) => (
+                <Table.ColumnHeader key={year} textAlign="end">
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="flex-end"
+                    gap="1"
+                    w="100%"
+                  >
+                    {year}
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      colorScheme="gray"
+                      ml={1}
+                      onClick={() => handleRemoveColumn(year)}
+                      aria-label={`Remove ${year} column`}
+                      minW="auto"
+                      p={0}
+                      h="auto"
                     >
-                      {year}
-                    </Box>
-                  </Table.ColumnHeader>
-                ))}
-              </Table.Row>
-            </Table.Header>
-            <Table.Body >{rows}</Table.Body>
-          </Table.Root>
-        </Box>
+                      ✕
+                    </Button>
+                  </Box>
+                </Table.ColumnHeader>
+              ))}
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>{rows}</Table.Body>
+        </Table.Root>
+      </Box>
       {/* </Box> */}
 
       {/* <ActionBar.Root open={selection.length > 0}>

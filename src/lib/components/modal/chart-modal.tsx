@@ -22,17 +22,19 @@ import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
-import { getSections, getCategories } from "@/lib/api/get";
+import { getSections, getCategories, getEsgData } from "@/lib/api/get";
 import ChartContent from "./ChartContent";
+import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
+import PieChartContent from "./PieChartContent";
 
 // const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
 const chartType: ChartType[] = [
-  { type: "Bar", label: "막대 차트", icons: FaChartPie },
-  { type: "Line", label: "선 차트", icons: FaPen },
-  { type: "Pie", label: "파이 차트", icons: FaChartPie },
-  { type: "Doughnut", label: "도넛 차트", icons: FaChartPie },
-  { type: "Mixed", label: "믹스 차트", icons: FaTable },
+  { type: "bar", label: "막대 차트", icons: FaChartPie },
+  { type: "line", label: "선 차트", icons: FaPen },
+  { type: "pie", label: "파이 차트", icons: FaChartPie },
+  { type: "doughnut", label: "도넛 차트", icons: FaChartPie },
+  { type: "mixed", label: "믹스 차트", icons: FaTable },
 ];
 
 export default function ChartModal() {
@@ -45,6 +47,11 @@ export default function ChartModal() {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
+  const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
+    CategorizedESGDataList[]
+  >([]);
+
+  const [dataLoading, setDataLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -80,9 +87,28 @@ export default function ChartModal() {
       })),
   });
 
-  const selectedCategoryId = categories
-    .filter((category) => selected.includes(category.categoryName))
-    .map((category) => category.categoryId);
+  const getData = async () => {
+    setDataLoading(true);
+    Promise.all(selected.map((id) => getEsgData(id)))
+      .then((results) => {
+        const validResults = results.filter(
+          (result): result is CategorizedESGDataList => result !== null
+        );
+        setCategorizedEsgDataList(validResults);
+      })
+      .catch((error) => {
+        console.error("Error fetching ESG data:", error);
+      })
+      .finally(() => {
+        setDataLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    if (selected.length > 0) {
+      getData();
+    }
+  }, [selected]);
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
@@ -97,7 +123,7 @@ export default function ChartModal() {
           // top="4"
           // right="4"
         >
-          <FaPlus size='sm'/>
+          <FaPlus size="sm" />
         </Button>
       </Dialog.Trigger>
 
@@ -226,25 +252,19 @@ export default function ChartModal() {
                       .map((category) => (
                         <Box key={category.categoryId}>
                           <Checkbox.Root
-                            checked={selected.includes(category.categoryName)}
+                            checked={selected.includes(category.categoryId)}
                             onCheckedChange={() => {
-                              console.log(
-                                "📌 선택된 카테고리 Name:",
-                                category.categoryName
-                              );
                               const isChecked = selected.includes(
-                                category.categoryName
+                                category.categoryId
                               );
                               if (isChecked) {
                                 setSelected((prev) =>
-                                  prev.filter(
-                                    (i) => i !== category.categoryName
-                                  )
+                                  prev.filter((i) => i !== category.categoryId)
                                 );
                               } else {
                                 setSelected((prev) => [
                                   ...prev,
-                                  category.categoryName,
+                                  category.categoryId,
                                 ]);
                               }
                             }}
@@ -347,16 +367,31 @@ export default function ChartModal() {
 
                     <Tabs.ContentGroup>
                       <Tabs.Content value="chart">
-                        <ChartContent
-                          selected={selected}
+                        <PieChartContent
+                          categorizedEsgDataList={categorizedEsgDataList}
                           charts={charts}
-                          categoryId={selectedCategoryId}
                         />
                       </Tabs.Content>
 
                       <Tabs.Content value="table">
                         {/* 2번 탭 콘텐츠 */}
-                        <TableContent categoryIds={selectedCategoryId} />
+                        {dataLoading ? (
+                          <Flex
+                            justifyContent="center"
+                            alignItems="center"
+                            height="100%"
+                          >
+                            <Text>데이터를 불러오는 중...</Text>
+                          </Flex>
+                        ) : (
+                          <TableContent
+                            resetData={getData}
+                            setCategorizedEsgDataList={
+                              setCategorizedEsgDataList
+                            }
+                            categorizedEsgDataList={categorizedEsgDataList}
+                          />
+                        )}
                       </Tabs.Content>
                     </Tabs.ContentGroup>
                   </Tabs.Root>

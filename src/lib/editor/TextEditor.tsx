@@ -5,7 +5,7 @@ import RichTextExample from "./example";
 import { DndProvider } from "react-dnd";
 import { Transforms } from "slate";
 
-const TextEditor = () => {
+const TextEditor = ({ id }: { id?: string }) => {
   return (
     <Flex
       justifyContent={"center"}
@@ -14,7 +14,7 @@ const TextEditor = () => {
       width="100vw"
       height="100vh"
     >
-      <RichTextExample documentId="6847960bc34ca5458cf5161c" />
+      <RichTextExample documentId={id} />
     </Flex>
   );
 };
