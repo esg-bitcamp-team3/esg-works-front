@@ -23,7 +23,7 @@ import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories, getEsgData } from "@/lib/api/get";
-import ChartContent from "./ChartContent";
+
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 import PieChartContent from "./PieChartContent";
 import MixedChartContent from "./MixedChartContent";
@@ -40,14 +40,21 @@ const chartType: ChartType[] = [
 
 export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
+
   const [step, setStep] = useState<1 | 2>(1);
-  const [charts, setCharts] = useState<ChartType[]>(chartType);
+
+  const [charts] = useState<ChartType[]>(chartType);
+
   const [selectedTab, setSelectedTab] = useState<string | null>("chart");
+
   const [sections, setSections] = useState<Section[]>([]);
+
   const [categories, setCategories] = useState<CategoryDetail[]>([]);
+
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
+
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
   >([]);

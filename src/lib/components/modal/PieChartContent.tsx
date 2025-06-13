@@ -439,34 +439,6 @@ const PieChartContent = ({
           maxH={"100%"}
           padding={3}
         >
-          {/* <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
-            선택된 지표:
-          </Text> */}
-          {/* 색상과 배경색 설정을 위한 사용자 정의 컴포넌트 */}
-          {/* <Flex gap='2' w='100%'>
-             {[
-          { type: "bar", icon: FcBarChart },
-          { type: "line", icon: FcLineChart },
-          { type: "pie", icon: FcPieChart },
-          { type: "doughnut", icon: FcDoughnutChart },
-          { type: "mixed", icon: FcComboChart },
-        ].map(({ type, icon }) => (
-          <Button
-            key={type}
-            onClick={() =>
-              setSelectedChartType(type as typeof selectedChartType)
-            }
-            variant="outline"
-            colorScheme="blue"
-            // width="full"
-            textAlign="left"
-            justifyContent="flex-start"
-            p={3}
-          >
-            <Icon as={icon} /> 
-          </Button>
-        ))}
-          </Flex> */}
           {loading ? (
             <Text fontSize="sm" color="gray.500">
               차트 색상을 불러오는 중입니다...

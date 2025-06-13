@@ -26,6 +26,12 @@ import { ChartDetail, InteresrtChartDetail } from "./interfaces/chart";
 
 import { CategorizedESGDataList } from "./interfaces/categorizedEsgDataList";
 import { CategoryDetail } from "./interfaces/categoryDetail";
+import {
+  InterestReport,
+  Report,
+  ReportDetail,
+  SortProp,
+} from "./interfaces/report";
 
 export const getSections = async () => {
   try {
@@ -116,6 +122,42 @@ export const getCategory = async () => {
     return res.data;
   } catch (error) {
     console.error("카테고리 리스트를 가져오지 못했습니다.");
+    return null;
+  }
+};
+
+// ==========================Report
+
+export const getReports = async (sortProp: SortProp) => {
+  try {
+    const res = await apiClient.get<ReportDetail[]>("/reports/corp", {
+      params: sortProp,
+    });
+    return res.data;
+  } catch (error) {
+    console.error("리포트 리스트 가져오기 실패");
+    return null;
+  }
+};
+
+export const getFavoriteReports = async (sortProp: SortProp) => {
+  try {
+    const res = await apiClient.get<ReportDetail[]>("/reports/interest", {
+      params: sortProp,
+    });
+    return res.data;
+  } catch (error) {
+    console.error("리포트 리스트 가져오기 실패");
+    return null;
+  }
+};
+
+export const getInterestReports = async () => {
+  try {
+    const res = await apiClient.get<InterestReport[]>("/interest-reports");
+    return res.data;
+  } catch (error) {
+    console.error("리포트 리스트 가져오기 실패");
     return null;
   }
 };

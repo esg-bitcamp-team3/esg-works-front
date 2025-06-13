@@ -1,8 +1,15 @@
 "use client";
 
-import { Box, Button, Flex, Input, InputGroup } from "@chakra-ui/react";
-import { useState } from "react";
-import { TbSearch } from "react-icons/tb";
+import {
+  Box,
+  Button,
+  Flex,
+  Input,
+  InputGroup,
+  Skeleton,
+} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { TbSearch, TbSortAscending, TbSortDescending } from "react-icons/tb";
 import { FaRegStar } from "react-icons/fa";
 import { FaRegClock } from "react-icons/fa6";
 import { FaRegFileWord } from "react-icons/fa";
@@ -16,11 +23,22 @@ import ListView from "@/lib/components/home/ListView";
 
 export default function Home() {
   const [activeFilter, setActiveFilter] = useState<
-    null | "all" | "recent" | "favorite"
+    "all" | "recent" | "favorite"
   >("all");
-  const [activeFilter2, setActiveFilter2] = useState<null | "list" | "layout">(
-    "list"
-  );
+  const [activeFilter2, setActiveFilter2] = useState<"list" | "layout">("list");
+  const [sort, setSort] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // 필터 상태가 바뀔 때마다 로딩 처리
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500); // 로딩 효과를 위해 약간의 지연 (300ms)
+
+    return () => clearTimeout(timer);
+  }, [activeFilter, activeFilter2, sort]);
+
   return (
     <Flex
       padding={4}
@@ -119,12 +137,24 @@ export default function Home() {
               >
                 <TbLayoutGridFilled />
               </Button>
+              <Button variant="ghost" onClick={() => setSort((prev) => !prev)}>
+                {sort ? <TbSortAscending /> : <TbSortDescending />}
+              </Button>
             </Box>
           </ButtonGroup>
-          <ListView
-            filter1={activeFilter || ""}
-            filter2={activeFilter2 || ""}
-          />
+          {isLoading ? (
+            <Box w="100%">
+              <Skeleton height="40px" mb={4} />
+              <Skeleton height="40px" mb={4} />
+              <Skeleton height="40px" mb={4} />
+            </Box>
+          ) : (
+            <ListView
+              filter1={activeFilter}
+              filter2={activeFilter2}
+              asc={sort}
+            />
+          )}
         </Flex>
       </Stack>
     </Flex>
