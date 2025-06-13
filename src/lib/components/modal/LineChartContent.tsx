@@ -102,7 +102,6 @@ const LineChartContent = ({
       },
     };
 
-   
     return {
       ...baseOptions,
       scales: {
@@ -144,7 +143,7 @@ const LineChartContent = ({
 
             const backgroundColors = category.esgNumberDTOList.map((_, idx) => {
               if (selectedColors[idx]) {
-                return selectedColors[idx].toString("hex");
+                return selectedColors[idx].toString("rgba");
               } else {
                 // Generate random color and update selectedColors
                 const hex = Math.floor(Math.random() * 16777215)
@@ -154,7 +153,7 @@ const LineChartContent = ({
                 const newSelectedColors = [...selectedColors];
                 newSelectedColors[idx] = randomColor;
                 setSelectedColors(newSelectedColors);
-                return randomColor.toString("hex");
+                return randomColor.toString("rgba");
               }
             });
 
@@ -180,11 +179,10 @@ const LineChartContent = ({
               ...years.map((year) => Number(year))
             ).toString();
 
-
             // Generate background colors based on selectedColors or random fallback
             const backgroundColors = categorizedEsgDataList.map((_, idx) => {
               if (selectedColors[idx]) {
-                return selectedColors[idx].toString("hex");
+                return selectedColors[idx].toString("rgba");
               } else {
                 // Generate random color and update selectedColors
                 const hex = Math.floor(Math.random() * 16777215)
@@ -194,7 +192,7 @@ const LineChartContent = ({
                 const newSelectedColors = [...selectedColors];
                 newSelectedColors[idx] = randomColor;
                 setSelectedColors(newSelectedColors);
-                return randomColor.toString("hex");
+                return randomColor.toString("rgba");
               }
             });
 
@@ -228,7 +226,7 @@ const LineChartContent = ({
             labels: years.map((year) => year.toString()),
             datasets: categorizedEsgDataList.map((category, idx) => {
               const color =
-                selectedColors[idx]?.toString("hex") ||
+                selectedColors[idx]?.toString("rgba") ||
                 `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
               return {
@@ -258,7 +256,7 @@ const LineChartContent = ({
             labels: years.map((year) => year.toString()),
             datasets: categorizedEsgDataList.map((category, idx) => {
               const color =
-                selectedColors[idx]?.toString("hex") ||
+                selectedColors[idx]?.toString("rgba") ||
                 `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
               return {
@@ -405,7 +403,6 @@ const LineChartContent = ({
           maxH={"100%"}
           padding={3}
         >
-     
           {loading ? (
             <Text fontSize="sm" color="gray.500">
               차트 색상을 불러오는 중입니다...

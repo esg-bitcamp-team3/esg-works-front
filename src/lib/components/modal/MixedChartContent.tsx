@@ -77,7 +77,6 @@ const MixedChartContent = ({
   const [chartData, setChartData] = useState<ChartData>();
   const [selectedChartType, setSelectedChartType] =
     useState<ChartType["type"]>("bar");
-  const [selectedColors, setSelectedColors] = useState<Color[]>([]);
   const [options, setOptions] = useState<ChartOptions>({});
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -184,19 +183,12 @@ const MixedChartContent = ({
             const category = categorizedEsgDataList[0];
 
             const backgroundColors = category.esgNumberDTOList.map((_, idx) => {
-              if (selectedColors[idx]) {
-                return selectedColors[idx].toString("hex");
-              } else {
-                // Generate random color and update selectedColors
-                const hex = Math.floor(Math.random() * 16777215)
-                  .toString(16)
-                  .padStart(6, "0");
-                const randomColor = parseColor(`#${hex}`);
-                const newSelectedColors = [...selectedColors];
-                newSelectedColors[idx] = randomColor;
-                setSelectedColors(newSelectedColors);
-                return randomColor.toString("hex");
-              }
+              // Generate random color and update selectedColors
+              const hex = Math.floor(Math.random() * 16777215)
+                .toString(16)
+                .padStart(6, "0");
+              const randomColor = parseColor(`#${hex}`);
+              return randomColor.toString("rgba");
             });
 
             newChartData = {
@@ -223,19 +215,11 @@ const MixedChartContent = ({
 
             // Generate background colors based on selectedColors or random fallback
             const backgroundColors = categorizedEsgDataList.map((_, idx) => {
-              if (selectedColors[idx]) {
-                return selectedColors[idx].toString("hex");
-              } else {
-                // Generate random color and update selectedColors
-                const hex = Math.floor(Math.random() * 16777215)
-                  .toString(16)
-                  .padStart(6, "0");
-                const randomColor = parseColor(`#${hex}`);
-                const newSelectedColors = [...selectedColors];
-                newSelectedColors[idx] = randomColor;
-                setSelectedColors(newSelectedColors);
-                return randomColor.toString("hex");
-              }
+              const hex = Math.floor(Math.random() * 16777215)
+                .toString(16)
+                .padStart(6, "0");
+              const randomColor = parseColor(`#${hex}`);
+              return randomColor.toString("rgba");
             });
 
             newChartData = {
@@ -267,9 +251,9 @@ const MixedChartContent = ({
           newChartData = {
             labels: years.map((year) => year.toString()),
             datasets: categorizedEsgDataList.map((category, idx) => {
-              const color =
-                selectedColors[idx]?.toString("hex") ||
-                `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+              const color = `#${Math.floor(Math.random() * 16777215).toString(
+                16
+              )}`;
 
               return {
                 // Alternate between bar and line based on index
@@ -297,9 +281,9 @@ const MixedChartContent = ({
           newChartData = {
             labels: years.map((year) => year.toString()),
             datasets: categorizedEsgDataList.map((category, idx) => {
-              const color =
-                selectedColors[idx]?.toString("hex") ||
-                `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+              const color = `#${Math.floor(Math.random() * 16777215).toString(
+                16
+              )}`;
 
               return {
                 type: selectedChartType,
@@ -324,12 +308,11 @@ const MixedChartContent = ({
 
       setChartData(newChartData as ChartData);
     }
-  }, [categorizedEsgDataList, selectedChartType, selectedColors]);
+  }, [categorizedEsgDataList, selectedChartType]);
 
   const handleChartTypeChange = (type: ChartType["type"]) => {
     setLoading(true); // Start loading when chart type changes
     setSelectedChartType(type);
-    setSelectedColors([]); // Reset selected colors when chart type changes
   };
 
   useEffect(() => {

@@ -23,12 +23,8 @@ import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories, getEsgData } from "@/lib/api/get";
-
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
-import PieChartContent from "./PieChartContent";
-import MixedChartContent from "./MixedChartContent";
-
-// const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
+import ChartContent from "./ChartContent";
 
 const chartType: ChartType[] = [
   { type: "bar", label: "막대 차트", icons: FaChartPie },
@@ -42,8 +38,6 @@ export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
 
   const [step, setStep] = useState<1 | 2>(1);
-
-  const [charts] = useState<ChartType[]>(chartType);
 
   const [selectedTab, setSelectedTab] = useState<string | null>("chart");
 
@@ -343,66 +337,19 @@ export default function ChartModal() {
               {/* 다음 페이지 (차트 & 테이블) ======================================================================================= */}
               {step === 2 && (
                 <Flex direction="column" height="100%" width="100%">
-                  <Tabs.Root
-                    variant="outline"
-                    size="lg"
-                    defaultValue={selectedTab}
-                    onValueChange={(e) => setSelectedTab(e.value)}
-                    display="flex"
-                    flexDirection="column"
-                  >
-                    <Tabs.List flexShrink={0}>
-                      <Tabs.Trigger
-                        value="chart"
-                        key="chart"
-                        // paddingLeft="5"
-                        // paddingRight="5"
-                      >
-                        <Icon as={FaChartPie} style={{ marginRight: 4 }} />
-                        {"차트"}
-                      </Tabs.Trigger>
-                      <Tabs.Trigger
-                        value="table"
-                        key="table"
-                        paddingLeft="5"
-                        paddingRight="5"
-                      >
-                        <Icon as={FaTable} style={{ marginRight: 4 }} />
-
-                        {"테이블"}
-                      </Tabs.Trigger>
-                    </Tabs.List>
-
-                    <Tabs.ContentGroup>
-                      <Tabs.Content value="chart">
-                        <MixedChartContent
-                          categorizedEsgDataList={categorizedEsgDataList}
-                          charts={charts}
-                        />
-                      </Tabs.Content>
-
-                      <Tabs.Content value="table">
-                        {/* 2번 탭 콘텐츠 */}
-                        {dataLoading ? (
-                          <Flex
-                            justifyContent="center"
-                            alignItems="center"
-                            height="100%"
-                          >
-                            <Text>데이터를 불러오는 중...</Text>
-                          </Flex>
-                        ) : (
-                          <TableContent
-                            resetData={getData}
-                            setCategorizedEsgDataList={
-                              setCategorizedEsgDataList
-                            }
-                            categorizedEsgDataList={categorizedEsgDataList}
-                          />
-                        )}
-                      </Tabs.Content>
-                    </Tabs.ContentGroup>
-                  </Tabs.Root>
+                  {dataLoading ? (
+                    <Flex
+                      justifyContent="center"
+                      alignItems="center"
+                      height="100%"
+                    >
+                      <Text>데이터를 불러오는 중...</Text>
+                    </Flex>
+                  ) : (
+                    <ChartContent
+                      categorizedEsgDataList={categorizedEsgDataList}
+                    />
+                  )}
                 </Flex>
               )}
             </Dialog.Body>
