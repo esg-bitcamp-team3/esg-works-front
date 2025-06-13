@@ -22,7 +22,7 @@ import {
   FcLineChart,
   FcPieChart,
 } from "react-icons/fc";
-
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import { getEsgData } from "@/lib/api/get";
 import { ChartType, DatasetType, DataType } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
@@ -45,6 +45,7 @@ import {
 import ChartColor from "./chartColor";
 import { get } from "http";
 import PieChartColor from "./PieChartColor";
+import { display } from "html2canvas/dist/types/css/property-descriptors/display";
 
 ChartJS.register(
   LinearScale,
@@ -55,7 +56,8 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels // Register the ChartDataLabels plugin
 );
 
 export interface ChartContentProps {
@@ -102,7 +104,20 @@ const PieChartContent = ({
           },
         },
         tooltip: {
-          enabled: true,
+          enabled: false,
+        },
+        datalabels: {
+          display: true,
+          formatter: (value: number, context: any) => {
+            // Display the value with a comma as a thousands separator
+            return value.toLocaleString();
+          },
+          anchor: "end" as const,
+          align: "center" as const,
+          font: {
+            weight: "bold" as const,
+          },
+          color: "#fff",
         },
       },
     };
@@ -164,7 +179,7 @@ const PieChartContent = ({
 
             const backgroundColors = category.esgNumberDTOList.map((_, idx) => {
               if (selectedColors[idx]) {
-                return selectedColors[idx].toString("hex");
+                return selectedColors[idx].toString("rgba");
               } else {
                 // Generate random color and update selectedColors
                 const hex = Math.floor(Math.random() * 16777215)
@@ -174,7 +189,7 @@ const PieChartContent = ({
                 const newSelectedColors = [...selectedColors];
                 newSelectedColors[idx] = randomColor;
                 setSelectedColors(newSelectedColors);
-                return randomColor.toString("hex");
+                return randomColor.toString("rgba");
               }
             });
 
@@ -203,7 +218,7 @@ const PieChartContent = ({
             // Generate background colors based on selectedColors or random fallback
             const backgroundColors = categorizedEsgDataList.map((_, idx) => {
               if (selectedColors[idx]) {
-                return selectedColors[idx].toString("hex");
+                return selectedColors[idx].toString("rgba");
               } else {
                 // Generate random color and update selectedColors
                 const hex = Math.floor(Math.random() * 16777215)
@@ -213,7 +228,7 @@ const PieChartContent = ({
                 const newSelectedColors = [...selectedColors];
                 newSelectedColors[idx] = randomColor;
                 setSelectedColors(newSelectedColors);
-                return randomColor.toString("hex");
+                return randomColor.toString("rgba");
               }
             });
 
@@ -247,7 +262,7 @@ const PieChartContent = ({
             labels: years.map((year) => year.toString()),
             datasets: categorizedEsgDataList.map((category, idx) => {
               const color =
-                selectedColors[idx]?.toString("hex") ||
+                selectedColors[idx]?.toString("rgba") ||
                 `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
               return {
@@ -277,7 +292,7 @@ const PieChartContent = ({
             labels: years.map((year) => year.toString()),
             datasets: categorizedEsgDataList.map((category, idx) => {
               const color =
-                selectedColors[idx]?.toString("hex") ||
+                selectedColors[idx]?.toString("rgba") ||
                 `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
               return {
@@ -424,34 +439,6 @@ const PieChartContent = ({
           maxH={"100%"}
           padding={3}
         >
-          {/* <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
-            선택된 지표:
-          </Text> */}
-          {/* 색상과 배경색 설정을 위한 사용자 정의 컴포넌트 */}
-          {/* <Flex gap='2' w='100%'>
-             {[
-          { type: "bar", icon: FcBarChart },
-          { type: "line", icon: FcLineChart },
-          { type: "pie", icon: FcPieChart },
-          { type: "doughnut", icon: FcDoughnutChart },
-          { type: "mixed", icon: FcComboChart },
-        ].map(({ type, icon }) => (
-          <Button
-            key={type}
-            onClick={() =>
-              setSelectedChartType(type as typeof selectedChartType)
-            }
-            variant="outline"
-            colorScheme="blue"
-            // width="full"
-            textAlign="left"
-            justifyContent="flex-start"
-            p={3}
-          >
-            <Icon as={icon} /> 
-          </Button>
-        ))}
-          </Flex> */}
           {loading ? (
             <Text fontSize="sm" color="gray.500">
               차트 색상을 불러오는 중입니다...

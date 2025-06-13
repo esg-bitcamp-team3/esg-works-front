@@ -190,9 +190,9 @@ const Sidebar = () => {
       {profileMenuOpen && (
         <Box
           bg="transparent"
-          position="absolute"
-          left="200px"
-          bottom="0"
+          position="fixed"
+          left={isExpanded ? "200px" : "60px"}
+          bottom="0px"
           w="180px"
           zIndex={100}
           onMouseEnter={() => {
@@ -208,10 +208,10 @@ const Sidebar = () => {
             gap={1}
             align="stretch"
             m={1}
-            p={2}
             bg="white"
             borderRadius="md"
             boxShadow="md"
+            p="2"
           >
             <Box
               as="button"
@@ -220,7 +220,7 @@ const Sidebar = () => {
               _hover={{ bg: "gray.100" }}
               w="full"
               textAlign="left"
-              onClick={() => router.push("/profile")}
+              onClick={() => router.push("/mypage")}
             >
               <Flex alignItems="center">
                 <Icon as={FaUser} color="#2F6EEA" />

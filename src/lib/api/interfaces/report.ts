@@ -1,215 +1,36 @@
+import { User } from "@/lib/interfaces/auth";
+import { Corporation } from "./corporation";
+
 export interface Report {
   id: string;
   title: string;
   content: string;
   userId: string; // User_id 참조
-  corpId: string;
-  createAt: string;
-  createBy: string;
-  updateAt: string;
-  updateBy: string;
+  corp: Corporation;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
+  isInterestedReport: boolean;
 }
 
-export const exampleReports: Report[] = [
-  {
-    id: "rpt-001",
-    title: "2024 Sustainability Report",
-    content: "Annual sustainability performance and initiatives.",
-    userId: "user-100",
-    corpId: "corp-001",
-    createAt: "2024-05-01T09:00:00Z",
-    createBy: "user-100",
-    updateAt: "2024-05-17T10:00:00Z",
-    updateBy: "user-101",
-  },
-  {
-    id: "rpt-002",
-    title: "ESG Risk Assessment",
-    content: "Comprehensive ESG risk analysis for Q2.",
-    userId: "user-101",
-    corpId: "corp-002",
-    createAt: "2024-05-15T14:30:00Z",
-    createBy: "user-101",
-    updateAt: "2024-05-16T08:20:00Z",
-    updateBy: "user-102",
-  },
-  {
-    id: "rpt-003",
-    title: "Carbon Footprint Report",
-    content: "Detailed carbon emissions data for 2023.",
-    userId: "user-102",
-    corpId: "corp-003",
-    createAt: "2024-04-10T11:45:00Z",
-    createBy: "user-102",
-    updateAt: "2024-04-11T12:00:00Z",
-    updateBy: "user-103",
-  },
-  {
-    id: "rpt-004",
-    title: "Diversity & Inclusion Update",
-    content: "Progress on diversity and inclusion goals.",
-    userId: "user-103",
-    corpId: "corp-001",
-    createAt: "2024-03-20T16:00:00Z",
-    createBy: "user-103",
-    updateAt: "2024-03-21T09:30:00Z",
-    updateBy: "user-104",
-  },
-  {
-    id: "rpt-005",
-    title: "Water Usage Analysis",
-    content: "Analysis of water consumption and conservation.",
-    userId: "user-104",
-    corpId: "corp-002",
-    createAt: "2024-02-05T08:15:00Z",
-    createBy: "user-104",
-    updateAt: "2024-02-06T10:45:00Z",
-    updateBy: "user-100",
-  },
-  {
-    id: "rpt-001",
-    title: "2024 Sustainability Report",
-    content: "Annual sustainability performance and initiatives.",
-    userId: "user-100",
-    corpId: "corp-001",
-    createAt: "2024-05-01T09:00:00Z",
-    createBy: "user-100",
-    updateAt: "2024-05-17T10:00:00Z",
-    updateBy: "user-101",
-  },
-  {
-    id: "rpt-002",
-    title: "ESG Risk Assessment",
-    content: "Comprehensive ESG risk analysis for Q2.",
-    userId: "user-101",
-    corpId: "corp-002",
-    createAt: "2024-05-15T14:30:00Z",
-    createBy: "user-101",
-    updateAt: "2024-05-16T08:20:00Z",
-    updateBy: "user-102",
-  },
-  {
-    id: "rpt-003",
-    title: "Carbon Footprint Report",
-    content: "Detailed carbon emissions data for 2023.",
-    userId: "user-102",
-    corpId: "corp-003",
-    createAt: "2024-04-10T11:45:00Z",
-    createBy: "user-102",
-    updateAt: "2024-04-11T12:00:00Z",
-    updateBy: "user-103",
-  },
-  {
-    id: "rpt-004",
-    title: "Diversity & Inclusion Update",
-    content: "Progress on diversity and inclusion goals.",
-    userId: "user-103",
-    corpId: "corp-001",
-    createAt: "2024-03-20T16:00:00Z",
-    createBy: "user-103",
-    updateAt: "2024-03-21T09:30:00Z",
-    updateBy: "user-104",
-  },
-  {
-    id: "rpt-005",
-    title: "Water Usage Analysis",
-    content: "Analysis of water consumption and conservation.",
-    userId: "user-104",
-    corpId: "corp-002",
-    createAt: "2024-02-05T08:15:00Z",
-    createBy: "user-104",
-    updateAt: "2024-02-06T10:45:00Z",
-    updateBy: "user-100",
-  },
-  {
-    id: "rpt-001",
-    title: "2024 Sustainability Report",
-    content: "Annual sustainability performance and initiatives.",
-    userId: "user-100",
-    corpId: "corp-001",
-    createAt: "2024-05-01T09:00:00Z",
-    createBy: "user-100",
-    updateAt: "2024-05-17T10:00:00Z",
-    updateBy: "user-101",
-  },
-  {
-    id: "rpt-002",
-    title: "ESG Risk Assessment",
-    content: "Comprehensive ESG risk analysis for Q2.",
-    userId: "user-101",
-    corpId: "corp-002",
-    createAt: "2024-05-15T14:30:00Z",
-    createBy: "user-101",
-    updateAt: "2024-05-16T08:20:00Z",
-    updateBy: "user-102",
-  },
-  {
-    id: "rpt-003",
-    title: "Carbon Footprint Report",
-    content: "Detailed carbon emissions data for 2023.",
-    userId: "user-102",
-    corpId: "corp-003",
-    createAt: "2024-04-10T11:45:00Z",
-    createBy: "user-102",
-    updateAt: "2024-04-11T12:00:00Z",
-    updateBy: "user-103",
-  },
-  {
-    id: "rpt-004",
-    title: "Diversity & Inclusion Update",
-    content: "Progress on diversity and inclusion goals.",
-    userId: "user-103",
-    corpId: "corp-001",
-    createAt: "2024-03-20T16:00:00Z",
-    createBy: "user-103",
-    updateAt: "2024-03-21T09:30:00Z",
-    updateBy: "user-104",
-  },
-  {
-    id: "rpt-005",
-    title: "Water Usage Analysis",
-    content: "Analysis of water consumption and conservation.",
-    userId: "user-104",
-    corpId: "corp-002",
-    createAt: "2024-02-05T08:15:00Z",
-    createBy: "user-104",
-    updateAt: "2024-02-06T10:45:00Z",
-    updateBy: "user-100",
-  },
-  {
-    id: "rpt-001",
-    title: "2024 Sustainability Report",
-    content: "Annual sustainability performance and initiatives.",
-    userId: "user-100",
-    corpId: "corp-001",
-    createAt: "2024-05-01T09:00:00Z",
-    createBy: "user-100",
-    updateAt: "2024-05-17T10:00:00Z",
-    updateBy: "user-101",
-  },
-  {
-    id: "rpt-002",
-    title: "ESG Risk Assessment",
-    content: "Comprehensive ESG risk analysis for Q2.",
-    userId: "user-101",
-    corpId: "corp-002",
-    createAt: "2024-05-15T14:30:00Z",
-    createBy: "user-101",
-    updateAt: "2024-05-16T08:20:00Z",
-    updateBy: "user-102",
-  },
-  {
-    id: "rpt-003",
-    title: "Carbon Footprint Report",
-    content: "Detailed carbon emissions data for 2023.",
-    userId: "user-102",
-    corpId: "corp-003",
-    createAt: "2024-04-10T11:45:00Z",
-    createBy: "user-102",
-    updateAt: "2024-04-11T12:00:00Z",
-    updateBy: "user-103",
-  },
-];
+export interface ReportDetail {
+  id: string;
+  title: string;
+  content: string;
+  userId: string; // User_id 참조
+  corp: Corporation;
+  createdAt: string;
+  createdBy: User;
+  updatedAt: string;
+  updatedBy: User;
+  isInterestedReport: boolean;
+}
+
+export interface SortProp {
+  sortField: string;
+  direction: string;
+}
 
 export interface InterestReport {
   interestReportId: string;
@@ -217,22 +38,3 @@ export interface InterestReport {
   userId: string;
   checkTime: string;
 }
-
-export const ir = [
-  {
-    interestReportId: "1",
-    report: {
-      id: "rpt-001",
-      title: "2024 Sustainability Report",
-      content: "Annual sustainability performance and initiatives.",
-      userId: "user-100",
-      corpId: "corp-001",
-      createAt: "2024-06-01T09:00:00Z",
-      createBy: "user-100",
-      updateAt: "2024-06-02T10:00:00Z",
-      updateBy: "user-101",
-    },
-    userId: "sj",
-    checkTime: "2024-06-02T10:00:00Z",
-  },
-];
