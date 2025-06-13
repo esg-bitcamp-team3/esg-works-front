@@ -211,6 +211,7 @@ const Sidebar = () => {
             bg="white"
             borderRadius="md"
             boxShadow="md"
+            p="2"
           >
             <Box
               as="button"

@@ -43,6 +43,7 @@ import {
 import ChartColor from "./chartColor";
 
 // Inside the ChartContent component, add this options configuration
+
 const chartOptions: ChartOptions = {
   responsive: true,
   scales: {
@@ -152,40 +153,8 @@ const ChartContent = ({
       gap={4}
       p="1"
     >
-      <Stack
-        direction="row"
-        align="auto"
-        width="100%"
-        // maxHeight={{ base: "30vh", md: "45vh", lg: "35vh" }}
-        padding={3}
-        borderRadius="md"
-        // outline={"1px solid #E2E8F0"}
-        // justifyContent='end'
-      >
-        {[
-          { type: "bar", icon: FcBarChart },
-          { type: "line", icon: FcLineChart },
-          { type: "pie", icon: FcPieChart },
-          { type: "doughnut", icon: FcDoughnutChart },
-          { type: "mixed", icon: FcComboChart },
-        ].map(({ type, icon }) => (
-          <Button
-            key={type}
-            onClick={() =>
-              setSelectedChartType(type as typeof selectedChartType)
-            }
-            variant="outline"
-            colorScheme="blue"
-            // width="full"
-            textAlign="left"
-            justifyContent="flex-start"
-            p={3}
-          >
-            <Icon as={icon} />
-          </Button>
-        ))}
-      </Stack>
       {/* 차트 및 차트 색상 커스텀 */}
+
       <Stack direction="row" width="100%" gap="4">
         <VStack
           align={{ base: "flex-start", md: "center", lg: "flex-start" }}
