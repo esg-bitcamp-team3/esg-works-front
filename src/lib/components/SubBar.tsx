@@ -30,6 +30,7 @@ import ChartModal from "./modal/chart-modal";
 import {
   PiChartPieSlice,
   PiFolder,
+  PiChartDonut,
   PiChartBar,
   PiChartLine,
   PiGridNine,
@@ -38,7 +39,6 @@ import {
   PiStar,
   PiStarBold,
   PiStarFill,
-  PiChartDonut,
 } from "react-icons/pi";
 import SingleChart from "./chart/SingleChart";
 import { deleteInterestChart } from "../api/delete";
