@@ -25,6 +25,10 @@ import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories, getEsgData } from "@/lib/api/get";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 import ChartContent from "./ChartContent";
+import MoveToTableButton from "./MoveToTableButton";
+import TabContent from "./TabContent";
+import MoveToChartButton from "./MoveToChartButton";
+import ContentBox from "./ContentBox";
 
 const chartType: ChartType[] = [
   { type: "bar", label: "막대 차트", icons: FaChartPie },
@@ -39,7 +43,7 @@ export default function ChartModal() {
 
   const [step, setStep] = useState<1 | 2>(1);
 
-  const [selectedTab, setSelectedTab] = useState<string | null>("chart");
+  const [selectedTab, setSelectedTab] = useState<string>("chart");
 
   const [sections, setSections] = useState<Section[]>([]);
 
@@ -337,19 +341,40 @@ export default function ChartModal() {
               {/* 다음 페이지 (차트 & 테이블) ======================================================================================= */}
               {step === 2 && (
                 <Flex direction="column" height="100%" width="100%">
-                  {dataLoading ? (
-                    <Flex
-                      justifyContent="center"
-                      alignItems="center"
-                      height="100%"
-                    >
-                      <Text>데이터를 불러오는 중...</Text>
-                    </Flex>
-                  ) : (
-                    <ChartContent
-                      categorizedEsgDataList={categorizedEsgDataList}
-                    />
-                  )}
+                  <Tabs.Root value={selectedTab}>
+                    <TabContent value="chart">
+                      <ContentBox
+                        loading={dataLoading}
+                        button={
+                          <MoveToTableButton
+                            selectedTab={selectedTab}
+                            setSelectedTab={setSelectedTab}
+                          />
+                        }
+                      >
+                        <ChartContent
+                          categorizedEsgDataList={categorizedEsgDataList}
+                        />
+                      </ContentBox>
+                    </TabContent>
+                    <TabContent value="table">
+                      <ContentBox
+                        loading={dataLoading}
+                        button={
+                          <MoveToChartButton
+                            selectedTab={selectedTab}
+                            setSelectedTab={setSelectedTab}
+                          />
+                        }
+                      >
+                        <TableContent
+                          categorizedEsgDataList={categorizedEsgDataList}
+                          setCategorizedEsgDataList={setCategorizedEsgDataList}
+                          resetData={getData}
+                        />
+                      </ContentBox>
+                    </TabContent>
+                  </Tabs.Root>
                 </Flex>
               )}
             </Dialog.Body>
