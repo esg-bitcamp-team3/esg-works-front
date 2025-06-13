@@ -425,7 +425,7 @@ const BarChartContent = ({
             </Box>
           )}
         </VStack>
-
+        
         <Stack
           minH={"100%"}
           maxH={"100%"}
@@ -442,7 +442,7 @@ const BarChartContent = ({
           pointerEvents={chartAreaOpen ? "auto" : "none"}
           flex={chartAreaOpen ? 2 : 0}
           marginLeft={chartAreaOpen ? 3 : 0}
-          bg="#E8F3FF"
+            bg="#E8F3FF"
           borderRadius="md"
         >
           {loading ? (

@@ -26,12 +26,12 @@ import {
   ChartOptions,
 } from "chart.js";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
-import { Accordion, Span } from "@chakra-ui/react";
+import { Accordion, Span, NumberInput, Slider } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-// ChartPlugins, PositionSelector 등 PieChartColor.tsx에서 복사해서 추가
 type Position = "top" | "bottom" | "left" | "right";
 
+// 타이틀/범례 위치를 선택하는 컴포넌트
 const PositionSelector = ({
   position,
   setPosition,
@@ -39,6 +39,7 @@ const PositionSelector = ({
   position: Position;
   setPosition: (position: Position) => void;
 }) => {
+  // 위치 선택 옵션 목록 정의
   const positions = createListCollection({
     items: [
       { label: "상단", value: "top" },
@@ -80,6 +81,7 @@ const PositionSelector = ({
   );
 };
 
+// 차트 옵션(타이틀/범례 등) 설정 컴포넌트
 const ChartPlugins = ({
   titleText,
   titleDisplay,
@@ -120,6 +122,7 @@ const ChartPlugins = ({
           setPosition={setTitlePosition}
         />
       </HStack>
+      {/* 타이틀 입력 박스 (표시 여부에 따라 노출/숨김) */}
       <Box
         overflow="hidden"
         height={titleDisplay ? "32px" : "0"}
@@ -136,6 +139,7 @@ const ChartPlugins = ({
       </Box>
     </VStack>
     <Box h="1px" bg="gray.200" my="3" />
+    {/* 범례 옵션 */}
     <HStack justify="space-between" w="100%">
       <Checkbox.Root
         size="xs"
@@ -168,42 +172,16 @@ interface ChartSettingsDrawerProps {
   setOptions: (chartOptions: ChartOptions<"bar">) => void;
 }
 
-export interface ChartContentProps {
-  categorizedEsgDataList: CategorizedESGDataList[];
-  charts: {
-    type: string;
-    label: string;
-    icons: React.ElementType;
-  }[];
-}
+// export interface ChartContentProps {
+//   categorizedEsgDataList: CategorizedESGDataList[];
+//   charts: {
+//     type: string;
+//     label: string;
+//     icons: React.ElementType;
+//   }[];
+// }
 
-// const backgroundPlugin = {
-//   id: "custom_canvas_background_color",
-//   beforeDraw: (chart: any, args: any, options: any) => {
-//     const { ctx, chartArea } = chart;
-//     ctx.save();
-//     ctx.globalCompositeOperation = "destination-over";
-//     ctx.fillStyle = options.color || "#ffff"; // 블랙 대신 미드나잇 그레이
-//     // 배경 컬러를 차트 영역보다 약간 작게 적용
-//     if (chartArea) {
-//       const padding = {
-//         top: 12,
-//         bottom: 12,
-//         left: 12,
-//         right: 12,
-//       };
-//       ctx.fillRect(
-//         chartArea.left + padding.left,
-//         chartArea.top + padding.top,
-//         chartArea.right - chartArea.left - padding.left - padding.right,
-//         chartArea.bottom - chartArea.top - padding.top - padding.bottom
-//       );
-//     }
-//     ctx.restore();
-//   },
-// };
-// ChartJS.register(backgroundPlugin);
-
+// 바 차트의 색상/옵션 (주요 상태 관리)
 const BarChartColor = ({
   categorizedEsgDataList,
   selectedColors,
@@ -221,6 +199,7 @@ const BarChartColor = ({
   const [titlePosition, setTitlePosition] = useState<Position>("top");
   const [legendDisplay, setLegendDisplay] = useState<boolean>(true);
   const [legendPosition, setLegendPosition] = useState<Position>("top");
+  const [barRadius, setBarRadius] = useState<number>(8); // 기본 모서리 둥글기
 
   // 옵션 변경시 Chart.js 옵션 업데이트
   useEffect(() => {
@@ -243,11 +222,23 @@ const BarChartColor = ({
         position: legendPosition,
         labels: { font: { size: 12 }, padding: 15 },
       };
+      if (!newOptions.elements) newOptions.elements = {};
+      newOptions.elements.bar = {
+        ...newOptions.elements.bar,
+        borderRadius: barRadius,
+      };
       setOptions(newOptions);
     }
-  }, [titleText, titleDisplay, titlePosition, legendDisplay, legendPosition]);
+  }, [
+    titleText,
+    titleDisplay,
+    titlePosition,
+    legendDisplay,
+    legendPosition,
+    barRadius,
+  ]);
 
-  // 기존 옵션에서 상태 추출(컴포넌트 최초 진입)
+  // 최초 진입시 옵션을 상태로 세팅 (기존 옵션 복원)
   useEffect(() => {
     if (options?.plugins?.title) {
       const titleOptions = options.plugins.title;
@@ -266,7 +257,7 @@ const BarChartColor = ({
     }
   }, []);
 
-  // 색상 변경 로직
+  // 바 색상 변경 함수 (각 막대마다 개별 색상 적용)
   const handleColorChange = (index: number, color: Color) => {
     const updatedColors = [...selectedColors];
     updatedColors[index] = color;
@@ -283,7 +274,7 @@ const BarChartColor = ({
           newBackgroundColors[index] = color.toString("hex");
           return { ...dataset, backgroundColor: newBackgroundColors };
         }
-        // 만약 backgroundColor가 배열이 아니면 새로 생성
+        // 만약 backgroundColor가 배열이 아니면 label 갯수만큼 배열 생성
         return {
           ...dataset,
           backgroundColor: Array(newChartData.labels?.length || 0)
@@ -300,7 +291,7 @@ const BarChartColor = ({
     }
   };
 
-  // 선택 색상 동기화
+  // 차트 데이터가 바뀔 때마다 색상 동기화
   useEffect(() => {
     if (chartData?.datasets?.[0]?.backgroundColor) {
       const dataset = chartData.datasets[0];
@@ -323,7 +314,8 @@ const BarChartColor = ({
       variant="enclosed"
       size="sm"
     >
-      <Accordion.Item value="plugins" bg='white'>
+      {/* 차트 옵션 (타이틀/범례) */}
+      <Accordion.Item value="plugins" bg="white">
         <Accordion.ItemTrigger>
           <Span flex="1" fontWeight="medium" mb="1">
             차트 옵션
@@ -345,7 +337,9 @@ const BarChartColor = ({
           />
         </Accordion.ItemContent>
       </Accordion.Item>
-      <Accordion.Item value="chartcolor" bg='white'>
+
+      {/* 차트 색상 개별 지정 */}
+      <Accordion.Item value="chartcolor" bg="white">
         <Accordion.ItemTrigger>
           <Span flex="1" fontWeight="medium" mb="1">
             차트 색상
@@ -354,6 +348,7 @@ const BarChartColor = ({
         </Accordion.ItemTrigger>
         <Accordion.ItemContent marginBottom="2">
           <VStack gap={2} align="stretch">
+            {/* 각 막대별 색상 Picker */}
             {Array.isArray(chartData?.labels) &&
               chartData.labels.map((label, index) => (
                 <HStack key={`chart-color-${index}`}>
@@ -388,6 +383,53 @@ const BarChartColor = ({
                   <Text w="100%">{label as string}</Text>
                 </HStack>
               ))}
+          </VStack>
+        </Accordion.ItemContent>
+      </Accordion.Item>
+
+      {/* 차트 모서리 설정 */}
+      <Accordion.Item value="chartradius" bg="white">
+        <Accordion.ItemTrigger>
+          <Span flex="1" fontWeight="medium" mb="1">
+            차트 모서리
+          </Span>
+          <Accordion.ItemIndicator />
+        </Accordion.ItemTrigger>
+        <Accordion.ItemContent marginBottom="2">
+          <VStack gap={2} align="stretch">
+            <Slider.Root
+              aria-label={["bar radius slider"]}
+              min={0}
+              max={50}
+              step={1}
+              value={[barRadius]}
+              onValueChange={(v) => {
+                const num = Array.isArray(v.value) ? v.value[0] : v.value;
+                if (!isNaN(num)) setBarRadius(num);
+              }}
+              width="120px"
+            >
+              <Slider.Control>
+                <Slider.Track>
+                  <Slider.Range />
+                </Slider.Track>
+                <Slider.Thumbs />
+              </Slider.Control>
+            </Slider.Root>
+            <NumberInput.Root
+              size="sm"
+              min={0}
+              max={50}
+              value={barRadius.toString()}
+              onValueChange={(v) => {
+                const num = Number(v.value);
+                if (!isNaN(num)) setBarRadius(num);
+              }}
+              width="100px"
+            >
+              <NumberInput.Control />
+              <NumberInput.Input />
+            </NumberInput.Root>
           </VStack>
         </Accordion.ItemContent>
       </Accordion.Item>
