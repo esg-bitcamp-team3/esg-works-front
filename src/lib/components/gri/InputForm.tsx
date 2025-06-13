@@ -14,9 +14,10 @@ import { ToggleTip } from "@/components/ui/toggle-tip";
 import { LuInfo } from "react-icons/lu";
 import { useCallback, useEffect, useState } from "react";
 import { getDataByCorpYear } from "@/lib/api/get";
+import { CategoryESGData } from "@/lib/api/interfaces/gri";
 
 interface Props {
-  category: Category;
+  category: CategoryESGData;
   year: string;
   onFieldChange?: (
     categoryId: string,

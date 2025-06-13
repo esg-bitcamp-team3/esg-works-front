@@ -1,3 +1,4 @@
+import { Unit } from "@/lib/interface";
 import { ESGData } from "./esgData";
 
 export interface SectionCategoryESGData {
@@ -10,15 +11,10 @@ export interface SectionCategoryESGData {
 export interface CategoryESGData {
   categoryId: string;
   sectionId: string;
-  unitId: string;
+  unit: Unit;
   categoryName: string;
   description: string;
   esgData: ESGData;
 }
 
-export interface GriParam {
-  year: string;
-  sectionId?: string;
-  categoryName: string;
-}
 // Make sure ESGDataDTO is defined elsewhere in your codebase.
