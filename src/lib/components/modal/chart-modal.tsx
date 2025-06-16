@@ -18,13 +18,13 @@ import {
   Toast,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
+import { RiResetLeftFill } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
 import { ChartType } from "@/lib/api/interfaces/chart";
 import { getSections, getCategories, getEsgData } from "@/lib/api/get";
-import ChartContent from "./ChartContent";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 import PieChartContent from "./PieChartContent";
 import { ChartOptions } from "chart.js";
@@ -43,18 +43,23 @@ const chartType: ChartType[] = [
 
 export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
+
   const [step, setStep] = useState<1 | 2>(1);
-  const [charts, setCharts] = useState<ChartType[]>(chartType);
-  const [selectedTab, setSelectedTab] = useState<string | null>("chart");
+
+  const [selectedTab, setSelectedTab] = useState<string>("chart");
+
   const [sections, setSections] = useState<Section[]>([]);
+
   const [categories, setCategories] = useState<CategoryDetail[]>([]);
+  const [allCategories, setAllCategories] = useState<CategoryDetail[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
+
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
   >([]);
-
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const [pieChartOptions, setPieChartOptions] = useState<ChartOptions>({});
 
@@ -72,16 +77,36 @@ export default function ChartModal() {
     fetchSections();
   }, []);
 
-  // Fetch categories when selectedSectionId changes
+  // 최초 렌더링 시 전체 카테고리 가져오기
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      const all = await getCategories();
+      setAllCategories(all);
+    };
+    fetchAllCategories();
+  }, []);
+
+  // 섹션 목록 가져오기
+  useEffect(() => {
+    const fetchSections = async () => {
+      const secs = await getSections();
+      setSections(secs);
+    };
+    fetchSections();
+  }, []);
+
+  // 섹션 선택 시, 해당 섹션의 카테고리만 가져오기
   useEffect(() => {
     if (!selectedSectionId) return;
-    const fetchCategories = async () => {
-      const data = await getCategories(selectedSectionId);
-      console.log("카테고리 응답 데이터:", data);
-      setCategories(data);
+    const fetchSectionCategories = async () => {
+      const cats = await getCategories(selectedSectionId);
+      setCategories(cats);
     };
-    fetchCategories();
+    fetchSectionCategories();
   }, [selectedSectionId]);
+
+  // 표시할 카테고리 배열 분기
+  const displayedCategories = !selectedSectionId ? allCategories : categories;
 
   const gristandards = createListCollection({
     items: sections
@@ -198,7 +223,7 @@ export default function ChartModal() {
                   direction="column"
                   alignItems="center"
                   width="100%"
-                  gap="4"
+                  gap="6"
                 >
                   {/* 상단 검색 영역 */}
                   <Flex
@@ -222,6 +247,7 @@ export default function ChartModal() {
                             paddingLeft="2"
                             paddingRight="2"
                             placeholder="GRI Standards"
+                            fontSize={{ base: "sm", md: "md", lg: "md" }}
                           />
                         </Select.Trigger>
                         <Select.IndicatorGroup paddingRight="2">
@@ -240,7 +266,7 @@ export default function ChartModal() {
                                   "📌 선택된 섹션 ID:",
                                   gristandard.value
                                 );
-                                setSelectedSectionId(gristandard.value);
+                                setSelectedSectionId(gristandard.value || null);
                               }}
                               paddingLeft="2"
                               paddingRight="2"
@@ -256,10 +282,10 @@ export default function ChartModal() {
                         </Select.Content>
                       </Select.Positioner>
                     </Select.Root>
-
+                    {/* 검색 */}
                     <InputGroup
                       startElement={
-                        <Box pl="3" display="flex" alignItems="center">
+                        <Box paddingLeft="3" display="flex" alignItems="center">
                           <FaSearch />
                         </Box>
                       }
@@ -267,7 +293,13 @@ export default function ChartModal() {
                       width={{ base: "100%", md: "60%" }}
                       flex={{ base: "1", md: "2", lg: "3" }}
                     >
-                      <Input placeholder="검색" />
+                      <Input
+                        placeholder="검색"
+                        fontSize='md'
+                        w='100%'
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
                     </InputGroup>
                   </Flex>
 
@@ -280,13 +312,20 @@ export default function ChartModal() {
                     borderRadius="md"
                     borderWidth="1px"
                     width="100%"
-                    minHeight={{ base: "45vh", md: "35vh", lg: "40vh" }}
+                    minHeight={{ base: "45vh", md: "35vh", lg: "45vh" }}
                     maxHeight={{ base: "50vh", md: "40vh", lg: "45vh" }}
                     padding="4"
                     overflowY="auto"
                   >
-                    {categories
+                    {displayedCategories
                       .filter((category) => category.categoryName !== "비고")
+                      .filter(
+                        (category) =>
+                          !!category.categoryName &&
+                          category.categoryName
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase())
+                      )
                       .map((category) => (
                         <Box key={category.categoryId}>
                           <Checkbox.Root
@@ -321,91 +360,87 @@ export default function ChartModal() {
                         </Box>
                       ))}
                   </Box>
+
                   {/* 태그 영역 */}
                   <Flex
+                    direction="row"
                     width="full"
-                    minHeight={{ base: "50px", md: "25px", lg: "100px" }}
-                    maxHeight={{ base: "55px", md: "50px", lg: "100px" }}
-                    gapX="2"
-                    paddingX="2"
+                    padding="2"
+                    gapY="2"
+                    minHeight={{ base: "50px", md: "25px", lg: "70px" }}
+                    maxHeight={{ base: "55px", md: "50px", lg: "70px" }}
+                    justifyContent="start"
                     wrap="wrap"
                     overflowY="auto"
                     borderWidth="1px"
                     rounded="md"
                   >
+                    {/* <Flex justify="flex-start" mb="2" wrap="wrap" bg="blue"> */}
                     {selected &&
-                      selected.map((item, index) => (
-                        <Flex key={index} alignItems="center">
-                          <Text fontSize="sm" minWidth="fit-content">
-                            {item}
-                          </Text>
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            _hover={{ bg: "white" }}
-                            onClick={() => {
-                              setSelected((prev) =>
-                                prev.filter((i) => i !== item)
-                              );
-
-                              // Explicitly uncheck the checkbox using document query
-                              const checkboxes = document.querySelectorAll(
-                                'input[type="checkbox"]'
-                              ) as NodeListOf<HTMLInputElement>;
-                              checkboxes.forEach((checkbox) => {
-                                if (
-                                  checkbox.nextElementSibling
-                                    ?.nextElementSibling?.textContent === item
-                                ) {
-                                  checkbox.checked = false;
-                                }
-                              });
-                            }}
+                      selected.map((item, index) => {
+                        // Find category object in displayedCategories
+                        const categoryObj = displayedCategories.find(
+                          (cat) => cat.categoryId === item
+                        );
+                        const displayName = categoryObj?.categoryName || item;
+                        return (
+                          <Flex
+                            key={index}
+                            alignItems="center"
+                            height="fit-content"
                           >
-                            ✕
-                          </Button>
-                        </Flex>
-                      ))}
+                            <Text fontSize="sm" minWidth="fit-content">
+                              {displayName}
+                            </Text>
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              height="100%"
+                              _hover={{ bg: "white" }}
+                              onClick={() => {
+                                setSelected((prev) =>
+                                  prev.filter((i) => i !== item)
+                                );
+
+                                // Explicitly uncheck the checkbox using document query
+                                const checkboxes = document.querySelectorAll(
+                                  'input[type="checkbox"]'
+                                ) as NodeListOf<HTMLInputElement>;
+                                checkboxes.forEach((checkbox) => {
+                                  if (
+                                    checkbox.nextElementSibling
+                                      ?.nextElementSibling?.textContent === item
+                                  ) {
+                                    checkbox.checked = false;
+                                  }
+                                });
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </Flex>
+                        );
+                      })}
                   </Flex>
+                  {/* </Flex> */}
                 </Flex>
               )}
 
               {/* 다음 페이지 (차트 & 테이블) ======================================================================================= */}
               {step === 2 && (
                 <Flex direction="column" height="100%" width="100%">
-                  <Tabs.Root
-                    variant="outline"
-                    size="lg"
-                    defaultValue={selectedTab}
-                    onValueChange={(e) => setSelectedTab(e.value)}
-                    display="flex"
-                    flexDirection="column"
-                  >
-                    <Tabs.List flexShrink={0}>
-                      <Tabs.Trigger
-                        value="chart"
-                        key="chart"
-                        // paddingLeft="5"
-                        // paddingRight="5"
+                  <Tabs.Root value={selectedTab}>
+                    <TabContent value="chart">
+                      <ContentBox
+                        loading={dataLoading}
+                        button={
+                          <MoveToTableButton
+                            selectedTab={selectedTab}
+                            setSelectedTab={setSelectedTab}
+                          />
+                        }
                       >
-                        <Icon as={FaChartPie} style={{ marginRight: 4 }} />
-                        {"차트"}
-                      </Tabs.Trigger>
-                      <Tabs.Trigger
-                        value="table"
-                        key="table"
-                        paddingLeft="5"
-                        paddingRight="5"
-                      >
-                        <Icon as={FaTable} style={{ marginRight: 4 }} />
-
-                        {"테이블"}
-                      </Tabs.Trigger>
-                    </Tabs.List>
-
-                    <Tabs.ContentGroup>
-                      <Tabs.Content value="chart">
-                        <PieChartContent
+                        <ChartContent
                           categorizedEsgDataList={categorizedEsgDataList}
                           charts={charts}
                           pieOptions={pieChartOptions}
@@ -441,7 +476,12 @@ export default function ChartModal() {
 
             {/* 생성 버튼 ==================================================== */}
             <Dialog.Footer>
-              <Flex justifyContent="flex-end" width="100%" gap="3">
+              <Flex
+                justifyContent="flex-end"
+                width="100%"
+                height="100%"
+                gap="3"
+              >
                 {step === 2 && (
                   <Button
                     variant="outline"
@@ -449,6 +489,22 @@ export default function ChartModal() {
                     onClick={() => setStep(1)}
                   >
                     이전
+                  </Button>
+                )}
+                {step === 1 && (
+                  <Button
+                    size="xs"
+                    padding="2"
+                    height="full"
+                    justifyContent="center"
+                    alignItems="center"
+                    colorScheme="gray"
+                    variant="ghost"
+                    color="#2F6EEA"
+                    onClick={() => setSelected([])}
+                    _hover={{ bg: "white" }}
+                  >
+                    <RiResetLeftFill /> 초기화
                   </Button>
                 )}
                 <Button

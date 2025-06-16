@@ -46,6 +46,7 @@ import ChartColor from "./chartColor";
 import { get } from "http";
 import PieChartColor from "./PieChartColor";
 import { display } from "html2canvas/dist/types/css/property-descriptors/display";
+import MixedChartColor from "./MixedChartColor";
 
 ChartJS.register(
   LinearScale,
@@ -67,21 +68,22 @@ export interface ChartContentProps {
     label: string;
     icons: React.ElementType;
   }[];
-  pieOptions: ChartOptions;
-  setPieOptions: (opt: ChartOptions) => void;
 }
 
-const PieChartContent = ({
+const MixedChartContent = ({
   categorizedEsgDataList,
   charts,
-  pieOptions,
-  setPieOptions,
 }: ChartContentProps) => {
   const [chartData, setChartData] = useState<ChartData>();
   const [selectedChartType, setSelectedChartType] =
     useState<ChartType["type"]>("bar");
-  const [selectedColors, setSelectedColors] = useState<Color[]>([]);
+  const [options, setOptions] = useState<ChartOptions>({});
   const [loading, setLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const onChartTypeChange = () => {
+    setRefreshKey((prevKey) => prevKey + 1); // Increment key to force re-render
+  };
 
   const getChartOptions = (): ChartOptions<
     "bar" | "line" | "pie" | "doughnut"
@@ -181,19 +183,12 @@ const PieChartContent = ({
             const category = categorizedEsgDataList[0];
 
             const backgroundColors = category.esgNumberDTOList.map((_, idx) => {
-              if (selectedColors[idx]) {
-                return selectedColors[idx].toString("rgba");
-              } else {
-                // Generate random color and update selectedColors
-                const hex = Math.floor(Math.random() * 16777215)
-                  .toString(16)
-                  .padStart(6, "0");
-                const randomColor = parseColor(`#${hex}`);
-                const newSelectedColors = [...selectedColors];
-                newSelectedColors[idx] = randomColor;
-                setSelectedColors(newSelectedColors);
-                return randomColor.toString("rgba");
-              }
+              // Generate random color and update selectedColors
+              const hex = Math.floor(Math.random() * 16777215)
+                .toString(16)
+                .padStart(6, "0");
+              const randomColor = parseColor(`#${hex}`);
+              return randomColor.toString("rgba");
             });
 
             newChartData = {
@@ -220,19 +215,11 @@ const PieChartContent = ({
 
             // Generate background colors based on selectedColors or random fallback
             const backgroundColors = categorizedEsgDataList.map((_, idx) => {
-              if (selectedColors[idx]) {
-                return selectedColors[idx].toString("rgba");
-              } else {
-                // Generate random color and update selectedColors
-                const hex = Math.floor(Math.random() * 16777215)
-                  .toString(16)
-                  .padStart(6, "0");
-                const randomColor = parseColor(`#${hex}`);
-                const newSelectedColors = [...selectedColors];
-                newSelectedColors[idx] = randomColor;
-                setSelectedColors(newSelectedColors);
-                return randomColor.toString("rgba");
-              }
+              const hex = Math.floor(Math.random() * 16777215)
+                .toString(16)
+                .padStart(6, "0");
+              const randomColor = parseColor(`#${hex}`);
+              return randomColor.toString("rgba");
             });
 
             newChartData = {
@@ -264,9 +251,9 @@ const PieChartContent = ({
           newChartData = {
             labels: years.map((year) => year.toString()),
             datasets: categorizedEsgDataList.map((category, idx) => {
-              const color =
-                selectedColors[idx]?.toString("rgba") ||
-                `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+              const color = `#${Math.floor(Math.random() * 16777215).toString(
+                16
+              )}`;
 
               return {
                 // Alternate between bar and line based on index
@@ -294,9 +281,9 @@ const PieChartContent = ({
           newChartData = {
             labels: years.map((year) => year.toString()),
             datasets: categorizedEsgDataList.map((category, idx) => {
-              const color =
-                selectedColors[idx]?.toString("rgba") ||
-                `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+              const color = `#${Math.floor(Math.random() * 16777215).toString(
+                16
+              )}`;
 
               return {
                 type: selectedChartType,
@@ -320,26 +307,51 @@ const PieChartContent = ({
       }
 
       setChartData(newChartData as ChartData);
-      console.log("Chart data updated:", newChartData);
-      console.log("CategorizedESGDataList:", categorizedEsgDataList);
     }
-  }, [categorizedEsgDataList, selectedChartType, selectedColors]);
+  }, [categorizedEsgDataList, selectedChartType]);
 
   const handleChartTypeChange = (type: ChartType["type"]) => {
     setLoading(true); // Start loading when chart type changes
     setSelectedChartType(type);
-    setSelectedColors([]); // Reset selected colors when chart type changes
   };
 
   useEffect(() => {
     console.log("Selected chart type:", selectedChartType);
+    // If a chart type is selected, update the options
     if (selectedChartType) {
-      setLoading(true);
-      requestAnimationFrame(() => {
+      setLoading(true); // Ensure loading is true when options are being set
+      try {
+        let option: ChartOptions = getChartOptions();
+        console.log("Chart options before update:", option);
+        setOptions(option);
+      } catch (error) {
+        console.error("Error setting chart options:", error);
+        setOptions({}); // Reset options in case of error
+      } finally {
+        // Turn off loading after options are set
         setLoading(false);
-      });
+      }
     }
-  }, [selectedChartType, setPieOptions]);
+  }, [selectedChartType]);
+
+  useEffect(() => {
+    // Log the chart data and options whenever they change
+    console.log("Chart data:", chartData);
+    console.log("Chart options:", options);
+  }, [chartData, options]);
+
+  const handleChartDataChange = (
+    newChartData: ChartData<"bar" | "line" | "pie" | "doughnut">
+  ) => {
+    setLoading(true); // Start loading when chart data changes
+    try {
+      setChartData(newChartData);
+    } catch (error) {
+      console.error("Error updating chart data:", error);
+    } finally {
+      setLoading(false); // Stop loading after chart data is set
+    }
+  };
 
   return (
     <Flex
@@ -420,9 +432,10 @@ const PieChartContent = ({
               justifyItems="center"
             >
               <Chart
+                key={refreshKey} // Use key to force re-render when chart type changes
                 type={selectedChartType === "mixed" ? "bar" : selectedChartType}
                 data={chartData}
-                options={pieOptions}
+                options={options}
               />
             </Box>
           )}
@@ -430,33 +443,63 @@ const PieChartContent = ({
         <Box
           flex="2"
           outline={"1px solid #E2E8F0"}
-          overflow={"auto"}
-          minH={"100%"}
-          maxH={"100%"}
+          overflowY={"auto"}
+          maxHeight="300px"
+          height={"100%"}
           padding={3}
         >
+          {/* <Text fontSize="lg" fontWeight="bold" color="#2F6EEA">
+            선택된 지표:
+          </Text> */}
+          {/* 색상과 배경색 설정을 위한 사용자 정의 컴포넌트 */}
+          {/* <Flex gap='2' w='100%'>
+             {[
+          { type: "bar", icon: FcBarChart },
+          { type: "line", icon: FcLineChart },
+          { type: "pie", icon: FcPieChart },
+          { type: "doughnut", icon: FcDoughnutChart },
+          { type: "mixed", icon: FcComboChart },
+        ].map(({ type, icon }) => (
+          <Button
+            key={type}
+            onClick={() =>
+              setSelectedChartType(type as typeof selectedChartType)
+            }
+            variant="outline"
+            colorScheme="blue"
+            // width="full"
+            textAlign="left"
+            justifyContent="flex-start"
+            p={3}
+          >
+            <Icon as={icon} /> 
+          </Button>
+        ))}
+          </Flex> */}
           {loading ? (
             <Text fontSize="sm" color="gray.500">
               차트 색상을 불러오는 중입니다...
             </Text>
-          ) : selectedChartType === "pie" ||
-            selectedChartType === "doughnut" ? (
-            <PieChartColor
+          ) : selectedChartType === "mixed" ? (
+            <MixedChartColor
               chartData={
-                (chartData as ChartData<"pie" | "doughnut">) || {
+                (chartData as ChartData<"bar" | "line">) || {
                   labels: [],
                   datasets: [],
                 }
               }
               setChartData={
-                setChartData as (data: ChartData<"pie" | "doughnut">) => void
-              }
-              options={options as ChartOptions<"pie" | "doughnut">}
-              setOptions={
-                setOptions as (
-                  chartOptions: ChartOptions<"pie" | "doughnut">
+                handleChartDataChange as (
+                  data: ChartData<"bar" | "line">
                 ) => void
               }
+              options={options as ChartOptions<"bar" | "line">}
+              setOptions={
+                setOptions as (
+                  chartOptions: ChartOptions<"bar" | "line">
+                ) => void
+              }
+              onChartTypeChange={onChartTypeChange}
             />
           ) : null}
         </Box>
@@ -465,4 +508,4 @@ const PieChartContent = ({
   );
 };
 
-export default PieChartContent;
+export default MixedChartContent;

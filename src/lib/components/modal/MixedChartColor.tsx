@@ -1,24 +1,11 @@
 import {
   Box,
-  Button,
-  CloseButton,
   ColorPicker,
-  Drawer,
   HStack,
   parseColor,
-  Portal,
   Text,
   VStack,
-  Flex,
   Color,
-  Slider,
-  NumberInput,
-  InputGroup,
-  Input,
-  Checkbox,
-  createListCollection,
-  Select,
-  Separator,
 } from "@chakra-ui/react";
 import {
   Chart as ChartJS,
@@ -34,23 +21,22 @@ import {
   ChartData,
   ChartOptions,
 } from "chart.js";
-import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 import { Accordion, Span } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { on } from "events";
-import { set } from "lodash";
 import {
   AlignType,
   AnchorType,
+  BarStyleOptions,
+  BorderStyleOptions,
   ChartPlugins,
-  CutoutSlider,
   DataLabelPlugin,
+  FillToggle,
   FormatType,
   LegendPosition,
-  OffsetSlider,
+  PointStyleOptions,
+  PointStyleType,
   Position,
-  RadiusSlider,
-  RotateSlider,
+  TypeSelector,
 } from "./StyleOptionSelectors";
 
 const backgroundPlugin = {
@@ -81,22 +67,21 @@ const backgroundPlugin = {
 ChartJS.register(backgroundPlugin);
 
 interface ChartSettingsDrawerProps {
-  chartData: ChartData<"pie" | "doughnut">;
-  setChartData: (data: ChartData<"pie" | "doughnut">) => void;
-  options: ChartOptions<"pie" | "doughnut">;
-  setOptions: (chartOptions: ChartOptions<"pie" | "doughnut">) => void;
+  chartData: ChartData<"line" | "bar">;
+  setChartData: (data: ChartData<"line" | "bar">) => void;
+  options: ChartOptions<"line" | "bar">;
+  setOptions: (chartOptions: ChartOptions<"line" | "bar">) => void;
+  onChartTypeChange?: () => void;
 }
 
-const PieChartColor = ({
+const MixedChartColor = ({
   chartData,
   setChartData,
   options,
   setOptions,
+  onChartTypeChange,
 }: ChartSettingsDrawerProps) => {
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
-  const [cutout, setCutout] = useState<number>(0);
-  const [rotation, setRotation] = useState<number>(0);
-  const [radius, setRadius] = useState<number>(100);
   const [titleText, setTitleText] = useState<string>("");
   const [titleDisplay, setTitleDisplay] = useState<boolean>(true);
   const [titlePosition, setTitlePosition] = useState<Position>("top");
@@ -113,18 +98,85 @@ const PieChartColor = ({
   const [dataLabelPostfix, setDataLabelPostfix] = useState<string>("");
   const [dataLabelDecimals, setDataLabelDecimals] = useState<number>(2);
   const [dataLabelDigits, setDataLabelDigits] = useState<number>(0);
+  const [types, setTypes] = useState<("bar" | "line")[]>([]);
+  const [borderColors, setBorderColors] = useState<Color[]>([]);
+  const [borderWidth, setBorderWidth] = useState<number>(1);
+  const [borderDash, setBorderDash] = useState<number[]>([]);
+  const [tension, setTension] = useState<number>(0.4);
+  const [pointBackgroundColor, setPointBackgroundColor] = useState<Color>(
+    parseColor("#2F6EEA")
+  );
+  const [pointBorderColor, setPointBorderColor] = useState<Color>(
+    parseColor("#000000")
+  );
+  const [pointRadius, setPointRadius] = useState<number>(3);
+  const [pointStyle, setPointStyle] = useState<PointStyleType>("circle");
+
+  const [barThickness, setBarThickness] = useState<number>(50); // 기본 막대 두께
+  const [barPercentage, setBarPercentage] = useState<number>(0.9);
+
+  const [fill, setFill] = useState<boolean>(false);
 
   useEffect(() => {
-    if (chartData?.datasets?.[0]?.backgroundColor) {
-      const dataset = chartData.datasets[0];
-      const colors = Array.isArray(dataset.backgroundColor)
-        ? dataset.backgroundColor.map((color) =>
-            typeof color === "string"
-              ? parseColor(color)
-              : parseColor("#2F6EEA")
-          )
-        : [];
-      setSelectedColors(colors);
+    // Initialize selectedColors from all datasets
+    if (chartData?.datasets?.length > 0) {
+      const newSelectedColors: Color[] = [];
+
+      chartData.datasets.forEach((dataset) => {
+        let colorStr;
+
+        // Extract color value from dataset
+        if (dataset.backgroundColor) {
+          if (typeof dataset.backgroundColor === "object") {
+            colorStr =
+              (dataset.backgroundColor as any)[0]?.toString() || "#000000";
+          } else {
+            colorStr = dataset.backgroundColor.toString();
+          }
+        } else {
+          colorStr = `#${Math.floor(Math.random() * 16777215)
+            .toString(16)
+            .padStart(6, "0")}`;
+        }
+
+        // Validate and fix hex color format
+        if (colorStr.startsWith("#")) {
+          // Remove # for processing
+          const hex = colorStr.substring(1);
+
+          // Check if it's a valid 6-digit hex
+          if (!/^[0-9A-F]{6}$/i.test(hex)) {
+            // Fix invalid hex by padding or truncating
+            const validHex = hex.padEnd(6, "0").substring(0, 6);
+            colorStr = `#${validHex}`;
+          }
+        } else {
+          // Not a hex color, use fallback
+          colorStr = "#000000";
+        }
+
+        // Now parse the validated color
+        const color = parseColor(colorStr);
+        newSelectedColors.push(color);
+      });
+
+      setSelectedColors(newSelectedColors);
+
+      setBorderColors(
+        newSelectedColors.map((color) => parseColor(color.toString("rgba")))
+      );
+
+      setPointBackgroundColor(newSelectedColors[0]);
+      setPointBorderColor(newSelectedColors[0]);
+      setPointStyle("circle");
+    }
+
+    // Initialize types array from datasets
+    if (chartData?.datasets?.length > 0) {
+      const newTypes = chartData.datasets.map(
+        (dataset) => (dataset.type as "bar" | "line") || "bar"
+      );
+      setTypes(newTypes);
     }
 
     if (
@@ -291,65 +343,7 @@ const PieChartColor = ({
         setLegendPosition(legendOptions.position as Position);
       }
     }
-    // Initialize cutout value from options
-    if (options?.cutout !== undefined) {
-      const cutoutValue =
-        typeof options.cutout === "string"
-          ? parseInt(options.cutout)
-          : typeof options.cutout === "function"
-          ? 0 // Default value for function case
-          : (options.cutout as number);
-      console.log("cutoutValue", cutoutValue);
-      setCutout(cutoutValue || 0);
-    }
-
-    // Initialize rotation value from options
-    if (options?.rotation !== undefined) {
-      // Convert radians to degrees (Chart.js uses radians)
-      const rotationDegrees = options.rotation;
-      setRotation(rotationDegrees || 0);
-    }
-
-    // Initialize radius from options
-    if (options?.radius !== undefined) {
-      setRadius((options.radius as number) || 100);
-    }
   }, []);
-
-  const handleOffsetChange = (index: number, value: number) => {
-    const newOffset = [...offset];
-    newOffset[index] = value;
-    setOffset(newOffset);
-
-    // Update the chart data to apply offsets
-    if (chartData && chartData.datasets && chartData.datasets.length > 0) {
-      // Create a deep copy of the chart data
-      const newChartData = { ...chartData };
-      newChartData.datasets = [...chartData.datasets];
-
-      // Clone the dataset we want to modify
-      const newDataset = { ...newChartData.datasets[0] };
-
-      // Create or update the offset property
-      if (!newDataset.offset) {
-        newDataset.offset = newOffset;
-      } else {
-        // If offset already exists, update it
-        const currentOffset = Array.isArray(newDataset.offset)
-          ? [...newDataset.offset]
-          : Array(chartData.labels?.length || 0).fill(0);
-
-        currentOffset[index] = value;
-        newDataset.offset = currentOffset;
-      }
-
-      // Update the dataset in the chartData
-      newChartData.datasets[0] = newDataset;
-
-      // Set the updated chart data
-      setChartData(newChartData);
-    }
-  };
 
   const handleColorChange = (index: number, color: Color) => {
     const updatedColors = [...selectedColors];
@@ -363,43 +357,11 @@ const PieChartColor = ({
       newChartData.datasets = [...chartData.datasets];
 
       // Clone the dataset we want to modify
-      const newDataset = { ...newChartData.datasets[0] };
+      const newDataset = { ...newChartData.datasets[index] };
 
-      // Update backgroundColor
-      if (Array.isArray(newDataset.backgroundColor)) {
-        const newBackgroundColors = [...newDataset.backgroundColor];
-        newBackgroundColors[index] = color.toString("rgba");
-        newDataset.backgroundColor = newBackgroundColors;
-      } else {
-        // If backgroundColor is not an array, make it one
-        newDataset.backgroundColor = Array(chartData.labels?.length || 0)
-          .fill(0)
-          .map((_, i) =>
-            i === index
-              ? color.toString("rgba")
-              : selectedColors[i]?.toString("rgba") || "#2F6EEA"
-          );
-      }
+      newDataset.backgroundColor = color.toString("rgba");
 
-      // Update borderColor if it exists
-      if (newDataset.borderColor) {
-        if (Array.isArray(newDataset.borderColor)) {
-          const newBorderColors = [...newDataset.borderColor];
-          newBorderColors[index] = color.toString("rgba");
-          newDataset.borderColor = newBorderColors;
-        } else {
-          newDataset.borderColor = Array(chartData.labels?.length || 0)
-            .fill(0)
-            .map((_, i) =>
-              i === index
-                ? color.toString("rgba")
-                : selectedColors[i]?.toString("rgba") || "#2F6EEA"
-            );
-        }
-      }
-
-      // Update the dataset in the chartData
-      newChartData.datasets[0] = newDataset;
+      newChartData.datasets[index] = newDataset;
 
       // Set the updated chart data
       setChartData(newChartData);
@@ -460,6 +422,100 @@ const PieChartColor = ({
 
     // Apply the updated options
     setOptions(newOptions);
+  };
+
+  const handleBorderOptionsChange = (
+    updates: Partial<{
+      borderColors: Color[];
+      borderWidth: number;
+      borderDash: number[];
+      tension: number;
+    }>
+  ) => {
+    if (chartData && chartData.datasets && chartData.datasets.length > 0) {
+      // Create a deep copy of the chart data to avoid reference issues
+      const newChartData = { ...chartData };
+      newChartData.datasets = [...chartData.datasets].map((dataset, idx) => ({
+        ...dataset,
+      }));
+
+      // Update all datasets with the border options
+      newChartData.datasets.forEach((dataset, idx) => {
+        // Update borderColors if provided
+        if (dataset.type === "line") {
+          if (updates.borderColors) {
+            dataset.borderColor =
+              updates.borderColors[idx]?.toString("rgba") ||
+              dataset.borderColor;
+          }
+
+          // Update borderWidth if provided
+          if (updates.borderWidth !== undefined) {
+            dataset.borderWidth = updates.borderWidth;
+          }
+
+          // Update borderDash if provided
+          if (updates.borderDash !== undefined) {
+            dataset.borderDash = updates.borderDash;
+          }
+
+          // Update tension if provided (for line charts)
+          if (updates.tension !== undefined && dataset.type === "line") {
+            dataset.tension = updates.tension;
+          }
+        }
+      });
+
+      // Set the updated chart data
+      setChartData(newChartData);
+    }
+  };
+
+  const handlePointOptionsChange = (
+    updates: Partial<{
+      pointBackgroundColor: Color;
+      pointBorderColor: Color;
+      pointRadius: number;
+      pointStyle: PointStyleType;
+    }>
+  ) => {
+    if (chartData && chartData.datasets && chartData.datasets.length > 0) {
+      // Create a deep copy of the chart data to avoid reference issues
+      const newChartData = { ...chartData };
+      newChartData.datasets = [...chartData.datasets].map((dataset, idx) => ({
+        ...dataset,
+      }));
+
+      // Update all datasets with the point options
+      newChartData.datasets.forEach((dataset, idx) => {
+        // Update pointBackgroundColor if provided
+        if (dataset.type === "line") {
+          if (updates.pointBackgroundColor) {
+            dataset.pointBackgroundColor =
+              updates.pointBackgroundColor.toString("rgba");
+          }
+
+          // Update pointBorderColor if provided
+          if (updates.pointBorderColor) {
+            dataset.pointBorderColor =
+              updates.pointBorderColor.toString("rgba");
+          }
+
+          // Update pointRadius if provided
+          if (updates.pointRadius !== undefined) {
+            dataset.pointRadius = updates.pointRadius;
+          }
+
+          // Update pointStyle if provided
+          if (updates.pointStyle !== undefined) {
+            dataset.pointStyle = updates.pointStyle;
+          }
+        }
+      });
+
+      // Set the updated chart data
+      setChartData(newChartData);
+    }
   };
 
   const handleDataLabelOptionsChange = (
@@ -567,28 +623,67 @@ const PieChartColor = ({
     setOptions(newOptions);
   };
 
-  const handleCutoutChange = (value: number) => {
-    setCutout(value);
-    const newOptions = { ...options };
-    newOptions.cutout = `${value}%`;
-    setOptions(newOptions);
+  const handleTypeChange = (index: number, type: "bar" | "line") => {
+    const newChartData = { ...chartData };
+    newChartData.datasets[index].type = type;
+    setTypes((prevTypes) => {
+      const newTypes = [...prevTypes];
+      newTypes[index] = type;
+      return newTypes;
+    });
+    setChartData(newChartData);
+    onChartTypeChange?.();
   };
 
-  // Update radius slider to directly modify chart options
-  const handleRadiusChange = (value: number) => {
-    setRadius(value);
-    const newOptions = { ...options };
-    newOptions.radius = value;
-    setOptions(newOptions);
+  const handleBarChange = (
+    updates: Partial<{
+      barThickness: number;
+      barPercentage: number;
+    }>
+  ) => {
+    if (chartData && chartData.datasets && chartData.datasets.length > 0) {
+      // Create a deep copy of the chart data to avoid reference issues
+      const newChartData = { ...chartData };
+      newChartData.datasets = [...chartData.datasets].map((dataset, idx) => ({
+        ...dataset,
+      }));
+
+      // Update all datasets with the border options
+      newChartData.datasets.forEach((dataset, idx) => {
+        // Update borderColors if provided
+        if (dataset.type === "bar") {
+          if (updates.barThickness) {
+            dataset.barThickness = updates.barThickness;
+          }
+
+          // Update barPercentage if provided
+          if (updates.barPercentage !== undefined) {
+            dataset.barPercentage = updates.barPercentage;
+          }
+        }
+      });
+
+      // Set the updated chart data
+      setChartData(newChartData);
+    }
   };
 
-  // Update rotation slider to directly modify chart options
-  const handleRotateChange = (value: number) => {
-    setRotation(value);
-    const newOptions = { ...options };
-    newOptions.rotation = value;
-    setOptions(newOptions);
-  };
+  function handleFillChange(value: boolean): void {
+    setFill(value);
+    const fallbackColor = "rgba(75, 192, 192, 0.3)";
+
+    const newChartData = {
+      ...chartData,
+      datasets: chartData.datasets.map((dataset) => {
+        return {
+          ...dataset,
+          fill: value,
+        };
+      }),
+    };
+
+    setChartData(newChartData);
+  }
 
   return (
     <Accordion.Root
@@ -597,6 +692,7 @@ const PieChartColor = ({
       defaultValue={["a"]}
       variant="enclosed"
       size="sm"
+      overflow={"auto"}
       bg="white"
     >
       <Accordion.Item value="plugins">
@@ -657,6 +753,30 @@ const PieChartColor = ({
           />
         </Accordion.ItemContent>
       </Accordion.Item>
+      <Accordion.Item value="chart-type">
+        <Accordion.ItemTrigger>
+          <Span flex="1" fontSize="sm" fontWeight="medium">
+            차트 유형
+          </Span>
+
+          <Accordion.ItemIndicator />
+        </Accordion.ItemTrigger>
+        <Accordion.ItemContent pb={3}>
+          <VStack gap={2} align="stretch">
+            {chartData.datasets?.map((dataset, index) => (
+              <HStack key={`chart-type-${index}`}>
+                <Text w="100%">{dataset.label as string}</Text>
+                <TypeSelector
+                  type={dataset.type || "bar"}
+                  setType={(type) => {
+                    handleTypeChange(index, type);
+                  }}
+                />
+              </HStack>
+            ))}
+          </VStack>
+        </Accordion.ItemContent>
+      </Accordion.Item>
       <Accordion.Item value="chart">
         <Accordion.ItemTrigger>
           <Span flex="1" fontSize="sm" fontWeight="medium">
@@ -666,8 +786,9 @@ const PieChartColor = ({
           <Accordion.ItemIndicator />
         </Accordion.ItemTrigger>
         <Accordion.ItemContent pb={3}>
+          <FillToggle fill={fill} setFill={handleFillChange} />
           <VStack gap={2} align="stretch">
-            {chartData.labels?.map((label, index) => (
+            {chartData.datasets?.map((dataset, index) => (
               <HStack key={`chart-color-${index}`}>
                 <ColorPicker.Root
                   size="xs"
@@ -691,61 +812,72 @@ const PieChartColor = ({
                     </ColorPicker.Content>
                   </ColorPicker.Positioner>
                 </ColorPicker.Root>
-                <Text w="100%">{label as string}</Text>
+                <Text w="100%">{dataset.label as string}</Text>
               </HStack>
             ))}
           </VStack>
         </Accordion.ItemContent>
       </Accordion.Item>
-      <Accordion.Item value="cutout">
+      <Accordion.Item value="border-options">
         <Accordion.ItemTrigger>
-          <Span flex="1" fontWeight="medium">
-            내부 반경
+          <Span flex="1" fontSize="sm" fontWeight="medium">
+            테두리 옵션
           </Span>
 
           <Accordion.ItemIndicator />
         </Accordion.ItemTrigger>
         <Accordion.ItemContent pb={3}>
-          <CutoutSlider cutout={cutout} setCutout={handleCutoutChange} />
-        </Accordion.ItemContent>
-      </Accordion.Item>
-      <Accordion.Item value="radius">
-        <Accordion.ItemTrigger>
-          <Span flex="1" fontWeight="medium">
-            반경
-          </Span>
-
-          <Accordion.ItemIndicator />
-        </Accordion.ItemTrigger>
-        <Accordion.ItemContent pb={3}>
-          <RadiusSlider radius={radius} setRadius={handleRadiusChange} />
-        </Accordion.ItemContent>
-      </Accordion.Item>
-      <Accordion.Item value="rotate">
-        <Accordion.ItemTrigger>
-          <Span flex="1" fontWeight="medium">
-            회전
-          </Span>
-
-          <Accordion.ItemIndicator />
-        </Accordion.ItemTrigger>
-        <Accordion.ItemContent pb={3}>
-          <RotateSlider rotation={rotation} setRotation={handleRotateChange} />
-        </Accordion.ItemContent>
-      </Accordion.Item>
-      <Accordion.Item value="offset">
-        <Accordion.ItemTrigger>
-          <Span flex="1" fontWeight="medium">
-            오프셋
-          </Span>
-
-          <Accordion.ItemIndicator />
-        </Accordion.ItemTrigger>
-        <Accordion.ItemContent pb={3}>
-          <OffsetSlider
+          <BorderStyleOptions
+            borderColors={borderColors}
+            setBorderColors={setBorderColors}
+            borderWidth={borderWidth}
+            setBorderWidth={setBorderWidth}
+            borderDash={borderDash}
+            setBorderDash={setBorderDash}
+            tension={tension}
+            setTension={setTension}
             chartData={chartData}
-            offset={offset}
-            onOffsetChange={handleOffsetChange}
+            onOptionsChange={handleBorderOptionsChange}
+          />
+        </Accordion.ItemContent>
+      </Accordion.Item>
+      <Accordion.Item value="point-options">
+        <Accordion.ItemTrigger>
+          <Span flex="1" fontSize="sm" fontWeight="medium">
+            포인트 옵션
+          </Span>
+
+          <Accordion.ItemIndicator />
+        </Accordion.ItemTrigger>
+        <Accordion.ItemContent pb={3}>
+          <PointStyleOptions
+            pointBackgroundColor={pointBackgroundColor}
+            setPointBackgroundColor={setPointBackgroundColor}
+            pointBorderColor={pointBorderColor}
+            setPointBorderColor={setPointBorderColor}
+            pointRadius={pointRadius}
+            setPointRadius={setPointRadius}
+            pointStyle={pointStyle}
+            setPointStyle={setPointStyle}
+            chartData={chartData}
+            onPointOptionsChange={handlePointOptionsChange}
+          />
+        </Accordion.ItemContent>
+      </Accordion.Item>
+      <Accordion.Item value="barstyle" bg="white">
+        <Accordion.ItemTrigger>
+          <Span flex="1" fontWeight="medium">
+            막대 스타일 설정
+          </Span>
+          <Accordion.ItemIndicator />
+        </Accordion.ItemTrigger>
+        <Accordion.ItemContent pb={3}>
+          <BarStyleOptions
+            barThickness={barThickness}
+            setBarThickness={setBarThickness}
+            barPercentage={barPercentage}
+            setBarPercentage={setBarPercentage}
+            onOptionsChange={handleBarChange}
           />
         </Accordion.ItemContent>
       </Accordion.Item>
@@ -753,4 +885,4 @@ const PieChartColor = ({
   );
 };
 
-export default PieChartColor;
+export default MixedChartColor;
