@@ -45,11 +45,11 @@ export const getSections = async () => {
 
 export const getCategories = async (sectionId?: string) => {
   try {
-    if(sectionId){
-    const res = await apiClient.get<CategoryDetail[]>(
-      `/categories/by-section/${sectionId}`
-    );
-    return res.data;
+    if (sectionId) {
+      const res = await apiClient.get<CategoryDetail[]>(
+        `/categories/by-section/${sectionId}`
+      );
+      return res.data;
     } else {
       const res = await apiClient.get<CategoryDetail[]>(`/categories`);
       return res.data;

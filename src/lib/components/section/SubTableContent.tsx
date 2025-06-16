@@ -1,10 +1,10 @@
 import { Box, Table, VStack } from "@chakra-ui/react";
-import ContentDetail from "./ContentDetail";
 import subCategory from "@/lib/data/gri";
 import { Category } from "@/lib/interface";
 import { useEffect, useState } from "react";
 import { getCategories } from "@/lib/api/get";
 import { CategoryDetail } from "@/lib/api/interfaces/categoryDetail";
+import SubContentDetail from "./SubContentDetail";
 
 type SubCategoryKey = keyof typeof subCategory;
 
@@ -13,7 +13,7 @@ interface Props {
   year: string;
 }
 
-const TableContent = ({ no, year }: Props) => {
+const SubTableContent = ({ no, year }: Props) => {
   const categoryNo = no as SubCategoryKey;
   const [categoryList, setCategoryList] = useState<CategoryDetail[]>([]);
   useEffect(() => {
@@ -47,7 +47,7 @@ const TableContent = ({ no, year }: Props) => {
             justifyContent="center"
             textAlign="center"
           >
-            <ContentDetail
+            <SubContentDetail
               row={value}
               categoriesList={categoryList.filter((category) =>
                 category.categoryId.startsWith(no + key)
@@ -61,4 +61,4 @@ const TableContent = ({ no, year }: Props) => {
   );
 };
 
-export default TableContent;
+export default SubTableContent;

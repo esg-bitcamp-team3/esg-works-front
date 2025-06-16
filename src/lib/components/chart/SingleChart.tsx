@@ -53,7 +53,7 @@ export default function SingleChart({ chartData }: Props) {
     const labels = chartData.dataSets.map((data) =>
       data.esgDataList.map((item) => item.year)
     );
-    if (chartData.dataSets[0].type === "bar") {
+    if (chartData.dataSets[0]?.type === "bar") {
       chartInstance.current = new Chart(ctx, {
         data: {
           labels: labels.flat(),
@@ -77,7 +77,7 @@ export default function SingleChart({ chartData }: Props) {
           },
         },
       });
-    } else if (chartData.dataSets[0].type === "line") {
+    } else if (chartData.dataSets[0]?.type === "line") {
       chartInstance.current = new Chart(ctx, {
         data: {
           labels: labels.flat(),
@@ -92,7 +92,7 @@ export default function SingleChart({ chartData }: Props) {
           })),
         },
       });
-    } else if (chartData.dataSets[0].type === "pie") {
+    } else if (chartData.dataSets[0]?.type === "pie") {
       chartInstance.current = new Chart(ctx, {
         data: {
           labels: labels.flat(),
@@ -103,7 +103,7 @@ export default function SingleChart({ chartData }: Props) {
           })),
         },
       });
-    } else if (chartData.dataSets[0].type === "doughnut") {
+    } else if (chartData.dataSets[0]?.type === "doughnut") {
       chartInstance.current = new Chart(ctx, {
         data: {
           labels: labels.flat(),

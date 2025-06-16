@@ -1,12 +1,13 @@
 import { Accordion, Button, Flex, HStack, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
-import DynamicInputForm from "./InputForm";
+import DynamicInputForm from "../gri/InputForm";
 import { Category } from "@/lib/interface";
 import { tokenCheck } from "@/lib/api/auth/auth";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
 import { LuSave } from "react-icons/lu";
 import { CategoryDetail } from "@/lib/api/interfaces/categoryDetail";
+import { SubDynamicInputForm } from "./SubDynamicInputForm";
 
 interface Prop {
   row: string;
@@ -15,7 +16,7 @@ interface Prop {
 }
 type FieldMap = Record<string, { value: string; isExisting: boolean }>;
 
-const ContentDetail = ({ row, categoriesList, year }: Prop) => {
+const SubContentDetail = ({ row, categoriesList, year }: Prop) => {
   const [fieldValues, setFieldValues] = useState<FieldMap>({});
 
   const handleFieldChange = (
@@ -29,38 +30,6 @@ const ContentDetail = ({ row, categoriesList, year }: Prop) => {
     }));
   };
 
-  const handleSaveAll = async () => {
-    const user = await tokenCheck();
-    if (!user) {
-      console.error("User not authenticated");
-      return;
-    }
-
-    for (const category of categoriesList) {
-      const { value, isExisting } = fieldValues[category.categoryId] || {
-        value: "",
-        isExisting: false,
-      };
-
-      const outputData = {
-        categoryId: category.categoryId,
-        corpId: user.corpId,
-        year,
-        value,
-      };
-
-      try {
-        if (isExisting) {
-          await patchESGData(outputData);
-        } else {
-          await postESGData(outputData);
-        }
-      } catch (error) {
-        console.error(`Error saving category ${category.categoryId}`, error);
-      }
-    }
-  };
-
   return (
     <Flex w="100%">
       <Accordion.Root collapsible variant={"plain"}>
@@ -71,19 +40,11 @@ const ContentDetail = ({ row, categoriesList, year }: Prop) => {
                 {row}
               </Text>
             </Accordion.ItemTrigger>
-            <Button
-              variant={"solid"}
-              onClick={handleSaveAll}
-              colorPalette="gray"
-              px={6}
-            >
-              저장
-            </Button>
           </HStack>
           <Accordion.ItemContent>
             <Accordion.ItemBody p={2}>
               {categoriesList.map((category) => (
-                <DynamicInputForm
+                <SubDynamicInputForm
                   key={category.categoryId}
                   category={category}
                   year={year}
@@ -98,4 +59,4 @@ const ContentDetail = ({ row, categoriesList, year }: Prop) => {
   );
 };
 
-export default ContentDetail;
+export default SubContentDetail;
