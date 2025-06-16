@@ -53,7 +53,7 @@ export default function SingleChart({ chartData }: Props) {
     const labels = chartData.dataSets.map((data) =>
       data.esgDataList.map((item) => item.year)
     );
-    if (chartData.dataSets[0].type === "bar") {
+    if (chartData.dataSets[0]?.type === "bar") {
       chartInstance.current = new Chart(ctx, {
         data: {
           labels: labels.flat(),
