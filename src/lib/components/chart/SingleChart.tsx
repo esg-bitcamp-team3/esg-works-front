@@ -77,7 +77,7 @@ export default function SingleChart({ chartData }: Props) {
           },
         },
       });
-    } else if (chartData.dataSets[0].type === "line") {
+    } else if (chartData.dataSets[0]?.type === "line") {
       chartInstance.current = new Chart(ctx, {
         data: {
           labels: labels.flat(),
@@ -92,7 +92,7 @@ export default function SingleChart({ chartData }: Props) {
           })),
         },
       });
-    } else if (chartData.dataSets[0].type === "pie") {
+    } else if (chartData.dataSets[0]?.type === "pie") {
       chartInstance.current = new Chart(ctx, {
         data: {
           labels: labels.flat(),
@@ -103,7 +103,7 @@ export default function SingleChart({ chartData }: Props) {
           })),
         },
       });
-    } else if (chartData.dataSets[0].type === "doughnut") {
+    } else if (chartData.dataSets[0]?.type === "doughnut") {
       chartInstance.current = new Chart(ctx, {
         data: {
           labels: labels.flat(),

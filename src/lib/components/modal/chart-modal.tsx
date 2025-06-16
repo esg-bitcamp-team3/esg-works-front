@@ -15,6 +15,7 @@ import {
   Checkbox,
   Tabs,
   Icon,
+  Toast,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
 import { useEffect, useState } from "react";
@@ -26,6 +27,9 @@ import { getSections, getCategories, getEsgData } from "@/lib/api/get";
 import ChartContent from "./ChartContent";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 import PieChartContent from "./PieChartContent";
+import { ChartOptions } from "chart.js";
+import { postChart } from "@/lib/api/post";
+import { toaster } from "@/components/ui/toaster";
 
 // const ChartContent = dynamic(() => import("./ChartContent"), { ssr: false });
 
@@ -52,6 +56,7 @@ export default function ChartModal() {
   >([]);
 
   const [dataLoading, setDataLoading] = useState<boolean>(false);
+  const [pieChartOptions, setPieChartOptions] = useState<ChartOptions>({});
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -102,6 +107,39 @@ export default function ChartModal() {
       .finally(() => {
         setDataLoading(false);
       });
+  };
+
+  const makeChart = async (chartOptions: ChartOptions) => {
+    try {
+      const chartName = String(chartOptions.plugins?.title?.text);
+      if (!chartName) {
+        console.error("차트 이름이 없습니다.");
+        return;
+      }
+      console.log("차트 이름:", chartName);
+      const options = JSON.stringify(chartOptions);
+      console.log("차트 옵션:", options);
+      const response = await postChart({ chartName, options });
+      console.log("차트 생성 성공:", response);
+      toaster.create({
+        title: "차트 생성 성공",
+        description: `차트 "${chartName}"이(가) 성공적으로 생성되었습니다.`,
+        type: "success",
+        duration: 3000,
+      });
+      // 추가적인 작업이 필요하다면 여기에 작성
+    } catch (error) {
+      console.error("차트 생성 실패:", error);
+      toaster.create({
+        title: "차트 생성 실패",
+        description: "차트가 생성되지 않았습니다. ",
+        type: "error",
+        duration: 3000,
+      });
+    }
+  };
+  const makeDataSet = async () => {
+    // Function implementation can be added here if needed
   };
 
   useEffect(() => {
@@ -370,6 +408,8 @@ export default function ChartModal() {
                         <PieChartContent
                           categorizedEsgDataList={categorizedEsgDataList}
                           charts={charts}
+                          pieOptions={pieChartOptions}
+                          setPieOptions={setPieChartOptions}
                         />
                       </Tabs.Content>
 
@@ -417,7 +457,11 @@ export default function ChartModal() {
                   width="80px"
                   onClick={() => {
                     if (step === 1) setStep(2);
-                    else console.log("차트 생성 시작", selected);
+                    else {
+                      console.log("차트 타입", pieChartOptions);
+                      makeChart(pieChartOptions);
+                    }
+                    // else console.log("차트 생성 시작", selected);
                   }}
                   _hover={{ bg: "#1D4FA3" }}
                 >

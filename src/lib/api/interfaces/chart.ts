@@ -90,3 +90,8 @@ export interface InteresrtChartDetail {
   userId: string;
   checkTime: Date;
 }
+
+export interface InputChart {
+  chartName: string;
+  options: string; // 또는 options: any;
+}

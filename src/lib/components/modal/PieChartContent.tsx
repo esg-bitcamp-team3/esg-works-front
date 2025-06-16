@@ -65,17 +65,20 @@ export interface ChartContentProps {
     label: string;
     icons: React.ElementType;
   }[];
+  pieOptions: ChartOptions;
+  setPieOptions: (opt: ChartOptions) => void;
 }
 
 const PieChartContent = ({
   categorizedEsgDataList,
   charts,
+  pieOptions,
+  setPieOptions,
 }: ChartContentProps) => {
   const [chartData, setChartData] = useState<ChartData>();
   const [selectedChartType, setSelectedChartType] =
     useState<ChartType["type"]>("bar");
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
-  const [options, setOptions] = useState<ChartOptions>({});
   const [loading, setLoading] = useState(false);
 
   const getChartOptions = (): ChartOptions<
@@ -315,20 +318,13 @@ const PieChartContent = ({
 
   useEffect(() => {
     console.log("Selected chart type:", selectedChartType);
-    // If a chart type is selected, update the options
     if (selectedChartType) {
-      setLoading(true); // Ensure loading is true when options are being set
+      setLoading(true);
       requestAnimationFrame(() => {
-        // Get chart options
-        let option: ChartOptions = getChartOptions();
-        console.log("Chart options before update:", option);
-        setOptions(option);
-
-        // Turn off loading after options are set
         setLoading(false);
       });
     }
-  }, [selectedChartType]);
+  }, [selectedChartType, setPieOptions]);
 
   return (
     <Flex
@@ -411,7 +407,7 @@ const PieChartContent = ({
               <Chart
                 type={selectedChartType === "mixed" ? "bar" : selectedChartType}
                 data={chartData}
-                options={options}
+                options={pieOptions}
               />
             </Box>
           )}
@@ -452,30 +448,28 @@ const PieChartContent = ({
           </Button>
         ))}
           </Flex> */}
-          {loading ? (
-            <Text fontSize="sm" color="gray.500">
-              차트 색상을 불러오는 중입니다...
-            </Text>
-          ) : selectedChartType === "pie" ||
-            selectedChartType === "doughnut" ? (
-            <PieChartColor
-              chartData={
-                (chartData as ChartData<"pie" | "doughnut">) || {
-                  labels: [],
-                  datasets: [],
+          <>
+            {loading ? (
+              <Text fontSize="sm" color="gray.500">
+                차트 색상을 불러오는 중입니다...
+              </Text>
+            ) : selectedChartType === "pie" ||
+              selectedChartType === "doughnut" ? (
+              <PieChartColor
+                chartData={
+                  (chartData as ChartData<"pie" | "doughnut">) || {
+                    labels: [],
+                    datasets: [],
+                  }
                 }
-              }
-              setChartData={
-                setChartData as (data: ChartData<"pie" | "doughnut">) => void
-              }
-              options={options as ChartOptions<"pie" | "doughnut">}
-              setOptions={
-                setOptions as (
-                  chartOptions: ChartOptions<"pie" | "doughnut">
-                ) => void
-              }
-            />
-          ) : null}
+                setChartData={
+                  setChartData as (data: ChartData<"pie" | "doughnut">) => void
+                }
+                options={pieOptions as ChartOptions<"pie" | "doughnut">}
+                setOptions={setPieOptions}
+              />
+            ) : null}
+          </>
         </Box>
       </Stack>
     </Flex>

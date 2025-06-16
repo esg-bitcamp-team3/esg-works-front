@@ -109,7 +109,7 @@ const Subbar = () => {
     InteresrtChartDetail[] | null
   >([]);
   const [isOpne, setIsOpen] = useState(false);
-  const [type, setType] = useState<string>("pie");
+  const [type, setType] = useState<string>("line");
   const DEFAULT_SIDEBAR_WIDTH = 350;
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -167,6 +167,14 @@ const Subbar = () => {
     }
   };
 
+  // 컴포넌트 마운트 시 무조건 실행
+  useEffect(() => {
+    fetchChart(
+      items[activeIndex]?.type === "all" ? undefined : items[activeIndex]?.type
+    );
+  }, []);
+
+  // activeIndex가 바뀔 때 실행
   useEffect(() => {
     fetchChart(
       items[activeIndex]?.type === "all" ? undefined : items[activeIndex]?.type
