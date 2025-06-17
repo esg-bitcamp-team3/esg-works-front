@@ -30,7 +30,6 @@ const SearchInput = ({
       flex={1}
       bg={"white"}
       borderWidth="1px"
-      marginX={12}
     />
   );
 };

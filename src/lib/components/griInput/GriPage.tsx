@@ -8,9 +8,15 @@ import {
   Skeleton,
   Button,
   Text,
+  Input,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
-import { getGri, getGriBySection, getSections } from "@/lib/api/get";
+import {
+  getGri,
+  getGriBySection,
+  // getGriByYearAndSectionIdAndCategoryName,
+  getSections,
+} from "@/lib/api/get";
 import { FaSearch } from "react-icons/fa";
 
 import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
@@ -18,6 +24,7 @@ import Selector from "../gri/Selector";
 import SearchInput from "../gri/SearchInput";
 import SectionAccordian from "./SectionAccodian";
 import { Section } from "@/lib/interface";
+import { debounce } from "lodash";
 
 const CARD_STYLES = {
   bg: "white",
@@ -46,41 +53,39 @@ const sectionList = [
 ];
 
 const GriPage = () => {
-  const [searchId, setSearchId] = useState("200");
-
   const [section, setSection] = useState("200");
   const [year, setYear] = useState("2020");
   const [search, setSearch] = useState<string>("");
 
   const [isLoading, setIsLoading] = useState(true);
+  const [categoryList, setCategoryList] = useState<SectionCategoryESGData[]>();
 
-  // const fetchSearch = useCallback(
-  //   async (year: string, section: string, categoryName: string) => {
-  //     try {
-  //       setIsLoading(true);
-  //       const trimmedCategory = categoryName.trim();
+  // 디바운스된 검색 함수 (300ms 후 실행)
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setSearch(value);
+    }, 300),
+    []
+  );
 
-  //       const data = await getGriBySection(year, section, trimmedCategory);
-  //       console.log("data", data);
-  //       setGriList(data || []);
-  //     } catch (error) {
-  //       console.error("fetch 실패");
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   },
-  //   [year, section, search]
-  // );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearch(val);
+    debouncedSearch(val);
+  };
 
-  // useEffect(() => {
-  //   fetchSearch(year, section, search);
-  // }, [fetchSearch]);
-
-  // useEffect(() => {
-  //   if (searchId.length > 3) {
-  //     setSection(searchId.substring(0, 3));
-  //   }
-  // }, [searchId]);
+  const searchByCategoryName = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      // const data = await getGriByYearAndSectionIdAndCategoryName(year, search);
+      // setCategoryList(data);
+      // console.log(data);
+    } catch (error) {
+      console.error("searching 실패", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [search]);
 
   return (
     <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
@@ -96,14 +101,25 @@ const GriPage = () => {
             <Box position="relative" w="md">
               <InputGroup
                 startElement={
-                  <Box pl="4" display="flex" alignItems="center">
+                  <Box display="flex" alignItems="center">
                     <FaSearch color="#2F6EEA" />
                   </Box>
                 }
                 alignItems="start"
                 w="100%"
               >
-                <SearchInput searchCategoryId={setSearch} />
+                <Input
+                  value={search}
+                  onChange={handleChange}
+                  flex={1}
+                  bg={"white"}
+                  borderWidth="1px"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      searchByCategoryName();
+                    }
+                  }}
+                />
               </InputGroup>
             </Box>
             <HStack>

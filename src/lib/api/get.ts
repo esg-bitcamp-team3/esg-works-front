@@ -230,12 +230,12 @@ export const getGriBySection = async (
   }
 };
 
-export const getGriBySectionSelect = async (
+export const getGriByYearAndSectionId = async (
   year: string,
   sectionId: string
 ) => {
   try {
-    const res = await apiClient.get<SectionCategoryESGData>("/gri/select", {
+    const res = await apiClient.get<SectionCategoryESGData>("/gri/search", {
       params: {
         year,
         sectionId,
@@ -246,3 +246,23 @@ export const getGriBySectionSelect = async (
     console.error("카테고리 검색 실패", error);
   }
 };
+
+// export const getGriByYearAndSectionIdAndCategoryName = async (
+//   year: string,
+//   categoryName: string
+// ) => {
+//   try {
+//     const res = await apiClient.get<SectionCategoryESGData[]>(
+//       "/gri/search-category",
+//       {
+//         params: {
+//           year,
+//           categoryName,
+//         },
+//       }
+//     );
+//     return res.data;
+//   } catch (error) {
+//     console.error("카테고리 검색 실패", error);
+//   }
+// };

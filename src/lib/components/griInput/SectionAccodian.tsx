@@ -9,7 +9,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
 import { Section } from "@/lib/interface";
-import { getGriBySectionSelect, getSearchSectionId } from "@/lib/api/get";
+import { getGriByYearAndSectionId, getSearchSectionId } from "@/lib/api/get";
 import SubsectionAccordian from "./SubsectionAccordian";
 
 interface Props {
@@ -43,7 +43,7 @@ const SectionAccordian = ({ section, year }: Props) => {
     async (year: string, section: string) => {
       try {
         setIsLoading(true);
-        const data = await getGriBySectionSelect(year, section);
+        const data = await getGriByYearAndSectionId(year, section);
         setSectionCategory(data);
       } catch (error) {
         console.error("fetch 실패");

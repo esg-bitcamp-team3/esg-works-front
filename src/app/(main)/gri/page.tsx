@@ -15,7 +15,6 @@ const Page = () => {
         <Text fontSize="2xl" fontWeight="bold" mb={4}>
           GRI 데이터 입력
         </Text>
-        {/* <GriPage /> */}
         <GriPage />
       </VStack>
     </Flex>
