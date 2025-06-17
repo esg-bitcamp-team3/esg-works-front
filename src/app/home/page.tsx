@@ -45,11 +45,79 @@ export default function Home() {
       </h1>
 
       {/* 검색창 */}
-      <SearchBar
-        keyword={searchKeyword}
-        setKeyword={setSearchKeyword}
-        onSearch={() => setSearchTrigger((v) => v + 1)}
-      />
+      <Box
+        width="2xl"
+        maxW="900px"
+        bg="white"
+        borderRadius="3xl"
+        boxShadow="md"
+        px={4}
+        py={0}
+        display="flex"
+        alignItems="center"
+      >
+        <form
+          className="search-box"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearchTrigger((v) => v + 1);
+          }}
+        >
+          <Flex gap={2} alignItems="center" width="300%" height={"20%"}>
+            <SearchBar
+              keyword={searchKeyword}
+              setKeyword={setSearchKeyword}
+              onSearch={() => setSearchTrigger((v) => v + 1)}
+            />
+            <Button
+              type="submit"
+              mt={2}
+              bg="white"
+              marginBottom="1%"
+              borderRadius="full"
+              color="black"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              transition="all 0.2s"
+            >
+              <TbSearch size={24} color="currentColor" />
+            </Button>
+          </Flex>
+        </form>
+      </Box>
+
+      {/* <form
+        className="search-box"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setSearchTrigger((v) => v + 1);
+        }}
+      >
+        <Flex gap={2} alignItems="center" width="2xl">
+          <SearchBar
+            keyword={searchKeyword}
+            setKeyword={setSearchKeyword}
+            onSearch={() => setSearchTrigger((v) => v + 1)}
+          />
+          <Button
+            type="submit"
+            mt={2}
+            bg="white"
+            border="1.5px"
+            marginBottom="1%"
+            borderRadius="full"
+            color="black"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            boxShadow="sm"
+            transition="all 0.2s"
+          >
+            <TbSearch size={24} color="currentColor" />
+          </Button>
+        </Flex>
+      </form> */}
 
       <Stack>
         <Flex
