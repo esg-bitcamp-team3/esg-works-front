@@ -1,4 +1,10 @@
-import { Category, DataFilter, PartialESGData, Section } from "../interface";
+import {
+  Category,
+  Criterion,
+  DataFilter,
+  PartialESGData,
+  Section,
+} from "../interface";
 import { apiClient } from "./client";
 
 export async function getDataByCorpYear(data: DataFilter) {
@@ -35,6 +41,18 @@ export const getSections = async () => {
     return [];
   }
 };
+
+export const getSectionsByCriterion = async (criterionId: string) => {
+  try {
+    const res = await apiClient.get<Section[]>(
+      `/sections/by-criterion/${criterionId}`
+    );
+    return res.data;
+  } catch (error) {
+    console.error("섹션 가져오기 실패:", error);
+    return [];
+  }
+};
 export const getSearchSectionId = async (sectionId: string) => {
   try {
     const response = await apiClient.get<Section[]>(
@@ -63,6 +81,77 @@ export const getCategories = async (sectionId?: string) => {
   } catch (error) {
     console.error("카테고리 가져오기 실패:", error);
     return [];
+  }
+};
+
+export const getCategoriesBySectionStartingWith = async ({
+  sectionId,
+  startsWith,
+}: {
+  sectionId: string;
+  startsWith?: string;
+}) => {
+  try {
+    const res = await apiClient.get<CategoryDetail[]>(
+      `/categories/by-section/${sectionId}`,
+      {
+        params: {
+          startsWith,
+        },
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("카테고리 가져오기 실패:", error);
+    return [];
+  }
+};
+
+export const searchGRIData = async ({
+  year = "2020",
+  sectionId = "201",
+  categoryName = "",
+}: {
+  year: string;
+  sectionId: string;
+  categoryName: string;
+}) => {
+  try {
+    const res = await apiClient.get<SectionCategoryESGData>(`/gri/search`, {
+      params: {
+        year,
+        categoryName,
+        sectionId,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("데이터 가져오기 실패:", error);
+    return null;
+  }
+};
+
+export const searchESGData = async ({
+  year = "2020",
+  sectionId = "201",
+  categoryName = "",
+}: {
+  year: string;
+  sectionId: string;
+  categoryName: string;
+}) => {
+  try {
+    const res = await apiClient.get<SectionCategoryESGData>(`/data/search`, {
+      params: {
+        year,
+        categoryName,
+        sectionId,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("데이터 가져오기 실패:", error);
+    return null;
   }
 };
 
@@ -169,6 +258,16 @@ export const getInterestReports = async () => {
     return res.data;
   } catch (error) {
     console.error("리포트 리스트 가져오기 실패");
+    return null;
+  }
+};
+
+export const getMyCriteria = async () => {
+  try {
+    const res = await apiClient.get<Criterion[]>(`/criteria/my`);
+    return res.data;
+  } catch (error) {
+    console.error("섹션 기준 가져오기 실패:", error);
     return null;
   }
 };
