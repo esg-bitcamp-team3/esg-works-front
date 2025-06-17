@@ -316,7 +316,7 @@ export const getGriBySection = async (
   categoryName: string
 ) => {
   try {
-    const res = await apiClient.get<SectionCategoryESGData[]>("/gri/section", {
+    const res = await apiClient.get<SectionCategoryESGData[]>("/gri/search", {
       params: {
         year,
         sectionId,

@@ -8,6 +8,7 @@ import {
   DataList,
   HStack,
   IconButton,
+  Separator,
   Spinner,
   Text,
   VStack,
@@ -61,11 +62,8 @@ const CategoryList = ({ year, query, sectionId }: CategoryListProps) => {
   return (
     <VStack gap={0} width="100%">
       <Box key={sectionId} width="100%">
-        <Text fontWeight="medium" width="100%" p={2}>
-          {dataList?.sectionName || ""}
-        </Text>
         {loading ? (
-          <Box width="100%" p={2} textAlign="center">
+          <Box width="100%" p={8} textAlign="center">
             <Spinner />
           </Box>
         ) : (
@@ -80,9 +78,16 @@ const CategoryList = ({ year, query, sectionId }: CategoryListProps) => {
                   <InfoTip>{item.description}</InfoTip>
                 </DataList.ItemLabel>
                 <DataList.ItemValue width="50%">
-                  <HStack justify={"space-between"} width="100%">
-                    <Text fontWeight="medium">
+                  <HStack justify={"end"} width="100%">
+                    <Text fontWeight="medium" textAlign={"end"} fontSize="sm">
                       {item.esgData?.value || ""}
+                    </Text>
+                    <Text
+                      fontWeight="medium"
+                      textAlign={"end"}
+                      fontSize="sm"
+                      color="gray.500"
+                    >
                       {item.unit.unitName && ` ${item.unit.unitName}`}
                     </Text>
                     <Clipboard.Root

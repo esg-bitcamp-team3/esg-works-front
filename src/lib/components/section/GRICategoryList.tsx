@@ -13,6 +13,7 @@ import {
   DataList,
   HStack,
   IconButton,
+  Separator,
   Spinner,
   Text,
   VStack,
@@ -56,11 +57,12 @@ const GRICategoryList = ({ sectionId, year, query }: CategoryListProps) => {
       {Object.entries(subCategory[sectionId as SubCategoryKey] || {}).map(
         ([key, value], index) => (
           <Box key={sectionId + key + index} width="100%">
-            <Text fontWeight="medium" width="100%" p={2}>
+            <Text fontWeight="medium" fontSize="sm" width="100%" p={2}>
               {value}
             </Text>
+            <Separator />
             {loading ? (
-              <Box width="100%" p={2} textAlign="center">
+              <Box width="100%" p={8} textAlign="center">
                 <Spinner />
               </Box>
             ) : (
@@ -79,9 +81,20 @@ const GRICategoryList = ({ sectionId, year, query }: CategoryListProps) => {
                         <InfoTip>{item.description}</InfoTip>
                       </DataList.ItemLabel>
                       <DataList.ItemValue width="50%">
-                        <HStack justify={"space-between"} width="100%">
-                          <Text fontWeight="medium">
+                        <HStack justify={"end"} width="100%">
+                          <Text
+                            fontWeight="medium"
+                            textAlign={"end"}
+                            fontSize="sm"
+                          >
                             {item.esgData?.value || ""}
+                          </Text>
+                          <Text
+                            fontWeight="medium"
+                            textAlign={"end"}
+                            fontSize="sm"
+                            color="gray.500"
+                          >
                             {item.unit.unitName && ` ${item.unit.unitName}`}
                           </Text>
                           <Clipboard.Root
