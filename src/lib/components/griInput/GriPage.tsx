@@ -1,12 +1,23 @@
 "use client";
-import { Box, Container, VStack, HStack, InputGroup } from "@chakra-ui/react";
+import {
+  Box,
+  Container,
+  VStack,
+  HStack,
+  InputGroup,
+  Skeleton,
+  Button,
+  Text,
+} from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
-import Gri from "./Gris";
-import { getCategoryByName, getGri, getGriBySection } from "@/lib/api/get";
+import { getGri, getGriBySection, getSections } from "@/lib/api/get";
 import { FaSearch } from "react-icons/fa";
-import Selector from "./Selector";
-import SearchInput from "./SearchInput";
+
 import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
+import Selector from "../gri/Selector";
+import SearchInput from "../gri/SearchInput";
+import SectionAccordian from "./SectionAccodian";
+import { Section } from "@/lib/interface";
 
 const CARD_STYLES = {
   bg: "white",
@@ -28,6 +39,7 @@ const yearList = [
   { label: "2025", value: "2025" },
 ];
 const sectionList = [
+  { label: "전체", value: "0" },
   { label: "GRI 200 : 경제", value: "200" },
   { label: "GRI 300 : 환경", value: "300" },
   { label: "GRI 400 : 사회", value: "400" },
@@ -35,55 +47,40 @@ const sectionList = [
 
 const GriPage = () => {
   const [searchId, setSearchId] = useState("200");
+
   const [section, setSection] = useState("200");
   const [year, setYear] = useState("2020");
-
   const [search, setSearch] = useState<string>("");
 
-  const [griList, setGriList] = useState<SectionCategoryESGData[]>();
-  console.log("test", griList);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = async (year: string, categoryName: string) => {
-    try {
-      const trimmedCategory = categoryName.trim();
+  // const fetchSearch = useCallback(
+  //   async (year: string, section: string, categoryName: string) => {
+  //     try {
+  //       setIsLoading(true);
+  //       const trimmedCategory = categoryName.trim();
 
-      // const data = await getGri(
-      //   year,
-      //   trimmedCategory === "" ? null : trimmedCategory
-      // );
-      const data = await getGriBySection(
-        year,
-        "200",
-        trimmedCategory === "" ? "" : trimmedCategory
-      );
-      setGriList(data || []);
-      console.log("test0", data);
-    } catch (error) {
-      console.error("fetch 실패");
-    }
-  };
+  //       const data = await getGriBySection(year, section, trimmedCategory);
+  //       console.log("data", data);
+  //       setGriList(data || []);
+  //     } catch (error) {
+  //       console.error("fetch 실패");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   },
+  //   [year, section, search]
+  // );
 
-  // ✅ API 호출 함수 (useCallback)
-  const searchCategoryId = useCallback(async (name: string) => {
-    try {
-      const data = await getCategoryByName(name);
-      setSearchId(data?.categoryId ?? "");
-    } catch (error) {
-      console.error("fetch error", error);
-    }
-  }, []);
+  // useEffect(() => {
+  //   fetchSearch(year, section, search);
+  // }, [fetchSearch]);
 
-  const categoryName = "";
-  useEffect(() => {
-    fetchData("2020", categoryName);
-    // searchCategoryId(search);
-  }, [search]);
-
-  useEffect(() => {
-    if (searchId.length > 3) {
-      setSection(searchId.substring(0, 3));
-    }
-  }, [searchId]);
+  // useEffect(() => {
+  //   if (searchId.length > 3) {
+  //     setSection(searchId.substring(0, 3));
+  //   }
+  // }, [searchId]);
 
   return (
     <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
@@ -120,7 +117,15 @@ const GriPage = () => {
             </HStack>
           </HStack>
           <Box minW="100%" maxH="60vh" overflowY="auto" scrollbarWidth={"none"}>
-            {/* <Gri section={section} year={year} search={searchId} /> */}
+            {/* {isLoading ? (
+              <VStack w="100%" gap={4}>
+                <Skeleton height="50px" w="100%" />
+                <Skeleton height="50px" w="100%" />
+                <Skeleton height="50px" w="100%" />
+              </VStack>
+            ) : ( */}
+            <SectionAccordian year={year} section={section} />
+            {/* )} */}
           </Box>
         </VStack>
       </Container>

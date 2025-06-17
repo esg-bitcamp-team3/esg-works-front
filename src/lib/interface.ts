@@ -21,9 +21,6 @@ export interface Category {
   categoryName: string;
   description: string;
 }
-export interface CategoryList {
-  categoryList: Category[];
-}
 
 export interface PartialESGData {
   categoryId: string;

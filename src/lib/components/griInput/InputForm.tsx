@@ -1,4 +1,4 @@
-import { Category, PartialESGData } from "@/lib/interface";
+import { PartialESGData } from "@/lib/interface";
 import {
   Box,
   Input,
