@@ -11,10 +11,12 @@ import {
   InputGroup,
   Separator,
   Skeleton,
+  Dialog,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
+import { FaPlus } from "react-icons/fa";
 import Chart from "chart.js/auto";
 import { Resizable } from "re-resizable";
 import { DndProvider } from "react-dnd";
@@ -63,6 +65,7 @@ import { IoSearch } from "react-icons/io5";
 import { FaSearch } from "react-icons/fa";
 import { Section } from "../interface";
 import SubTableContent from "./section/SubTableContent";
+import TableModal from "@/lib/components/modal/table-modal";
 import Selector from "./gri/Selector";
 
 const items = [
@@ -325,7 +328,7 @@ const Subbar = () => {
             {activeIndex !== 0 && (
               <>
                 <HStack
-                  w="120%"
+                  w="100%"
                   justifyContent="space-around"
                   alignItems="center"
                 >
@@ -354,7 +357,7 @@ const Subbar = () => {
                   {/* 즐겨찾기 버튼 */}
                   <Button
                     bg="white"
-                    gap="3"
+                    gap="2"
                     onClick={() => setSelectedTab("star")}
                     display="flex"
                     alignItems="center"
@@ -374,10 +377,14 @@ const Subbar = () => {
                       즐겨찾기
                     </Text>
                   </Button>
+                  {/* 테이블 만들기 */}
+                  <div>
+                    <TableModal />
+                  </div>
                 </HStack>
 
                 <Box
-                  width="120%"
+                  width="100%"
                   height="4px"
                   display="flex"
                   // mt="2"
