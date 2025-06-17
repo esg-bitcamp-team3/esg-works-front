@@ -13,7 +13,7 @@ import {
   Input,
   Switch,
 } from "@chakra-ui/react";
-import { tokenCheck } from "@/lib/api/auth/auth";
+import { getUserInfo, tokenCheck } from "@/lib/api/auth/auth";
 import { User } from "@/lib/interfaces/auth";
 import Sidebar from "@/lib/components/Sidebar";
 
@@ -25,7 +25,7 @@ const MyPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await tokenCheck();
+        const data = await getUserInfo();
         setUser(data);
       } catch (error) {
         console.error(error);
@@ -38,7 +38,7 @@ const MyPage = () => {
     <Flex>
       <Sidebar />
 
-      <Box flex="1" p={10} minH="100vh">
+      <Box p={5} minH="100vh" minW={"70vw"}>
         <Heading fontSize="2xl" mb={8}>
           마이페이지
         </Heading>
@@ -51,15 +51,29 @@ const MyPage = () => {
             </HStack>
 
             <VStack mt={6} gap={4} align="start">
-              <Box w="full">
+              <Box w="full" display="flex" flexDirection="row" gap={14}>
                 <Text fontWeight="medium" mb={1}>
                   이름
                 </Text>
+                <Text>{user?.name}</Text>
               </Box>
-              <Box w="full">
+              <Box w="full" display="flex" flexDirection="row" gap={14}>
                 <Text fontWeight="medium" mb={1}>
                   이메일
                 </Text>
+                <Text>{user?.email}</Text>
+              </Box>
+              <Box w="full" display="flex" flexDirection="row" gap={14}>
+                <Text fontWeight="medium" mb={1}>
+                  기업코드
+                </Text>
+                <Text>{user?.corpId}</Text>
+              </Box>
+              <Box w="full" display="flex" flexDirection="row" gap={14}>
+                <Text fontWeight="medium" mb={1}>
+                  전화번호
+                </Text>
+                <Text>{user?.phoneNumber}</Text>
               </Box>
             </VStack>
           </Box>
@@ -78,17 +92,36 @@ const MyPage = () => {
           {/* 환경설정 */}
           <Box p={6} rounded="lg" shadow="sm">
             <Heading size="md" mb={4}>
-              환경설정
+              비밀번호 변경
             </Heading>
-            <VStack align="start" gap={5}></VStack>
+            <VStack align="start" gap={5}>
+              <Box w="full" display="flex" flexDirection="row" gap={10}>
+                <Text fontWeight="medium" mb={1}>
+                  현재 비밀번호
+                </Text>
+                <Input type="password" width={"sm"} borderRadius={"lg"} />
+              </Box>
+              <Box w="full" display="flex" flexDirection="row" gap={14}>
+                <Text fontWeight="medium" mb={1}>
+                  새 비밀번호
+                </Text>
+                <Input type="password" width={"sm"} borderRadius={"lg"} />
+              </Box>
+              <Box w="full" display="flex" flexDirection="row" gap={5}>
+                <Text fontWeight="medium" mb={1}>
+                  새 비밀번호 확인
+                </Text>
+                <Input type="password" width={"sm"} borderRadius={"lg"} />
+              </Box>
+              <Box w="full" display="flex" justifyContent="flex-end">
+                <Button colorScheme="red" variant="solid" borderRadius="lg">
+                  변경하기
+                </Button>
+              </Box>
+            </VStack>
           </Box>
 
           {/* 로그아웃 */}
-          <Box textAlign="right">
-            <Button colorScheme="red" variant="solid">
-              로그아웃
-            </Button>
-          </Box>
         </VStack>
       </Box>
     </Flex>

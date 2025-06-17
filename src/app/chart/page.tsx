@@ -36,9 +36,7 @@ export default function Page() {
   return (
     <Box mt={6} flex="1" overflowY="auto">
       <Flex flexDirection="column" gap={4}>
-        <Box p={4}>
-          <ChartMake chartData={chart?.[0] || null} />
-        </Box>
+        <Box p={4}>{/* <ChartMake chartData={chart?.[0] || null} /> */}</Box>
       </Flex>
     </Box>
   );
