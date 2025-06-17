@@ -42,10 +42,12 @@ const DataTab = () => {
     <Box w="100%" pt={4} pb={4}>
       <HStack justifyContent="space-between" w="100%" alignItems={"center"}>
         <CriterionSelector value={criterion} onValueChange={setCriterion} />
-        <SearchBar
-          query={query}
-          onQueryChange={setQuery}
-          onSearch={() => console.log("Search triggered with query:", query)}
+        <SectionSelector
+          sectionList={sectionList}
+          setSectionList={setSectionList}
+          criterionId={criterion}
+          value={sectionId}
+          onValueChange={handleSectionChange}
         />
       </HStack>
       <Flex w="100%" pt={4} pb={4} justifyContent={"end"}>
@@ -55,13 +57,6 @@ const DataTab = () => {
           justifyItems={"flex-end"}
           mx={4}
         >
-          <SectionSelector
-            sectionList={sectionList}
-            setSectionList={setSectionList}
-            criterionId={criterion}
-            value={sectionId}
-            onValueChange={handleSectionChange}
-          />
           <YearSelector value={year} onValueChange={setYear} />
         </VStack>
       </Flex>
