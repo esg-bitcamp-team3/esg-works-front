@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { ChartDetail } from "@/lib/api/interfaces/chart";
 import {
-  Chart,
+  Chart as ChartJS,
   LineController,
   BarController,
   LineElement,
@@ -13,12 +13,13 @@ import {
   LinearScale,
   Tooltip,
   Legend,
-  ChartType,
-  ChartTypeRegistry,
+  ChartData,
 } from "chart.js";
-import { Box } from "@chakra-ui/react";
 
-Chart.register(
+import { Box } from "@chakra-ui/react";
+import { Chart } from "react-chartjs-2";
+
+ChartJS.register(
   LineController,
   BarController,
   LineElement,
@@ -34,94 +35,85 @@ interface Props {
   chartData: ChartDetail;
 }
 
+type ChartTypeUnion = "bar" | "line" | "pie" | "doughnut";
+
 export default function SingleChart({ chartData }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const chartInstance = useRef<Chart<keyof ChartTypeRegistry> | null>(null);
+  const [chartWithOptions, setChartWithOptions] = useState<
+    ChartData<ChartTypeUnion, number[], string>
+  >({
+    labels: [],
+    datasets: [],
+  });
+
+  const options = JSON.parse(chartData.options);
 
   useEffect(() => {
-    const ctx = canvasRef.current?.getContext("2d");
-    if (!ctx) {
-      console.error("❌ Canvas context not available");
-      return;
-    }
+    const years = Array.from(
+      new Set(
+        chartData.dataSets.flatMap((dataSet) =>
+          dataSet.esgDataList.map((data) => data.year)
+        )
+      )
+    ).sort();
 
-    // destroy old chart if it exists
-    chartInstance.current?.destroy();
+    let newChartData: ChartData<ChartTypeUnion, number[], string> | undefined;
 
-    console.log("data", chartData);
+    const chartType = chartData.dataSets[0]?.type;
 
-    const labels = chartData.dataSets.map((data) =>
-      data.esgDataList.map((item) => item.year)
-    );
-    if (chartData.dataSets[0]?.type === "bar") {
-      chartInstance.current = new Chart(ctx, {
-        data: {
-          labels: labels.flat(),
-          datasets: chartData.dataSets.map((data) => ({
-            label: data.label,
-            type: "bar",
-            data: data.esgDataList.map((item) => parseFloat(item.value)),
-            backgroundColor: data.backgroundColor,
-            borderColor: data.borderColor,
-            borderWidth: parseFloat(data.borderWidth),
-            fill: data.fill === "true",
-          })),
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "top",
-            },
+    if (chartType === "bar" || chartType === "line") {
+      newChartData = {
+        labels: years.map((year) => year.toString()),
+        datasets: chartData.dataSets.map((dataSet) => ({
+          type: dataSet.type as "bar" | "line",
+          label: dataSet.label,
+          data: years.map((year) => {
+            const yearData = dataSet.esgDataList.find(
+              (data) => data.year === year
+            );
+            return yearData ? parseFloat(yearData.value) || 0 : 0;
+          }),
+          borderColor: dataSet.borderColor,
+          backgroundColor: dataSet.backgroundColor,
+          borderWidth: Number(dataSet.borderWidth),
+          fill: dataSet.fill === "true" || dataSet.fill === "1",
+        })),
+      };
+    } else if (chartType === "pie" || chartType === "doughnut") {
+      const dataSet = chartData.dataSets[0];
+      newChartData = {
+        labels: dataSet.esgDataList.map((data) => data.year),
+        datasets: [
+          {
+            type: dataSet.type as "pie" | "doughnut",
+            label: dataSet.label,
+            data: dataSet.esgDataList.map(
+              (data) => parseFloat(data.value) || 0
+            ),
+            backgroundColor: Array.isArray(dataSet.backgroundColor)
+              ? dataSet.backgroundColor
+              : [dataSet.backgroundColor],
+            borderColor: Array.isArray(dataSet.borderColor)
+              ? dataSet.borderColor
+              : [dataSet.borderColor],
+            borderWidth: Number(dataSet.borderWidth),
+            hoverOffset: 10,
           },
-        },
-      });
-    } else if (chartData.dataSets[0]?.type === "line") {
-      chartInstance.current = new Chart(ctx, {
-        data: {
-          labels: labels.flat(),
-          datasets: chartData.dataSets.map((data) => ({
-            label: data.label,
-            type: "line",
-            data: data.esgDataList.map((item) => parseFloat(item.value)),
-            backgroundColor: data.backgroundColor,
-            borderColor: data.borderColor,
-            borderWidth: parseFloat(data.borderWidth),
-            fill: data.fill === "true",
-          })),
-        },
-      });
-    } else if (chartData.dataSets[0]?.type === "pie") {
-      chartInstance.current = new Chart(ctx, {
-        data: {
-          labels: labels.flat(),
-          datasets: chartData.dataSets.map((data) => ({
-            label: data.label,
-            type: "pie",
-            data: data.esgDataList.map((item) => parseFloat(item.value)),
-          })),
-        },
-      });
-    } else if (chartData.dataSets[0]?.type === "doughnut") {
-      chartInstance.current = new Chart(ctx, {
-        data: {
-          labels: labels.flat(),
-          datasets: chartData.dataSets.map((data) => ({
-            label: data.label,
-            type: "doughnut",
-            data: data.esgDataList.map((item) => parseFloat(item.value)),
-          })),
-        },
-      });
-
-      // create new chart
+        ],
+      };
     }
 
-    return () => {
-      chartInstance.current?.destroy();
-    };
+    if (newChartData) {
+      setChartWithOptions(newChartData);
+    }
   }, [chartData]);
 
-  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />;
+  return (
+    <Box>
+      <Chart
+        type={chartData.dataSets[0].type as ChartTypeUnion}
+        data={chartWithOptions}
+        options={options}
+      />
+    </Box>
+  );
 }

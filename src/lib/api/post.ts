@@ -1,6 +1,11 @@
 import { PartialESGData } from "../interface";
 import { apiClient } from "./client";
-import { Chart, InputChart, InteresrtChartDetail } from "./interfaces/chart";
+import {
+  Chart,
+  InputChart,
+  InputDataSet,
+  InteresrtChartDetail,
+} from "./interfaces/chart";
 import { DataSet } from "./interfaces/dataSets";
 import { ESGData } from "./interfaces/esgData";
 
@@ -32,7 +37,7 @@ export const postInterestChart = async (chartId: string) => {
   }
 };
 
-export const postDataSet = async (data: DataSet) => {
+export const postDataSet = async (data: InputDataSet) => {
   try {
     const res = await apiClient.post(`/datasets`, data);
     console.log("dataSet 등록 성공:", res.data);

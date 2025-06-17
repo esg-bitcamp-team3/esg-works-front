@@ -62,13 +62,21 @@ ChartJS.register(
 
 export interface ChartContentProps {
   categorizedEsgDataList: CategorizedESGDataList[];
+  chartData: ChartData;
+  setChartData: (data: ChartData) => void;
+  options: ChartOptions;
+  setOptions: (data: ChartOptions) => void;
 }
 
-const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
-  const [chartData, setChartData] = useState<ChartData>();
+const ChartContent = ({
+  categorizedEsgDataList,
+  chartData,
+  setChartData,
+  options,
+  setOptions,
+}: ChartContentProps) => {
   const [selectedChartType, setSelectedChartType] =
     useState<ChartType["type"]>("bar");
-  const [options, setOptions] = useState<ChartOptions>({});
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
