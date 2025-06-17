@@ -60,7 +60,7 @@ const GriPage = () => {
   }, [category, year]);
 
   return (
-    <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
+    <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"} >
       <Container py={4}>
         <VStack gap={8}>
           <HStack w="100%" gap={4} justifyContent="space-between">
@@ -100,9 +100,9 @@ const GriPage = () => {
               />
             </HStack>
           </HStack>
-          <Box minW="100%" maxH="60vh" overflowY="auto" scrollbarWidth={"none"}>
+          <Box minW="100%" maxH="60vh" overflowY="auto" className="custom-scrollbar"  paddingRight={2}>
             {isLoading ? (
-              <VStack w="100%" gap={4}>
+              <VStack w="100%" gap={4} paddingRight={4} >
                 <Skeleton height="40px" w="100%" />
                 <Skeleton height="40px" w="100%" />
                 <Skeleton height="40px" w="100%" />
