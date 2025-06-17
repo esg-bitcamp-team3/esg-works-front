@@ -21,9 +21,6 @@ export interface Category {
   categoryName: string;
   description: string;
 }
-export interface CategoryList {
-  categoryList: Category[];
-}
 
 export interface PartialESGData {
   categoryId: string;
@@ -35,4 +32,9 @@ export interface PartialESGData {
 export interface DataFilter {
   categoryId: string;
   year: string;
+}
+
+export interface Criterion {
+  criterionId: string;
+  criterionName: string;
 }

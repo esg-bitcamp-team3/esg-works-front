@@ -1,6 +1,6 @@
 import { Accordion, Box, Span, Icon, Text, Flex } from "@chakra-ui/react";
 import { FaChevronDown } from "react-icons/fa";
-import TableContent from "./TableContent";
+import TableContent from "../modal/TableContent";
 import { useEffect, useState } from "react";
 import { Section, SectionList } from "@/lib/interface";
 import { getSearchSectionId } from "@/lib/api/get";
@@ -76,7 +76,7 @@ const Standards = ({ criterionId, year }: StandardsProps) => {
           </Accordion.ItemTrigger>
           <Accordion.ItemContent>
             <Box p={6} bg="white">
-              {<TableContent no={item.sectionId} year={year} />}
+              {/* {<TableContent no={item.sectionId} year={year} />} */}
             </Box>
           </Accordion.ItemContent>
         </Accordion.Item>

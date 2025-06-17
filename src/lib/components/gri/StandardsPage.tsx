@@ -1,6 +1,7 @@
 // src/lib/components/standards/StandardsPage.tsx
 import { Box, VStack, Button, Heading, Container } from "@chakra-ui/react";
-import { useRouter } from "next/navigation"; // next/router 쓰는 경우도 있음
+import { useRouter } from "next/navigation";
+import { FaArrowRight } from "react-icons/fa";
 
 const standardList = [
   { label: "GRI", value: "gri" },
@@ -36,8 +37,11 @@ const StandardsPage = () => {
               onClick={() => router.push(`/${std.value}`)}
               colorScheme="teal"
               variant="outline"
+              justifyContent='space-between'
+              paddingX='10'
             >
               {std.label}
+              <FaArrowRight />
             </Button>
           ))}
         </VStack>
