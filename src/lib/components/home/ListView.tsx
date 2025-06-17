@@ -8,15 +8,17 @@ import {
   Text,
   VStack,
   Pagination,
+  Button,
 } from "@chakra-ui/react";
 import { FaCopy } from "react-icons/fa6";
-import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { useState, useEffect } from "react";
-import axios from "axios";
-import ReportCard from "./ReportCard";
 import { apiClient } from "@/lib/api/client";
 import { useRouter } from "next/navigation";
-import { getFavoriteReports, getReports } from "@/lib/api/get";
+import { PiStar, PiStarFill } from "react-icons/pi";
+import { Report } from "@/lib/api/interfaces/report";
+import { deleteInterestReports } from "@/lib/api/delete";
+import { postInterestReports } from "@/lib/api/post";
+import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 
 interface ListViewProps {
   filter: "all" | "recent" | "interest";
@@ -25,68 +27,26 @@ interface ListViewProps {
   searchTrigger: number;
 }
 
-interface ReportDTO {
-  id: string;
-  title: string;
-  content: string;
-  inInterestedReport: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export default function ListView({
   keyword,
   filter,
   filter2,
   searchTrigger,
 }: ListViewProps) {
-  const [data, setData] = useState<ReportDTO[]>([]);
-  const [loading, setLoading] = useState(false);
-const ListView = ({ filter, view, asc }: viewProps) => {
   const [page, setPage] = useState(1);
   const pageSize = 6;
   const startRange = (page - 1) * pageSize;
   const endRange = startRange + pageSize;
 
-  const [viewList, setViewList] = useState<ReportDetail[]>([]);
-  const visibleItems = viewList?.slice(startRange, endRange);
+  const [data, setData] = useState<Report[]>([]);
+  const visibleItems = data?.slice(startRange, endRange);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  console.log("data", data);
 
   const route = useRouter();
   const goReport = (id: string) => {
     route.push(`/editor/${id}`);
-  };
-
-  const fetchReports = async () => {
-    setIsLoading(true);
-    try {
-      let data: ReportDetail[] = [];
-      if (filter === "all") {
-        data =
-          (await getReports({
-            sortField: "createdAt",
-            direction: asc ? "ASC" : "DESC",
-          })) || [];
-      } else if (filter === "recent") {
-        data =
-          (await getReports({
-            sortField: "updatedAt",
-            direction: asc ? "ASC" : "DESC",
-          })) || [];
-      } else if (filter === "favorite") {
-        data =
-          (await getFavoriteReports({
-            sortField: "updatedAt",
-            direction: asc ? "ASC" : "DESC",
-          })) || [];
-      }
-      setViewList(data || []);
-    } catch (error) {
-      console.log("fetching error", error);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   useEffect(() => {
@@ -100,23 +60,14 @@ const ListView = ({ filter, view, asc }: viewProps) => {
       .finally(() => setLoading(false));
   }, [searchTrigger, filter]);
 
-  if (loading) {
-    return <div>로딩중...</div>;
-  }
-  if (!data.length) {
-    return <div>검색 결과가 없습니다.</div>;
-  }
-    fetchReports();
-  }, [filter, asc]);
-
-  const clickFavorite = async (report: ReportDetail, index: number) => {
+  const clickFavorite = async (report: Report) => {
     try {
       if (report.isInterestedReport) {
         await deleteInterestReports(report.id);
       } else {
         await postInterestReports(report.id);
       }
-      setViewList((prev) =>
+      setData((prev) =>
         prev.map((item) =>
           item.id === report.id
             ? { ...item, isInterestedReport: !item.isInterestedReport }
@@ -128,60 +79,17 @@ const ListView = ({ filter, view, asc }: viewProps) => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Box w="100%">
-        <Skeleton height="40px" mb={4} />
-        <Skeleton height="40px" mb={4} />
-        <Skeleton height="40px" mb={4} />
-      </Box>
-    );
+  if (loading) {
+    return <div>로딩중...</div>;
   }
-
+  if (!data.length) {
+    return <div>검색 결과가 없습니다.</div>;
+  }
   return (
     <VStack w="100%">
       {filter2 === "list" ? (
         <Stack gap={4} w="100%">
-          {data.map((report) => (
-            // ReportCard 컴포넌트가 있으면 아래처럼 사용
-            // <ReportCard key={report.id} report={report} />
-            <Box
-              key={report.id}
-              bg="white"
-              shadow="md"
-              borderRadius="md"
-              borderColor="black"
-              w="100%"
-              h="70px"
-              display="flex"
-              alignItems="center"
-              px={4}
-            >
-              <HStack
-                padding={4}
-                gap={4}
-                justifyContent="space-between"
-                w="100%"
-              >
-                <HStack>
-                  <FaCopy style={{ marginRight: 8 }} />
-                  <Text>{report.title}</Text>
-                </HStack>
-                <VStack>
-                  <Text color="gray.500" fontSize="sm">
-                    createdAt : {report.createdAt}
-                  </Text>
-                  <Text color="gray.500" fontSize="sm">
-                    updatedAt : {report.updatedAt}
-                  </Text>
-                </VStack>
-              </HStack>
-            </Box>
-          ))}
-    <VStack w={"100%"}>
-      {view === "list" ? (
-        <Stack gap={4} w="100%" h={"100%"}>
-          {visibleItems?.map((report, index) => {
+          {visibleItems.map((report) => {
             const date = new Date(report.updatedAt);
             const formatted =
               date.getFullYear() +
@@ -189,9 +97,12 @@ const ListView = ({ filter, view, asc }: viewProps) => {
               String(date.getMonth() + 1).padStart(2, "0") +
               "/" +
               String(date.getDate()).padStart(2, "0");
+
             return (
+              // ReportCard 컴포넌트가 있으면 아래처럼 사용
+              // <ReportCard key={report.id} report={report} />
               <Box
-                key={index}
+                key={report.id}
                 bg="white"
                 shadow="md"
                 borderRadius="md"
@@ -215,19 +126,19 @@ const ListView = ({ filter, view, asc }: viewProps) => {
                   </HStack>
                   <HStack>
                     <Text color="gray.500" fontSize="sm" ml={4}>
-                      {report.updatedBy.name}
+                      {report.updatedBy}
                     </Text>
                     <Text color="gray.500" fontSize="sm" ml={4}>
                       {formatted}
                     </Text>
                     <Button
                       backgroundColor={"transparent"}
-                      onClick={() => clickFavorite(report, index)}
+                      onClick={() => clickFavorite(report)}
                     >
                       {report.isInterestedReport ? (
-                        <PiStarFill color="gold" size={20} />
+                        <PiStarFill color="#FFB22C" />
                       ) : (
-                        <PiStar color="gray.200" size={20} />
+                        <PiStar color="gray" />
                       )}
                     </Button>
                   </HStack>
@@ -238,39 +149,91 @@ const ListView = ({ filter, view, asc }: viewProps) => {
         </Stack>
       ) : (
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} gap={10} w="100%">
-          {data.map((report) => (
-            <Box
-              key={report.id}
-              borderRadius="md"
-              shadow="md"
-              overflow="hidden"
-              w="100%"
-            >
-              <Box bg="blue.100" h="120px">
-                <Text color="gray.700">{report.title}</Text>
-              </Box>
+          {visibleItems.map((report) => {
+            const date = new Date(report.updatedAt);
+
+            const formatted =
+              date.getFullYear() +
+              "/" +
+              String(date.getMonth() + 1).padStart(2, "0") +
+              "/" +
+              String(date.getDate()).padStart(2, "0");
+
+            return (
               <Box
-                bg="white"
-                px={4}
-                py={2}
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                gap={2}
+                key={report.id}
+                borderRadius="md"
+                shadow="md"
+                overflow="hidden"
+                w="100%"
               >
-                <VStack align="flex-end">
-                  <Text color="gray.500" fontSize="sm">
-                    createdAt : {report.createdAt}
-                  </Text>
-                  <Text color="gray.500" fontSize="sm">
-                    updatedAt : {report.updatedAt}
-                  </Text>
-                </VStack>
+                <Box bg="blue.100" h="120px">
+                  <Text color="gray.700">{report.title}</Text>
+                </Box>
+                <Box
+                  bg="white"
+                  px={4}
+                  py={2}
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap={2}
+                >
+                  <Box display="flex" justifyContent="flex-end" w="100%">
+                    <HStack align="flex-end">
+                      <Text color="gray.500" fontSize="sm">
+                        {report.updatedBy}
+                      </Text>
+                      <Text color="gray.500" fontSize="sm" ml={4}>
+                        {formatted}
+                      </Text>
+                      <Button
+                        bg={"white"}
+                        onClick={() => clickFavorite(report)}
+                        boxSize={6}
+                      >
+                        {report.isInterestedReport ? (
+                          <PiStarFill color="#FFB22C" />
+                        ) : (
+                          <PiStar color="gray" />
+                        )}
+                      </Button>
+                    </HStack>
+                  </Box>
+                </Box>
               </Box>
-            </Box>
-          ))}
+            );
+          })}
         </SimpleGrid>
       )}
+      <Pagination.Root
+        count={data?.length}
+        pageSize={pageSize}
+        page={page}
+        onPageChange={(e) => setPage(e.page)}
+      >
+        <ButtonGroup variant="ghost" size="sm">
+          <Pagination.PrevTrigger asChild>
+            <IconButton>
+              <HiChevronLeft />
+            </IconButton>
+          </Pagination.PrevTrigger>
+
+          <Pagination.Items
+            render={(page) => (
+              <IconButton variant={{ base: "ghost", _selected: "outline" }}>
+                {page.value}
+              </IconButton>
+            )}
+          />
+
+          <Pagination.NextTrigger asChild>
+            <IconButton>
+              <HiChevronRight />
+            </IconButton>
+          </Pagination.NextTrigger>
+        </ButtonGroup>
+      </Pagination.Root>
     </VStack>
   );
 }

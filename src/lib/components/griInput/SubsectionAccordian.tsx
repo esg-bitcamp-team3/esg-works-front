@@ -1,23 +1,24 @@
 import { Accordion, Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
 import subCategory from "@/lib/data/gri";
-import { Category } from "@/lib/interface";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { getCategories } from "@/lib/api/get";
-import { tokenCheck } from "@/lib/api/auth/auth";
+import { useCallback, useMemo, useState } from "react";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
-import DynamicInputForm from "../gri/InputForm";
 import { CategoryESGData } from "@/lib/api/interfaces/gri";
+import DynamicInputForm from "./InputForm";
+import { tokenCheck } from "@/lib/api/auth/auth";
 
 interface Props {
   categoryESGDataList: CategoryESGData[];
+  year: string;
 }
 
 type subSection = Record<string, CategoryESGData[]>;
 type FieldMap = Record<string, { value: string; isExisting: boolean }>;
 
-const SubsectionAccordian = ({ categoryESGDataList }: Props) => {
+const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
   const [value, setValue] = useState<string>("");
+
+  const [fieldValues, setFieldValues] = useState<FieldMap>({});
 
   const partedSection = useMemo(() => {
     const groupedBySection: subSection = {};
@@ -31,14 +32,6 @@ const SubsectionAccordian = ({ categoryESGDataList }: Props) => {
     return groupedBySection;
   }, [categoryESGDataList]);
 
-  const [categoryList, setCategoryList] = useState<CategoryESGData[]>([]);
-
-  const setCategory = () => {
-    // setCategoryList()
-  };
-
-  const [fieldValues, setFieldValues] = useState<FieldMap>({});
-
   const handleFieldChange = useCallback(
     (categoryId: string, value: string, isExisting: boolean) => {
       setFieldValues((prev) => ({
@@ -49,42 +42,49 @@ const SubsectionAccordian = ({ categoryESGDataList }: Props) => {
     []
   );
 
-  const outputList = useMemo(() => {
-    return categoryList.map((category) => {
-      const { value, isExisting } = fieldValues[category.categoryId] || {
-        value: "",
-        isExisting: false,
-      };
-      return { ...category, value, isExisting };
-    });
-  }, [categoryList, fieldValues]);
+  const outputList = useCallback(
+    (categoryList: CategoryESGData[]) => {
+      return categoryList.map((category) => {
+        const { value, isExisting } = fieldValues[category.categoryId] || {
+          value: "",
+          isExisting: false,
+        };
+        return { ...category, value, isExisting };
+      });
+    },
+    [fieldValues]
+  );
 
-  // const handleSaveAll = useCallback(async () => {
-  //   const user = await tokenCheck();
-  //   if (!user) {
-  //     console.error("User not authenticated");
-  //     return;
-  //   }
+  const handleSaveAll = useCallback(
+    async (index: number) => {
+      const user = await tokenCheck();
+      if (!user) {
+        console.error("User not authenticated");
+        return;
+      }
+      for (const item of outputList(Object.values(partedSection)[index])) {
+        console.log(item);
 
-  //   for (const item of outputList) {
-  //     const outputData = {
-  //       categoryId: item.categoryId,
-  //       corpId: user.corpId,
-  //       year: ,
-  //       value: item.value,
-  //     };
+        const outputData = {
+          categoryId: item.categoryId,
+          corpId: user.corpId,
+          year: year,
+          value: item.value,
+        };
 
-  //     try {
-  //       if (item.isExisting) {
-  //         await patchESGData(outputData);
-  //       } else {
-  //         await postESGData(outputData);
-  //       }
-  //     } catch (error) {
-  //       console.error(`Error saving category ${item.categoryId}`, error);
-  //     }
-  //   }
-  // }, [outputList, year]);
+        try {
+          if (item.isExisting) {
+            await patchESGData(outputData);
+          } else {
+            await postESGData(outputData);
+          }
+        } catch (error) {
+          console.error(`Error saving category ${item.categoryId}`, error);
+        }
+      }
+    },
+    [outputList, partedSection]
+  );
 
   return (
     <Accordion.Root
@@ -93,7 +93,7 @@ const SubsectionAccordian = ({ categoryESGDataList }: Props) => {
       value={[value]}
       onValueChange={(e) => setValue(e.value[0] || "")}
     >
-      {Object.entries(partedSection).map(([key, value]) => (
+      {Object.entries(partedSection).map(([key, value], index) => (
         <Accordion.Item
           key={key}
           value={key}
@@ -113,7 +113,7 @@ const SubsectionAccordian = ({ categoryESGDataList }: Props) => {
             </Accordion.ItemTrigger>
             <Button
               variant={"solid"}
-              // onClick={handleSaveAll}
+              onClick={() => handleSaveAll(index)}
               colorPalette="gray"
               px={6}
             >

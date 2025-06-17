@@ -6,6 +6,8 @@ import {
   HStack,
   InputGroup,
   Skeleton,
+  Button,
+  Text,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { getGri, getGriBySection, getSections } from "@/lib/api/get";
@@ -50,7 +52,6 @@ const GriPage = () => {
   const [year, setYear] = useState("2020");
   const [search, setSearch] = useState<string>("");
 
-  const [griList, setGriList] = useState<SectionCategoryESGData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // const fetchSearch = useCallback(
@@ -123,7 +124,7 @@ const GriPage = () => {
                 <Skeleton height="50px" w="100%" />
               </VStack>
             ) : ( */}
-            <SectionAccordian section={section} />
+            <SectionAccordian year={year} section={section} />
             {/* )} */}
           </Box>
         </VStack>

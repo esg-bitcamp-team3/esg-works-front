@@ -14,9 +14,10 @@ import SubsectionAccordian from "./SubsectionAccordian";
 
 interface Props {
   section: string;
+  year: string;
 }
 
-const SectionAccordian = ({ section }: Props) => {
+const SectionAccordian = ({ section, year }: Props) => {
   const [sectionLoading, setSectionLoading] = useState(true);
   const [value, setValue] = useState<string>("");
   const [sections, setSections] = useState<Section[]>([]);
@@ -33,31 +34,35 @@ const SectionAccordian = ({ section }: Props) => {
     }
   }, [section]);
 
-  useEffect(() => {
-    fetchSections();
-  }, [fetchSections]);
-
   const [sectionCategory, setSectionCategory] =
     useState<SectionCategoryESGData>();
 
   const [isLoading, setIsLoading] = useState(true);
 
-  const clickSection = useCallback(async (year: string, section: string) => {
-    try {
-      setIsLoading(true);
-      const data = await getGriBySectionSelect(year, section);
-
-      setSectionCategory(data);
-    } catch (error) {
-      console.error("fetch 실패");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
+  const clickSection = useCallback(
+    async (year: string, section: string) => {
+      try {
+        setIsLoading(true);
+        const data = await getGriBySectionSelect(year, section);
+        setSectionCategory(data);
+      } catch (error) {
+        console.error("fetch 실패");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [section]
+  );
   const categoryList = useMemo(() => {
     return sectionCategory?.categoryESGDataList || [];
   }, [sectionCategory]);
+
+  useEffect(() => {
+    fetchSections();
+  }, [fetchSections, clickSection]);
+  useEffect(() => {
+    setValue("");
+  }, [year]);
 
   if (sectionLoading) {
     return (
@@ -100,7 +105,7 @@ const SectionAccordian = ({ section }: Props) => {
             justifyContent="space-between"
             alignItems="center"
             width="100%"
-            onClick={() => clickSection("2020", item.sectionId)}
+            onClick={() => clickSection(year, item.sectionId)}
           >
             <Text textStyle={"md"} fontWeight="bold" color="gray.700">
               {item.sectionId + " : " + item.sectionName}
@@ -114,7 +119,10 @@ const SectionAccordian = ({ section }: Props) => {
                 {isLoading ? (
                   <Spinner size="sm" color="blue.500" />
                 ) : (
-                  <SubsectionAccordian categoryESGDataList={categoryList} />
+                  <SubsectionAccordian
+                    categoryESGDataList={categoryList}
+                    year={year}
+                  />
                 )}
               </Box>
             )}
