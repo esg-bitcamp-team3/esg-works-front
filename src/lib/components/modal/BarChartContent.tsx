@@ -22,7 +22,7 @@ import {
   FcLineChart,
   FcPieChart,
 } from "react-icons/fc";
-import ChartDataLabels from "chartjs-plugin-datalabels";
+
 import { getEsgData } from "@/lib/api/get";
 import { ChartType, DatasetType, DataType } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
@@ -42,10 +42,7 @@ import {
   ChartOptions,
   ChartData,
 } from "chart.js";
-import BarChartColor from "./barChartColor";
-import LineChartColor from "./LineChartColor";
-import PieChartColor from "./PieChartColor";
-import MixedChartColor from "./MixedChartColor";
+import BarChartColor from "./BarChartColor";
 
 ChartJS.register(
   LinearScale,
@@ -56,25 +53,27 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend,
-  ChartDataLabels
+  Legend
 );
 
 export interface ChartContentProps {
   categorizedEsgDataList: CategorizedESGDataList[];
+  charts: {
+    type: string;
+    label: string;
+    icons: React.ElementType;
+  }[];
 }
 
-const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
+const BarChartContent = ({
+  categorizedEsgDataList,
+  charts,
+}: ChartContentProps) => {
   const [chartData, setChartData] = useState<ChartData>();
   const [selectedChartType, setSelectedChartType] =
     useState<ChartType["type"]>("bar");
   const [options, setOptions] = useState<ChartOptions>({});
   const [loading, setLoading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const onChartTypeChange = () => {
-    setRefreshKey((prevKey) => prevKey + 1); // Increment key to force re-render
-  };
 
   const getChartOptions = (): ChartOptions<
     "bar" | "line" | "pie" | "doughnut"
@@ -278,6 +277,7 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
       }
 
       setChartData(newChartData as ChartData);
+      console.log("Chart data updated:", newChartData);
     }
   }, [categorizedEsgDataList, selectedChartType]);
 
@@ -325,8 +325,9 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
       direction={{ base: "column", md: "column" }}
       justifyContent={{ base: "center", md: "space-between" }}
       alignItems={{ base: "flex-start", md: "center" }}
-      minHeight={{ base: "45vh", md: "35vh", lg: "30vh" }}
-      maxHeight={{ base: "50vh", md: "40vh", lg: "80vh" }}
+      // minHeight={{ base: "45vh", md: "35vh", lg: "30vh" }}
+      // maxHeight={{ base: "50vh", md: "40vh", lg: "80vh" }}
+      height='100vh'
       width="100%"
       gap="4"
       p="1"
@@ -408,7 +409,6 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
               justifyItems="center"
             >
               <Chart
-                key={refreshKey} // Use refreshKey to force re-render
                 type={selectedChartType === "mixed" ? "bar" : selectedChartType}
                 data={chartData}
                 options={options}
@@ -438,112 +438,27 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
             <Text fontSize="sm" color="gray.500">
               차트 색상을 불러오는 중입니다...
             </Text>
-          ) : (
-            <>
-              {selectedChartType === "bar" && (
-                <BarChartColor
-                  chartData={
-                    (chartData as ChartData<"bar">) || {
-                      labels: [],
-                      datasets: [],
-                    }
-                  }
-                  setChartData={
-                    handleChartDataChange as (data: ChartData<"bar">) => void
-                  }
-                  options={options as ChartOptions<"bar">}
-                  setOptions={
-                    setOptions as (chartOptions: ChartOptions<"bar">) => void
-                  }
-                />
-              )}
-              {selectedChartType === "line" && (
-                <LineChartColor
-                  chartData={
-                    (chartData as ChartData<"line">) || {
-                      labels: [],
-                      datasets: [],
-                    }
-                  }
-                  setChartData={
-                    handleChartDataChange as (data: ChartData<"line">) => void
-                  }
-                  options={options as ChartOptions<"line">}
-                  setOptions={
-                    setOptions as (chartOptions: ChartOptions<"line">) => void
-                  }
-                />
-              )}
-              {selectedChartType === "pie" && (
-                <PieChartColor
-                  chartData={
-                    (chartData as ChartData<"pie" | "doughnut">) || {
-                      labels: [],
-                      datasets: [],
-                    }
-                  }
-                  setChartData={
-                    setChartData as (
-                      data: ChartData<"pie" | "doughnut">
-                    ) => void
-                  }
-                  options={options as ChartOptions<"pie" | "doughnut">}
-                  setOptions={
-                    setOptions as (
-                      chartOptions: ChartOptions<"pie" | "doughnut">
-                    ) => void
-                  }
-                />
-              )}
-              {selectedChartType === "doughnut" && (
-                <PieChartColor
-                  chartData={
-                    (chartData as ChartData<"pie" | "doughnut">) || {
-                      labels: [],
-                      datasets: [],
-                    }
-                  }
-                  setChartData={
-                    setChartData as (
-                      data: ChartData<"pie" | "doughnut">
-                    ) => void
-                  }
-                  options={options as ChartOptions<"pie" | "doughnut">}
-                  setOptions={
-                    setOptions as (
-                      chartOptions: ChartOptions<"pie" | "doughnut">
-                    ) => void
-                  }
-                />
-              )}
-              {selectedChartType === "mixed" && (
-                <MixedChartColor
-                  chartData={
-                    (chartData as ChartData<"bar" | "line">) || {
-                      labels: [],
-                      datasets: [],
-                    }
-                  }
-                  setChartData={
-                    handleChartDataChange as (
-                      data: ChartData<"bar" | "line">
-                    ) => void
-                  }
-                  options={options as ChartOptions<"bar" | "line">}
-                  setOptions={
-                    setOptions as (
-                      chartOptions: ChartOptions<"bar" | "line">
-                    ) => void
-                  }
-                  onChartTypeChange={onChartTypeChange}
-                />
-              )}
-            </>
-          )}
+          ) : selectedChartType === "bar" ? (
+            <BarChartColor
+              chartData={
+                (chartData as ChartData<"bar">) || {
+                  labels: [],
+                  datasets: [],
+                }
+              }
+              setChartData={
+                handleChartDataChange as (data: ChartData<"bar">) => void
+              }
+              options={options as ChartOptions<"bar">}
+              setOptions={
+                setOptions as (chartOptions: ChartOptions<"bar">) => void
+              }
+            />
+          ) : null}
         </Box>
       </Stack>
     </Flex>
   );
 };
 
-export default ChartContent;
+export default BarChartContent;

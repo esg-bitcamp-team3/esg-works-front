@@ -49,12 +49,17 @@ export const getSearchSectionId = async (sectionId: string) => {
 
 // =============================
 
-export const getCategories = async (sectionId: string) => {
+export const getCategories = async (sectionId?: string) => {
   try {
-    const res = await apiClient.get<CategoryDetail[]>(
-      `/categories/by-section/${sectionId}`
-    );
-    return res.data;
+    if (sectionId) {
+      const res = await apiClient.get<CategoryDetail[]>(
+        `/categories/by-section/${sectionId}`
+      );
+      return res.data;
+    } else {
+      const res = await apiClient.get<CategoryDetail[]>(`/categories`);
+      return res.data;
+    }
   } catch (error) {
     console.error("카테고리 가져오기 실패:", error);
     return [];
@@ -76,7 +81,7 @@ export const getEsgData = async (categoryId: string) => {
 
 export const getChart = async () => {
   try {
-    const res = await apiClient.get<ChartDetail[]>(`/charts/my/`);
+    const res = await apiClient.get<ChartDetail[]>(`/charts/my`);
     console.log("Chart data:", res.data);
     return res.data;
   } catch (error) {
@@ -88,7 +93,7 @@ export const getChart = async () => {
 export const getInterestChart = async () => {
   try {
     const res = await apiClient.get<InteresrtChartDetail[]>(
-      `/interest-charts/my/`
+      `/interest-charts/my`
     );
     console.log("Interest Chart data:", res.data);
     return res.data;
