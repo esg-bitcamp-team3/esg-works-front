@@ -90,7 +90,7 @@ export default function Home() {
         <Stack>
           <Flex
             flexDirection={"column"}
-            gap={10}
+            gap={4}
             w="6xl"
             alignItems="start"
             h={"100%"}
