@@ -32,7 +32,7 @@ const YearSelector = ({ value, onValueChange }: YearSelectorProps) => {
   return (
     <Select.Root
       collection={yearCollection}
-      size="xs"
+      size="sm"
       width="160px"
       value={[value]}
       defaultValue={["2020"]}

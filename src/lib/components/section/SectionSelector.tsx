@@ -16,6 +16,8 @@ interface SectionSelectorProps {
   criterionId: string;
   value: string;
   onValueChange: (value: string) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const SectionSelector = ({
@@ -24,19 +26,20 @@ const SectionSelector = ({
   criterionId,
   value,
   onValueChange,
+  loading,
+  setLoading,
 }: SectionSelectorProps) => {
-  const [isLoading, setIsLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
   const getData = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       const data = (await getSectionsByCriterion(criterionId)) || [];
       setSectionList(data);
     } catch (error) {
       console.error("Error fetching sections:", error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -74,12 +77,19 @@ const SectionSelector = ({
       onValueChange={(e) => {
         onValueChange(e.value[0]);
       }}
+      bg="white"
+      openOnClick
     >
-      <Combobox.Label></Combobox.Label>
       <Combobox.Control>
-        <Combobox.Input placeholder="검색어를 입력하세요" />
+        <Combobox.Input
+          placeholder="검색어를 입력하세요"
+          bg="white"
+          borderColor="gray.200"
+          borderWidth={"1px"}
+          _focus={{ borderColor: "gray.400", boxShadow: "none" }}
+        />
         <Combobox.IndicatorGroup>
-          {isLoading && (
+          {loading && (
             <Spinner size="xs" borderWidth="1.5px" color="fg.muted" />
           )}
           <Combobox.ClearTrigger onClick={() => onValueChange("")} />
