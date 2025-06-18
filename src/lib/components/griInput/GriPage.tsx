@@ -1,30 +1,10 @@
 "use client";
-import {
-  Box,
-  Container,
-  VStack,
-  HStack,
-  InputGroup,
-  Skeleton,
-  Button,
-  Text,
-  Input,
-} from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
-import {
-  getGri,
-  getGriBySection,
-  // getGriByYearAndSectionIdAndCategoryName,
-  getSections,
-} from "@/lib/api/get";
-import { FaSearch } from "react-icons/fa";
-
-import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
-import Selector from "../gri/Selector";
-import SearchInput from "../gri/SearchInput";
+import { Box, Container, VStack, HStack } from "@chakra-ui/react";
+import { useState } from "react";
 import SectionAccordian from "./SectionAccodian";
-import { Section } from "@/lib/interface";
-import { debounce } from "lodash";
+import Selector from "./Selector";
+import SectionSelector from "../section/SectionSelector";
+import { Criterion, Section } from "@/lib/interface";
 
 const CARD_STYLES = {
   bg: "white",
@@ -45,47 +25,37 @@ const yearList = [
   { label: "2024", value: "2024" },
   { label: "2025", value: "2025" },
 ];
-const sectionList = [
-  { label: "전체", value: "0" },
+const sectionsSelector = [
+  { label: "전체", value: "all" },
   { label: "GRI 200 : 경제", value: "200" },
   { label: "GRI 300 : 환경", value: "300" },
   { label: "GRI 400 : 사회", value: "400" },
 ];
 
-const GriPage = () => {
-  const [section, setSection] = useState("200");
+const GriPage = ({ criterionId, criterionName }: Criterion) => {
+  const [sectionSelect, setSectionSelect] = useState("200");
   const [year, setYear] = useState("2020");
-  const [search, setSearch] = useState<string>("");
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [categoryList, setCategoryList] = useState<SectionCategoryESGData[]>();
+  const [loading, setLoading] = useState(true);
+  const [sectionList, setSectionList] = useState<Section[]>([]);
+  const [section, setSection] = useState<Section[]>([]);
+  const [sectionId, setSectionId] = useState<string>("");
 
-  // 디바운스된 검색 함수 (300ms 후 실행)
-  const debouncedSearch = useCallback(
-    debounce((value: string) => {
-      setSearch(value);
-    }, 300),
-    []
-  );
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setSearch(val);
-    debouncedSearch(val);
-  };
-
-  const searchByCategoryName = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      // const data = await getGriByYearAndSectionIdAndCategoryName(year, search);
-      // setCategoryList(data);
-      // console.log(data);
-    } catch (error) {
-      console.error("searching 실패", error);
-    } finally {
-      setIsLoading(false);
+  const handleSectionChange = (sectionId: string) => {
+    setSectionId(sectionId);
+    if (!sectionId) {
+      setSection([]);
+      return;
     }
-  }, [search]);
+    const selectedSection = sectionList.find(
+      (item) => item.sectionId === sectionId
+    );
+    if (selectedSection) {
+      setSection([selectedSection]);
+    } else {
+      setSection([]);
+    }
+  };
 
   return (
     <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
@@ -93,34 +63,21 @@ const GriPage = () => {
         <VStack gap={8}>
           <HStack w="100%" gap={4} justifyContent="space-between">
             <Selector
-              items={sectionList}
-              text="GRI Standards"
-              value={section}
-              onValueChange={setSection}
+              items={sectionsSelector}
+              // text="GRI Standards"
+              value={sectionSelect}
+              onValueChange={setSectionSelect}
             />
             <Box position="relative" w="md">
-              <InputGroup
-                startElement={
-                  <Box display="flex" alignItems="center">
-                    <FaSearch color="#2F6EEA" />
-                  </Box>
-                }
-                alignItems="start"
-                w="100%"
-              >
-                <Input
-                  value={search}
-                  onChange={handleChange}
-                  flex={1}
-                  bg={"white"}
-                  borderWidth="1px"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      searchByCategoryName();
-                    }
-                  }}
-                />
-              </InputGroup>
+              <SectionSelector
+                sectionList={sectionList}
+                setSectionList={setSectionList}
+                criterionId={criterionId}
+                value={sectionId}
+                onValueChange={handleSectionChange}
+                loading={loading}
+                setLoading={setLoading}
+              />
             </Box>
             <HStack>
               <Selector
@@ -133,15 +90,11 @@ const GriPage = () => {
             </HStack>
           </HStack>
           <Box minW="100%" maxH="60vh" overflowY="auto" scrollbarWidth={"none"}>
-            {/* {isLoading ? (
-              <VStack w="100%" gap={4}>
-                <Skeleton height="50px" w="100%" />
-                <Skeleton height="50px" w="100%" />
-                <Skeleton height="50px" w="100%" />
-              </VStack>
-            ) : ( */}
-            <SectionAccordian year={year} section={section} />
-            {/* )} */}
+            <SectionAccordian
+              year={year}
+              section={sectionSelect}
+              search={section}
+            />
           </Box>
         </VStack>
       </Container>

@@ -12,6 +12,7 @@ import {
   Tabs,
   TabsContent,
   Flex,
+  Skeleton,
 } from "@chakra-ui/react";
 import { FaCopy } from "react-icons/fa6";
 import { useState, useEffect } from "react";
@@ -48,13 +49,24 @@ interface ContentProps {
   visibleItems: Report[];
   goReport: (id: string) => void;
   clickFavorite: (report: Report) => void;
+  loading: boolean;
 }
 
 const ListContent = ({
   visibleItems,
   goReport,
   clickFavorite,
+  loading,
 }: ContentProps) => {
+  if (loading) {
+    return (
+      <Box w="100%">
+        <Skeleton height="40px" mb={4} />
+        <Skeleton height="40px" mb={4} />
+        <Skeleton height="40px" mb={4} />
+      </Box>
+    );
+  }
   return (
     <Stack gap={4} w="100%">
       {visibleItems.map((report) => {
@@ -121,7 +133,34 @@ const GridContent = ({
   visibleItems,
   goReport,
   clickFavorite,
+  loading,
 }: ContentProps) => {
+  if (loading) {
+    return (
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} gap={10} w="100%">
+        {Array.from({ length: 3 }).map((_, idx) => (
+          <Box
+            key={idx}
+            borderRadius="md"
+            shadow="md"
+            overflow="hidden"
+            w="100%"
+            gap={4}
+          >
+            <Skeleton height="130px" />
+            <Box bg="white" px={4} py={2}>
+              <HStack align="flex-end" justify="space-between">
+                <Skeleton height="20px" width="60px" />
+
+                <Skeleton height="20px" width="60px" />
+                <Skeleton height="24px" width="24px" borderRadius="full" />
+              </HStack>
+            </Box>
+          </Box>
+        ))}
+      </SimpleGrid>
+    );
+  }
   return (
     <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} gap={10} w="100%">
       {visibleItems.map((report) => {
@@ -189,25 +228,18 @@ interface ListViewProps {
   filter: "all" | "recent" | "interest";
   filter2: "list" | "layout";
   keyword: string;
-  searchTrigger: number;
 }
 
-export default function ListView({
-  keyword,
-  filter,
-  filter2,
-  searchTrigger,
-}: ListViewProps) {
+export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
   const [page, setPage] = useState(1);
   const pageSize = 6;
   const startRange = (page - 1) * pageSize;
   const endRange = startRange + pageSize;
 
-  const [data, setData] = useState<Report[]>([]);
+  const [data, setData] = useState<Report[]>();
   const visibleItems = data?.slice(startRange, endRange);
 
   const [loading, setLoading] = useState(true);
-  console.log("data", data);
 
   const route = useRouter();
   const goReport = (id: string) => {
@@ -223,7 +255,7 @@ export default function ListView({
       .then((res) => setData(res.data))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
-  }, [searchTrigger, filter]);
+  }, [keyword, filter]);
 
   const clickFavorite = async (report: Report) => {
     try {
@@ -232,7 +264,7 @@ export default function ListView({
       } else {
         await postInterestReports(report.id);
       }
-      setData((prev) =>
+      setData((prev = []) =>
         prev.map((item) =>
           item.id === report.id
             ? { ...item, isInterestedReport: !item.isInterestedReport }
@@ -244,12 +276,10 @@ export default function ListView({
     }
   };
 
-  if (loading) {
-    return <div>로딩중...</div>;
+  if (data && data.length === 0) {
+    return <Text>검색 결과가 없습니다.</Text>;
   }
-  if (!data.length) {
-    return <div>검색 결과가 없습니다.</div>;
-  }
+
   return (
     <VStack w="100%" gap={4}>
       <Box w={"100%"} position="relative">
@@ -261,16 +291,18 @@ export default function ListView({
         >
           <TabContent value="list">
             <ListContent
-              visibleItems={visibleItems}
+              visibleItems={visibleItems || []}
               goReport={goReport}
               clickFavorite={clickFavorite}
+              loading={loading}
             />
           </TabContent>
           <TabContent value="layout">
             <GridContent
-              visibleItems={visibleItems}
+              visibleItems={visibleItems || []}
               goReport={goReport}
               clickFavorite={clickFavorite}
+              loading={loading}
             />
           </TabContent>
         </Tabs.Root>

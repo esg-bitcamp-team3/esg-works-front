@@ -16,7 +16,9 @@ export async function getDataByCorpYear(data: DataFilter) {
       }
     );
     return response.data;
-  } catch (error) {}
+  } catch (error) {
+    return null;
+  }
 }
 
 import { ChartDetail, InteresrtChartDetail } from "./interfaces/chart";
