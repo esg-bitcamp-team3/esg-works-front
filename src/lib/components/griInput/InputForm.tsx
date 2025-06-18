@@ -66,7 +66,7 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
         onFieldChange?.(category.categoryId, "", false);
       }
     } catch (error) {
-      console.log(error);
+      return null;
     }
   }, [year]);
 
@@ -78,8 +78,8 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
 
   return (
     <Box
-      w={"150%"}
-      p={6}
+      minW="140%"
+      p={4}
       borderWidth="1px"
       borderRadius="xl"
       mb={4}
@@ -87,9 +87,14 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
       transition="all 0.2s"
       _hover={{ boxShadow: "md" }}
     >
-      <HStack gap={4} align="stretch" justifyContent={"space-between"}>
+      <HStack
+        gap={4}
+        align="stretch"
+        justifyContent={"space-between"}
+        minW="600px"
+      >
         <HStack>
-          <Text fontSize={"sm"} fontWeight={"bold"} maxLines={1}>
+          <Text fontSize={"sm"} fontWeight={"bold"} maxLines={1} pl={2}>
             {category.categoryName}
           </Text>
           <ToggleTip
@@ -150,7 +155,7 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
                     _hover={{ borderColor: "gray.400" }}
                     _focus={{ borderColor: "gray.400" }}
                     bg={"white"}
-                    w={"40%"}
+                    w={"80%"}
                     p={4}
                     placeItems={"end"}
                   />

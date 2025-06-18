@@ -22,7 +22,6 @@ export default function Home() {
   >("all");
   const [activeFilter2, setActiveFilter2] = useState<"list" | "layout">("list");
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [searchTrigger, setSearchTrigger] = useState(0);
 
   // const handleSearch = () => {
   //   setSearchTrigger((prev) => prev + 1);
@@ -60,15 +59,10 @@ export default function Home() {
             className="search-box"
             onSubmit={(e) => {
               e.preventDefault();
-              setSearchTrigger((v) => v + 1);
             }}
           >
             <Flex gap={2} alignItems="center" width="300%" height={"20%"}>
-              <SearchBar
-                keyword={searchKeyword}
-                setKeyword={setSearchKeyword}
-                onSearch={() => setSearchTrigger((v) => v + 1)}
-              />
+              <SearchBar onSearch={setSearchKeyword} />
               <Button
                 type="submit"
                 mt={2}
@@ -178,7 +172,6 @@ export default function Home() {
               keyword={searchKeyword}
               filter={activeFilter}
               filter2={activeFilter2}
-              searchTrigger={searchTrigger}
             />
           </Flex>
         </Stack>

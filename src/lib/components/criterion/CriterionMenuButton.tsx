@@ -24,6 +24,7 @@ export default function CriterionMenuButton({
       setCriteria((prev: Criterion[]) => prev.filter((c: Criterion) => c.criterionId !== criterionId));
       if (selected === criterionId) setSelected(null);
       alert("삭제 완료!");
+      window.location.reload();
     } catch (err) {
       console.error("삭제 에러:", err);
       alert("삭제에 실패했어요 😢");

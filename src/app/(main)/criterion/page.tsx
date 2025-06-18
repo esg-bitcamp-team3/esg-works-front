@@ -1,12 +1,12 @@
 "use client";
 
-import StandardsPage from "@/lib/components/gri/StandardsPage";
+import StandardsPage from "@/lib/components/griInput/StandardsPage";
 import { Flex, Text, VStack } from "@chakra-ui/react";
 
 const Page = () => {
   return (
     <Flex
-      padding={4}
+      padding={4} 
       flexDirection="column"
       alignItems="center"
       justifyContent="center"

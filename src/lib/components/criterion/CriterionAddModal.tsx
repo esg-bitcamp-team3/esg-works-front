@@ -51,6 +51,7 @@ export default function CriterionAddModal() {
       setNewCriterion(""); // 입력값 초기화
 
       alert("저장 완료!");
+      window.location.reload();
     } catch (err) {
       console.error("저장 에러:", err);
       alert("문제가 발생했어요 😢");

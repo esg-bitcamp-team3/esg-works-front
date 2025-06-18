@@ -112,12 +112,15 @@ const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
               </Text>
             </Accordion.ItemTrigger>
             <Button
-              variant={"solid"}
+              variant={"subtle"}
               onClick={() => handleSaveAll(index)}
               colorPalette="gray"
-              px={6}
+              px={4}
+              size={"sm"}
             >
-              저장
+              <Text fontSize="xs" color="gray.900">
+                저장
+              </Text>
             </Button>
           </HStack>
           <Accordion.ItemContent>

@@ -44,8 +44,10 @@ const StandardsPage = () => {
         p={2}
         width="70vw"
         minHeight="65vh"
+        maxHeight='65vh'
         overflowY="auto"
         padding="8"
+        className="custom-scrollbar"
       >
         <VStack align="center" width="100%">
           {loading
