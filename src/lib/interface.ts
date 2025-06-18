@@ -36,3 +36,8 @@ export interface DataFilter {
   categoryId: string;
   year: string;
 }
+
+export interface Criterion {
+  criterionId: string;
+  criterionName: string;
+}

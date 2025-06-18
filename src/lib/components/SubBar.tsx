@@ -64,6 +64,7 @@ import { FaSearch } from "react-icons/fa";
 import { Section } from "../interface";
 import SubTableContent from "./section/SubTableContent";
 import Selector from "./gri/Selector";
+import DataTab from "./section/DataTab";
 
 const items = [
   {
@@ -284,7 +285,7 @@ const Subbar = () => {
             </HStack>
 
             {/* 검색창 */}
-            <Box>
+            {/* <Box>
               <InputGroup
                 startElement={
                   <Box pl="4" display="flex">
@@ -319,7 +320,7 @@ const Subbar = () => {
                   </Box>
                 </VStack>
               </Box>
-            </Box>
+            </Box> */}
 
             {/* 전체 버튼 */}
             {activeIndex !== 0 && (
@@ -399,85 +400,7 @@ const Subbar = () => {
               </>
             )}
 
-            {activeIndex === 0 && (
-              <>
-                <Box w="100%" pt={4} pb={4}>
-                  <HStack spaceX={6} align="center" justify="space-between">
-                    <Selector
-                      items={GRIsectionList}
-                      text="GRI Standards"
-                      selected={(value) => {
-                        setCategory(value);
-                        refreshSection(value);
-                      }}
-                      width="100%"
-                    />
-                    <Selector
-                      items={yearList}
-                      text="연도"
-                      selected={(value) => setYear(value)}
-                      width="100%"
-                    />
-                  </HStack>
-                </Box>
-              </>
-            )}
-
-            {/* Section 기준 항목 */}
-            {activeIndex === 0 && (
-              <>
-                <Accordion.Root
-                  collapsible
-                  width="100%"
-                  value={[value]}
-                  onValueChange={(e) => setValue(e.value[0] || "")}
-                >
-                  {sectionList.map((item, index) => (
-                    <Accordion.Item
-                      key={index}
-                      value={item.sectionId}
-                      borderWidth="1px"
-                      borderColor="gray.200"
-                      borderRadius="lg"
-                      mb={4}
-                      overflow="hidden"
-                      _hover={{ borderColor: "blue.200" }}
-                      transition="all 0.2s ease"
-                    >
-                      <Accordion.ItemTrigger
-                        p={6}
-                        bg="white"
-                        _hover={{ bg: "blue.50" }}
-                        _expanded={{
-                          bg: "blue.50",
-                          borderBottomWidth: "1px",
-                          borderColor: "gray.200",
-                        }}
-                        display="flex"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        width="100%"
-                      >
-                        <Text
-                          textStyle={"md"}
-                          fontWeight="bold"
-                          color="gray.700"
-                        >
-                          {item.sectionId + " : " + item.sectionName}
-                        </Text>
-
-                        <Accordion.ItemIndicator colorPalette="blue" />
-                      </Accordion.ItemTrigger>
-                      <Accordion.ItemContent>
-                        <Box p={6} bg="white">
-                          {<SubTableContent no={item.sectionId} year={year} />}
-                        </Box>
-                      </Accordion.ItemContent>
-                    </Accordion.Item>
-                  ))}
-                </Accordion.Root>
-              </>
-            )}
+            {activeIndex === 0 && <DataTab />}
 
             {/* 차트 목록 */}
             {activeIndex === 1 && (
