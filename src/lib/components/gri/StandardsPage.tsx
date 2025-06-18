@@ -1,17 +1,11 @@
-import {
-  Box,
-  VStack,
-  Button,
-  Separator,
-  Text,
-  Skeleton,
-} from "@chakra-ui/react";
+import { Box, VStack, Separator, Text, Skeleton, Flex } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs";
 import { getMyCriteria } from "@/lib/api/get";
 import type { Criterion } from "@/lib/interface";
+import CriterionMenuButton from "../criterion/CriterionMenuButton";
+import CriterionAddModal from "../criterion/CriterionAddModal";
 
 const CARD_STYLES = {
   bg: "white",
@@ -38,99 +32,102 @@ const StandardsPage = () => {
   }, []);
 
   return (
-    <Box
-      {...CARD_STYLES}
-      p={2}
-      width="70vw"
-      minHeight="65vh"
-      overflowY="auto"
-      padding="8"
-    >
-      <VStack align="center" width="100%">
-        {loading
-          ? Array.from({
-              length: criteria.length > 0 ? criteria.length : 4,
-            }).map((_, idx) => (
-              <Box key={`skeleton-${idx}`} width="100%">
-                <Box
-                  display="flex"
-                  gap={2}
-                  paddingLeft="2"
-                  paddingRight="2"
-                  width="100%"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Skeleton height="36px" width="100%" borderRadius="md" />
-                </Box>
-                {idx < (criteria.length > 0 ? criteria.length : 4) - 1 && (
-                  <Skeleton
-                    height="2px"
+    <Flex direction="column" gap="3">
+      {/* 기준 추가 버튼 */}
+      <Flex width="100%" justifyContent="end">
+        <CriterionAddModal />
+      </Flex>
+
+      {/* 기준 리스트 */}
+      <Box
+        {...CARD_STYLES}
+        p={2}
+        width="70vw"
+        minHeight="65vh"
+        overflowY="auto"
+        padding="8"
+      >
+        <VStack align="center" width="100%">
+          {loading
+            ? Array.from({
+                length: criteria.length > 0 ? criteria.length : 4,
+              }).map((_, idx) => (
+                <Box key={`skeleton-${idx}`} width="100%">
+                  <Box
+                    display="flex"
+                    gap={2}
+                    paddingLeft="2"
+                    paddingRight="2"
                     width="100%"
-                    borderRadius="full"
-                    my={1}
-                  />
-                )}
-              </Box>
-            ))
-          : criteria.map((std, idx) => (
-              <Box key={std.criterionId + "-wrapper"} width="100%">
-                <Box
-                  display="flex"
-                  gap={2}
-                  paddingLeft="6"
-                  paddingRight="2"
-                  width="100%"
-                  height="full"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Tooltip
-                    showArrow
-                    content="해당 기준의 데이터 입력 화면으로 이동"
-                    positioning={{ placement: "right" }}
-                    contentProps={{ css: { "--tooltip-bg": "gray" } }}
-                    openDelay={500}
-                    closeDelay={100}
-                  >
-                    <Text
-                      as="button"
-                      fontSize="2xl"
-                      textAlign="left"
-                      cursor="pointer"
-                      width="fit-content"
-                      paddingTop="3"
-                      paddingBottom="3"
-                      onClick={() => router.push(`/criterion/${std.criterionId}`)}
-                      _hover={{ color: "blue.700", fontWeight: "bold" }}
-                      background="none"
-                      border="none"
-                    >
-                      {std.criterionName}
-                    </Text>
-                  </Tooltip>
-                  <Button
-                    h="fit-content"
-                    width="fit-content"
-                    justifyContent="center"
+                    justifyContent="space-between"
                     alignItems="center"
-                    variant="plain"
                   >
-                    <BsThreeDotsVertical />
-                  </Button>
+                    <Skeleton height="36px" width="100%" borderRadius="md" />
+                  </Box>
+                  {idx < (criteria.length > 0 ? criteria.length : 4) - 1 && (
+                    <Skeleton
+                      height="2px"
+                      width="100%"
+                      borderRadius="full"
+                      my={1}
+                    />
+                  )}
                 </Box>
-                {idx < criteria.length - 1 && (
-                  <Separator
-                    key={std.criterionId + "-separator"}
+              ))
+            : criteria.map((std, idx) => (
+                <Box key={std.criterionId + "-wrapper"} width="100%">
+                  <Box
+                    display="flex"
+                    gap={2}
+                    paddingLeft="6"
+                    paddingRight="2"
                     width="100%"
-                    borderColor="gray.200"
-                    my={1}
-                  />
-                )}
-              </Box>
-            ))}
-      </VStack>
-    </Box>
+                    height="full"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Tooltip
+                      showArrow
+                      content="해당 기준의 데이터 입력 화면으로 이동"
+                      positioning={{ placement: "right" }}
+                      contentProps={{ css: { "--tooltip-bg": "gray" } }}
+                      openDelay={500}
+                      closeDelay={100}
+                    >
+                      <Text
+                        as="button"
+                        fontSize="2xl"
+                        textAlign="left"
+                        cursor="pointer"
+                        width="fit-content"
+                        paddingTop="3"
+                        paddingBottom="3"
+                        onClick={() =>
+                          router.push(`/criterion/${std.criterionId}`)
+                        }
+                        _hover={{ color: "blue.700", fontWeight: "bold" }}
+                        background="none"
+                        border="none"
+                      >
+                        {std.criterionName}
+                      </Text>
+                    </Tooltip>
+
+                    <CriterionMenuButton criterionId={std.criterionId} />
+                  </Box>
+                  {idx < criteria.length - 1 && (
+                    <Separator
+                      key={std.criterionId + "-separator"}
+                      width="100%"
+                      borderColor="gray.200"
+                      my={1}
+                    />
+                  )}
+                </Box>
+              ))}
+        </VStack>
+      </Box>
+    </Flex>
   );
 };
 
