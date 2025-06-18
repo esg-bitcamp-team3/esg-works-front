@@ -110,7 +110,14 @@ export default function SingleChart({ chartData }: Props) {
   return (
     <Box>
       <Chart
-        type={chartData.dataSets[0].type as ChartTypeUnion}
+        type={
+          !chartData.dataSets ||
+          chartData.dataSets.length === 0 ||
+          !chartData.dataSets[0].type ||
+          chartData.dataSets[0].type.trim() === ""
+            ? ("line" as ChartTypeUnion)
+            : (chartData.dataSets[0].type as ChartTypeUnion)
+        }
         data={chartWithOptions}
         options={options}
       />

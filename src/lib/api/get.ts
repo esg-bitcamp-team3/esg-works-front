@@ -1,13 +1,20 @@
 import { Category, DataFilter, PartialESGData, Section } from "../interface";
 import { apiClient } from "./client";
 import { ESGData } from "./interfaces/esgData";
-export async function getSearchSectionId(sectionId: string) {
+export async function getSearchSectionId(sectionId?: string) {
   try {
-    const response = await apiClient.get<Section[]>(
-      `/sections/search/${sectionId}`
-    );
-    return response.data;
-  } catch (error) {}
+    if (sectionId) {
+      const response = await apiClient.get<Section[]>(
+        `/sections/search/${sectionId}`
+      );
+      return response.data;
+    } else {
+      const response = await apiClient.get<Section[]>(`/sections`);
+      return response.data;
+    }
+  } catch (error) {
+    console.log("section을 가져오는데 실패했습니다!: ", error);
+  }
 }
 
 export async function getDataByCorpYear(data: DataFilter) {

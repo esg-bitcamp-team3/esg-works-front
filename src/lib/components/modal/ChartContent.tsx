@@ -41,6 +41,7 @@ import {
   Legend,
   ChartOptions,
   ChartData,
+  layouts,
 } from "chart.js";
 import BarChartColor from "./barChartColor";
 import LineChartColor from "./LineChartColor";
@@ -91,6 +92,11 @@ const ChartContent = ({
     const baseOptions = {
       responsive: true,
       maintainAspectRatio: false,
+      layout: {
+        padding: {
+          right: 40,
+        },
+      },
       plugins: {
         legend: {
           position: "top" as const,
@@ -172,11 +178,10 @@ const ChartContent = ({
 
             newChartData = {
               // Use years from this single category as labels
-              labels: category.esgNumberDTOList.map((data) =>
-                data.year.toString()
-              ),
+              labels: category.categoryName,
               datasets: [
                 {
+                  type: selectedChartType,
                   label: category.categoryDetailDTO.categoryName,
                   data: category.esgNumberDTOList.map((data) => data.value),
                   backgroundColor: backgroundColors,
@@ -207,6 +212,7 @@ const ChartContent = ({
               ),
               datasets: [
                 {
+                  type: selectedChartType,
                   label: `Data for ${mostRecentYear}`,
                   data: categorizedEsgDataList.map((category) => {
                     const yearData = category.esgNumberDTOList.find(
@@ -236,7 +242,7 @@ const ChartContent = ({
 
               return {
                 // Alternate between bar and line based on index
-                type: idx % 2 === 0 ? "bar" : "line",
+                type: "line",
                 label: category.categoryDetailDTO.categoryName,
                 data: years.map((year) => {
                   const yearData = category.esgNumberDTOList.find(
@@ -292,6 +298,7 @@ const ChartContent = ({
   const handleChartTypeChange = (type: ChartType["type"]) => {
     setLoading(true); // Start loading when chart type changes
     setSelectedChartType(type);
+    console.log("type: ", type);
   };
 
   const handleChartDataChange = (

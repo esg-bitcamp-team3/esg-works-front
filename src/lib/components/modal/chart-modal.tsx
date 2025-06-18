@@ -47,25 +47,17 @@ const chartType: ChartType[] = [
 
 export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
-
   const [step, setStep] = useState<1 | 2>(1);
-
   const [selectedTab, setSelectedTab] = useState<string>("chart");
-
   const [sections, setSections] = useState<Section[]>([]);
-
   const [categories, setCategories] = useState<CategoryDetail[]>([]);
-
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
-
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
   >([]);
-
   const [dataLoading, setDataLoading] = useState<boolean>(false);
-
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
     datasets: [],
