@@ -9,15 +9,16 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
 import { Section } from "@/lib/interface";
-import { getGriBySectionSelect, getSearchSectionId } from "@/lib/api/get";
+import { getGriByYearAndSectionId, getSearchSectionId } from "@/lib/api/get";
 import SubsectionAccordian from "./SubsectionAccordian";
 
 interface Props {
   section: string;
   year: string;
+  search?: Section[];
 }
 
-const SectionAccordian = ({ section, year }: Props) => {
+const SectionAccordian = ({ section, year, search }: Props) => {
   const [sectionLoading, setSectionLoading] = useState(true);
   const [value, setValue] = useState<string>("");
   const [sections, setSections] = useState<Section[]>([]);
@@ -43,7 +44,7 @@ const SectionAccordian = ({ section, year }: Props) => {
     async (year: string, section: string) => {
       try {
         setIsLoading(true);
-        const data = await getGriBySectionSelect(year, section);
+        const data = await getGriByYearAndSectionId(year, section);
         setSectionCategory(data);
       } catch (error) {
         console.error("fetch 실패");
@@ -58,8 +59,17 @@ const SectionAccordian = ({ section, year }: Props) => {
   }, [sectionCategory]);
 
   useEffect(() => {
-    fetchSections();
-  }, [fetchSections, clickSection]);
+    if (search && search.length > 0) {
+      setSections(search);
+      // setValue(search[0].sectionId);
+      // clickSection(year, search[0].sectionId);
+    } else {
+      // setSections([]);
+      // setValue("");
+      fetchSections();
+    }
+    // fetchSections();
+  }, [fetchSections, clickSection, search]);
   useEffect(() => {
     setValue("");
   }, [year]);
@@ -117,7 +127,13 @@ const SectionAccordian = ({ section, year }: Props) => {
             {value === item.sectionId && (
               <Box p={6} bg="white">
                 {isLoading ? (
-                  <Spinner size="sm" color="blue.500" />
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Spinner size="md" color="blue.500" />
+                  </Box>
                 ) : (
                   <SubsectionAccordian
                     categoryESGDataList={categoryList}

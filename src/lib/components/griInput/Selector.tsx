@@ -16,7 +16,7 @@ interface Item {
 
 interface Props {
   items: Item[];
-  text: string;
+  text?: string;
   value: string;
   onValueChange: (value: string) => void;
   width?: string;
@@ -31,7 +31,7 @@ const Selector = ({ items, text, value, onValueChange, width }: Props) => {
   });
 
   return (
-    <HStack gap={4}>
+    <HStack gap="2">
       <Text whiteSpace="nowrap" width="fit-content">
         {text}
       </Text>

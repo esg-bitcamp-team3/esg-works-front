@@ -63,7 +63,6 @@ import { IoSearch } from "react-icons/io5";
 import { FaSearch } from "react-icons/fa";
 import { Section } from "../interface";
 import SubTableContent from "./section/SubTableContent";
-import Selector from "./gri/Selector";
 import DataTab from "./section/DataTab";
 
 const items = [
