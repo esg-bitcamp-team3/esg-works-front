@@ -17,7 +17,7 @@ const Page = () => {
           GRI 데이터 입력
         </Text>
         <StandardsPage/>
-        <GriPage />
+        {/* <GriPage /> */}
       </VStack>
     </Flex>
   );

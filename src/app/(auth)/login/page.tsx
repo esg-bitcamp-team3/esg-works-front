@@ -101,6 +101,7 @@ const LoginPage = () => {
                 color="black"
                 _placeholder={{ color: "gray.400" }}
                 borderColor="grey.300"
+                onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
               />
             </Box>
 
@@ -118,6 +119,7 @@ const LoginPage = () => {
                 color="black"
                 _placeholder={{ color: "gray.400" }}
                 borderColor="gray.300"
+                onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
               />
             </Box>
 

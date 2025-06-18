@@ -1,14 +1,17 @@
-// src/lib/components/standards/StandardsPage.tsx
-import { Box, VStack, Button, Heading, Container } from "@chakra-ui/react";
+import {
+  Box,
+  VStack,
+  Button,
+  Separator,
+  Text,
+  Skeleton,
+} from "@chakra-ui/react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
-import { FaArrowRight } from "react-icons/fa";
-
-const standardList = [
-  { label: "GRI", value: "gri" },
-  { label: "ISO", value: "iso" },
-  { label: "SASB", value: "sasb" },
-  { label: "K-ESG", value: "kesg" },
-];
+import { useEffect, useState } from "react";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { getMyCriteria } from "@/lib/api/get";
+import type { Criterion } from "@/lib/interface";
 
 const CARD_STYLES = {
   bg: "white",
@@ -23,29 +26,110 @@ const CARD_STYLES = {
 
 const StandardsPage = () => {
   const router = useRouter();
+  const [criteria, setCriteria] = useState<Criterion[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getMyCriteria()
+      .then((data) => {
+        if (data) setCriteria(data);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
-    <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
-      <Container py={4}>
-        <VStack gap={8} align="center">
-          {standardList.map((std) => (
-            <Button
-              key={std.value}
-              w="800px"
-              h="60px"
-              fontSize="xl"
-              onClick={() => router.push(`/${std.value}`)}
-              colorScheme="teal"
-              variant="outline"
-              justifyContent='space-between'
-              paddingX='10'
-            >
-              {std.label}
-              <FaArrowRight />
-            </Button>
-          ))}
-        </VStack>
-      </Container>
+    <Box
+      {...CARD_STYLES}
+      p={2}
+      width="70vw"
+      minHeight="65vh"
+      overflowY="auto"
+      padding="8"
+    >
+      <VStack align="center" width="100%">
+        {loading
+          ? Array.from({
+              length: criteria.length > 0 ? criteria.length : 4,
+            }).map((_, idx) => (
+              <Box key={`skeleton-${idx}`} width="100%">
+                <Box
+                  display="flex"
+                  gap={2}
+                  paddingLeft="2"
+                  paddingRight="2"
+                  width="100%"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Skeleton height="36px" width="100%" borderRadius="md" />
+                </Box>
+                {idx < (criteria.length > 0 ? criteria.length : 4) - 1 && (
+                  <Skeleton
+                    height="2px"
+                    width="100%"
+                    borderRadius="full"
+                    my={1}
+                  />
+                )}
+              </Box>
+            ))
+          : criteria.map((std, idx) => (
+              <Box key={std.criterionId + "-wrapper"} width="100%">
+                <Box
+                  display="flex"
+                  gap={2}
+                  paddingLeft="6"
+                  paddingRight="2"
+                  width="100%"
+                  height="full"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Tooltip
+                    showArrow
+                    content="해당 기준의 데이터 입력 화면으로 이동"
+                    positioning={{ placement: "right" }}
+                    contentProps={{ css: { "--tooltip-bg": "gray" } }}
+                    openDelay={500}
+                    closeDelay={100}
+                  >
+                    <Text
+                      as="button"
+                      fontSize="2xl"
+                      textAlign="left"
+                      cursor="pointer"
+                      width="fit-content"
+                      paddingTop="3"
+                      paddingBottom="3"
+                      onClick={() => router.push(`/criterion/${std.criterionId}`)}
+                      _hover={{ color: "blue.700", fontWeight: "bold" }}
+                      background="none"
+                      border="none"
+                    >
+                      {std.criterionName}
+                    </Text>
+                  </Tooltip>
+                  <Button
+                    h="fit-content"
+                    width="fit-content"
+                    justifyContent="center"
+                    alignItems="center"
+                    variant="plain"
+                  >
+                    <BsThreeDotsVertical />
+                  </Button>
+                </Box>
+                {idx < criteria.length - 1 && (
+                  <Separator
+                    key={std.criterionId + "-separator"}
+                    width="100%"
+                    borderColor="gray.200"
+                    my={1}
+                  />
+                )}
+              </Box>
+            ))}
+      </VStack>
     </Box>
   );
 };
