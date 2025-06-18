@@ -22,7 +22,7 @@ import {
   FcLineChart,
   FcPieChart,
 } from "react-icons/fc";
-import ChartDataLabels from "chartjs-plugin-datalabels";
+// import ChartDataLabels from "chartjs-plugin-datalabels";
 import { getEsgData } from "@/lib/api/get";
 import { ChartType, DatasetType, DataType } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
@@ -56,8 +56,8 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend,
-  ChartDataLabels
+  Legend
+  // ChartDataLabels
 );
 
 export interface ChartContentProps {
@@ -380,7 +380,9 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
           align={{ base: "flex-start", md: "center", lg: "flex-start" }}
           flex={chartAreaOpen ? "4" : "5"}
           width="100%"
-          height="100%"
+          // height="100%"
+          minHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
+          // maxHeight="50vh"
           textAlign={{ base: "left", md: "center" }}
           outline={"1px solid #E2E8F0"}
           padding={3}
@@ -419,7 +421,7 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
 
         <Box
           padding={chartAreaOpen ? "3" : "0"}
-          // minHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
+          minHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
           // maxHeight={{ base: "30vh", md: "45vh", lg: "60vh" }}
           textAlign={{ base: "left", md: "center" }}
           outline={"1px solid #E2E8F0"}

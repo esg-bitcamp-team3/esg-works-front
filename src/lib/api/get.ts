@@ -5,22 +5,8 @@ import {
   PartialESGData,
   Section,
 } from "../interface";
+
 import { apiClient } from "./client";
-
-export async function getDataByCorpYear(data: DataFilter) {
-  try {
-    const response = await apiClient.get<PartialESGData>(
-      `/esg-data/data-value`,
-      {
-        params: data,
-      }
-    );
-    return response.data;
-  } catch (error) {
-    return null;
-  }
-}
-
 import { ChartDetail, InteresrtChartDetail } from "./interfaces/chart";
 
 import { CategorizedESGDataList } from "./interfaces/categorizedEsgDataList";
@@ -31,7 +17,20 @@ import {
   ReportDetail,
   SortProp,
 } from "./interfaces/report";
+
 import { SectionCategoryESGData } from "./interfaces/gri";
+
+export const getDataByCorpYear = async (data: DataFilter) => {
+  try {
+    const response = await apiClient.get<PartialESGData>(
+      `/esg-data/data-value`,
+      {
+        params: data,
+      }
+    );
+    return response.data;
+  } catch (error) {}
+};
 
 // ============================section
 export const getSections = async () => {
@@ -82,6 +81,22 @@ export const getCategories = async (sectionId?: string) => {
     }
   } catch (error) {
     console.error("카테고리 가져오기 실패:", error);
+    return [];
+  }
+};
+export const getCriterion = async (criterionId?: string) => {
+  try {
+    if (criterionId) {
+      const res = await apiClient.get<Criterion[]>(
+        `/categories/by-section/${criterionId}`
+      );
+      return res.data;
+    } else {
+      const res = await apiClient.get<Criterion[]>(`/criteria`);
+      return res.data;
+    }
+  } catch (error) {
+    console.error("기준 가져오기 실패:", error);
     return [];
   }
 };
