@@ -1,36 +1,37 @@
-import { Accordion, Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
+import {
+  Accordion,
+  Box,
+  Button,
+  HStack,
+  Separator,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import subCategory from "@/lib/data/gri";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
-import { CategoryESGData } from "@/lib/api/interfaces/gri";
+import {
+  CategoryESGData,
+  SectionCategoryESGData,
+} from "@/lib/api/interfaces/gri";
 import DynamicInputForm from "./InputForm";
-import { tokenCheck } from "@/lib/api/auth/auth";
+
+type SubCategoryKey = keyof typeof subCategory;
 
 interface Props {
-  categoryESGDataList: CategoryESGData[];
+  section: SectionCategoryESGData;
   year: string;
 }
 
-type subSection = Record<string, CategoryESGData[]>;
 type FieldMap = Record<string, { value: string; isExisting: boolean }>;
 
-const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
+const SubsectionAccordian = ({ section, year }: Props) => {
   const [value, setValue] = useState<string>("");
 
   const [fieldValues, setFieldValues] = useState<FieldMap>({});
 
-  const partedSection = useMemo(() => {
-    const groupedBySection: subSection = {};
-    Object.values(categoryESGDataList).forEach((item) => {
-      const sectionId = item.categoryId.substring(3, 5);
-      if (!groupedBySection[sectionId]) {
-        groupedBySection[sectionId] = [];
-      }
-      groupedBySection[sectionId].push(item);
-    });
-    return groupedBySection;
-  }, [categoryESGDataList]);
+  const [updateLoading, setUpdateLoading] = useState<string>("");
 
   const handleFieldChange = useCallback(
     (categoryId: string, value: string, isExisting: boolean) => {
@@ -54,36 +55,38 @@ const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
     },
     [fieldValues]
   );
+  console.log("outputList", outputList(section.categoryESGDataList));
 
   const handleSaveAll = useCallback(
-    async (index: number) => {
-      const user = await tokenCheck();
-      if (!user) {
-        console.error("User not authenticated");
-        return;
-      }
-      for (const item of outputList(Object.values(partedSection)[index])) {
-        console.log(item);
+    async (key: number) => {
+      setUpdateLoading(key.toString());
+      try {
+        for (const item of outputList(
+          section.categoryESGDataList.filter((category) =>
+            category.categoryId.startsWith(section.sectionId + key)
+          )
+        )) {
+          const outputData = {
+            categoryId: item.categoryId,
+            year: year,
+            value: item.value,
+          };
 
-        const outputData = {
-          categoryId: item.categoryId,
-          corpId: user.corpId,
-          year: year,
-          value: item.value,
-        };
-
-        try {
-          if (item.isExisting) {
-            await patchESGData(outputData);
-          } else {
-            await postESGData(outputData);
+          try {
+            if (item.isExisting) {
+              await patchESGData(outputData);
+            } else {
+              await postESGData(outputData);
+            }
+          } catch (error) {
+            console.error(`Error saving category ${item.categoryId}`, error);
           }
-        } catch (error) {
-          console.error(`Error saving category ${item.categoryId}`, error);
         }
+      } finally {
+        setUpdateLoading("");
       }
     },
-    [outputList, partedSection]
+    [outputList, year]
   );
 
   return (
@@ -93,9 +96,11 @@ const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
       value={[value]}
       onValueChange={(e) => setValue(e.value[0] || "")}
     >
-      {Object.entries(partedSection).map(([key, value], index) => (
+      {Object.entries(
+        subCategory[section.sectionId as SubCategoryKey] || {}
+      ).map(([key, value], index) => (
         <Accordion.Item
-          key={key}
+          key={key + index}
           value={key}
           borderWidth="1px"
           borderColor="gray.200"
@@ -108,42 +113,39 @@ const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
           <HStack padding={4}>
             <Accordion.ItemTrigger p={2}>
               <Text fontSize="sm" fontWeight="bold" color="gray.700">
-                {subCategory[Object.values(value)[0].sectionId][key]}
+                {value}
               </Text>
             </Accordion.ItemTrigger>
             <Button
               variant={"subtle"}
-              onClick={() => handleSaveAll(index)}
+              onClick={() => handleSaveAll(key as unknown as number)}
               colorPalette="gray"
               px={4}
               size={"sm"}
+              loading={updateLoading === key.toString() ? true : false}
             >
               <Text fontSize="xs" color="gray.900">
                 저장
               </Text>
             </Button>
           </HStack>
+
           <Accordion.ItemContent>
-            <Box
-              key={key}
-              width="100%"
-              p={2}
-              borderBottomWidth="1px"
-              display="flex"
-              justifyContent="center"
-              textAlign="center"
-            >
-              <VStack>
-                {Object.values(value).map((category) => (
+            <Separator />
+            <VStack gap={2}>
+              {section?.categoryESGDataList
+                ?.filter((category) =>
+                  category.categoryId.startsWith(section.sectionId + key)
+                )
+                .map((item) => (
                   <DynamicInputForm
-                    key={category.categoryId}
-                    category={category}
-                    year={category.esgData?.year}
+                    key={item.categoryId}
+                    category={item}
+                    year={item.esgData?.year}
                     onFieldChange={handleFieldChange}
                   />
                 ))}
-              </VStack>
-            </Box>
+            </VStack>
           </Accordion.ItemContent>
         </Accordion.Item>
       ))}

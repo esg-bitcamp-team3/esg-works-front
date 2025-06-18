@@ -2,7 +2,7 @@ import {
   Category,
   Criterion,
   DataFilter,
-  PartialESGData,
+  ESGDataInput,
   Section,
 } from "../interface";
 
@@ -22,12 +22,9 @@ import { SectionCategoryESGData } from "./interfaces/gri";
 
 export const getDataByCorpYear = async (data: DataFilter) => {
   try {
-    const response = await apiClient.get<PartialESGData>(
-      `/esg-data/data-value`,
-      {
-        params: data,
-      }
-    );
+    const response = await apiClient.get<ESGDataInput>(`/esg-data/data-value`, {
+      params: data,
+    });
     return response.data;
   } catch (error) {}
 };

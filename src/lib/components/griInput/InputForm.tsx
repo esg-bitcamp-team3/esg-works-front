@@ -1,4 +1,4 @@
-import { PartialESGData } from "@/lib/interface";
+import { ESGDataInput } from "@/lib/interface";
 import {
   Box,
   Input,
@@ -46,7 +46,7 @@ const unitTypes: Record<string, "money" | "number" | "boolean" | "string"> = {
 export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
   const { control } = useForm();
   const [field, setField] = useState("");
-  const [inputData, setInputData] = useState<PartialESGData>();
+  const [inputData, setInputData] = useState<ESGDataInput>();
 
   const fieldCheck = useCallback(async () => {
     try {
@@ -77,125 +77,120 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
   }, [fieldCheck]);
 
   return (
-    <Box
-      minW="140%"
+    <HStack
       p={4}
-      borderWidth="1px"
-      borderRadius="xl"
-      mb={4}
-      bg="white"
+      w={"100%"}
       transition="all 0.2s"
       _hover={{ boxShadow: "md" }}
+      justify={"space-between"}
     >
-      <HStack
-        gap={4}
-        align="stretch"
-        justifyContent={"space-between"}
-        minW="600px"
-      >
-        <HStack>
-          <Text fontSize={"sm"} fontWeight={"bold"} maxLines={1} pl={2}>
-            {category.categoryName}
-          </Text>
-          <ToggleTip
-            content={category.description}
-            size={"lg"}
-            positioning={{ placement: "bottom-end" }}
-            closeOnInteractOutside={false}
-          >
-            <Button size="xs" variant="ghost">
-              <LuInfo />
-            </Button>
-          </ToggleTip>
-        </HStack>
+      <HStack>
+        <Text fontSize={"sm"} fontWeight={"medium"} maxLines={1} pl={2}>
+          {category.categoryName}
+        </Text>
+        <ToggleTip
+          content={category.description}
+          size={"lg"}
+          positioning={{ placement: "bottom-end" }}
+          closeOnInteractOutside={false}
+        >
+          <Button size="xs" variant="ghost">
+            <LuInfo />
+          </Button>
+        </ToggleTip>
+      </HStack>
 
-        <Controller
-          name={category.categoryId}
-          control={control}
-          render={({ field: controllerField }) => {
-            const commonProps = {
-              ...controllerField,
-              value: field,
-              onChange: (e: any) => {
-                const val = e.target.value;
-                controllerField.onChange(val);
-                setField(val);
-                onFieldChange?.(category.categoryId, val, !!inputData);
-              },
-            };
+      <Controller
+        name={category.categoryId}
+        control={control}
+        render={({ field: controllerField }) => {
+          const commonProps = {
+            ...controllerField,
+            value: field,
+            onChange: (e: any) => {
+              const val = e.target.value;
+              controllerField.onChange(val);
+              setField(val);
+              onFieldChange?.(category.categoryId, val, !!inputData);
+            },
+          };
 
-            if (inputType === "money") {
-              return (
-                <HStack justifyContent={"end"} padding={2}>
-                  <Input
-                    {...commonProps}
-                    type="number"
-                    borderRadius="md"
-                    borderWidth={1}
-                    borderColor="gray.300"
-                    _hover={{ borderColor: "gray.400" }}
-                    _focus={{ borderColor: "gray.400" }}
-                    bg={"white"}
-                    w={"80%"}
-                    p={4}
-                    placeItems={"end"}
-                  />
-                  <Text>{category.unit.unitName}</Text>
-                </HStack>
-              );
-            } else if (inputType === "number") {
-              return (
-                <HStack justifyContent={"end"} padding={2}>
-                  <Input
-                    {...commonProps}
-                    type="number"
-                    borderRadius="md"
-                    borderWidth={1}
-                    borderColor="gray.300"
-                    _hover={{ borderColor: "gray.400" }}
-                    _focus={{ borderColor: "gray.400" }}
-                    bg={"white"}
-                    w={"80%"}
-                    p={4}
-                    placeItems={"end"}
-                  />
-                  <Text>{category.unit.unitName}</Text>
-                </HStack>
-              );
-            }
-
-            if (inputType === "boolean") {
-              return (
-                <Checkbox.Root variant={"outline"}>
-                  <Checkbox.HiddenInput />
-                  <Checkbox.Control />
-                </Checkbox.Root>
-              );
-            }
-
-            if (inputType === "string") {
-              return (
-                <Textarea
+          if (inputType === "money") {
+            return (
+              <HStack justifyContent={"end"} padding={2}>
+                <Input
                   {...commonProps}
-                  placeholder={category.unit.unitName}
+                  type="number"
                   borderRadius="md"
                   borderWidth={1}
                   borderColor="gray.300"
                   _hover={{ borderColor: "gray.400" }}
                   _focus={{ borderColor: "gray.400" }}
-                  minH="120px"
-                  maxW="80%"
-                  resize="vertical"
-                  bg="white"
+                  bg={"white"}
+                  w={"80%"}
+                  p={4}
+                  placeItems={"end"}
                 />
-              );
-            }
+                <Text color={"gray.500"} fontSize="xs">
+                  {category.unit.unitName}
+                </Text>
+              </HStack>
+            );
+          } else if (inputType === "number") {
+            return (
+              <HStack justifyContent={"end"} padding={2}>
+                <Input
+                  {...commonProps}
+                  type="number"
+                  borderRadius="md"
+                  borderWidth={1}
+                  borderColor="gray.300"
+                  _hover={{ borderColor: "gray.400" }}
+                  _focus={{ borderColor: "gray.400" }}
+                  bg={"white"}
+                  w={"80%"}
+                  p={4}
+                  placeItems={"end"}
+                />
+                <Text color={"gray.500"} fontSize="xs">
+                  {category.unit.unitName}
+                </Text>
+              </HStack>
+            );
+          }
 
-            return <Input {...commonProps} />;
-          }}
-        />
-      </HStack>
-    </Box>
+          if (inputType === "boolean") {
+            return (
+              <Checkbox.Root variant={"outline"}>
+                <Checkbox.HiddenInput />
+                <Checkbox.Control />
+              </Checkbox.Root>
+            );
+          }
+
+          if (inputType === "string") {
+            return (
+              <Textarea
+                {...commonProps}
+                placeholder={category.unit.unitName}
+                borderRadius="md"
+                borderWidth={1}
+                borderColor="gray.300"
+                _hover={{ borderColor: "gray.400" }}
+                _focus={{ borderColor: "gray.400", boxShadow: "sm" }}
+                minH="120px"
+                maxW="80%"
+                resize="vertical"
+                bg="white"
+                transition="all 0.2s ease-in-out"
+              />
+            );
+          }
+
+          return <Input {...commonProps} />;
+        }}
+      />
+    </HStack>
   );
 };
 

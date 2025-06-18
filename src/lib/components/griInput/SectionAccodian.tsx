@@ -54,9 +54,6 @@ const SectionAccordian = ({ section, year, search }: Props) => {
     },
     [section]
   );
-  const categoryList = useMemo(() => {
-    return sectionCategory?.categoryESGDataList || [];
-  }, [sectionCategory]);
 
   useEffect(() => {
     if (search && search.length > 0) {
@@ -126,7 +123,7 @@ const SectionAccordian = ({ section, year, search }: Props) => {
           <Accordion.ItemContent>
             {value === item.sectionId && (
               <Box p={6} bg="white">
-                {isLoading ? (
+                {isLoading || !sectionCategory ? (
                   <Box
                     display="flex"
                     justifyContent="center"
@@ -135,10 +132,7 @@ const SectionAccordian = ({ section, year, search }: Props) => {
                     <Spinner size="md" color="blue.500" />
                   </Box>
                 ) : (
-                  <SubsectionAccordian
-                    categoryESGDataList={categoryList}
-                    year={year}
-                  />
+                  <SubsectionAccordian section={sectionCategory} year={year} />
                 )}
               </Box>
             )}
