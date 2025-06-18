@@ -38,3 +38,7 @@ export interface Criterion {
   criterionId: string;
   criterionName: string;
 }
+export interface Password {
+  oldPassword: string;
+  newPassword: string;
+}
