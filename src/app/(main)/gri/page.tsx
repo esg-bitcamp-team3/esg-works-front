@@ -4,6 +4,8 @@ import GriPage from "@/lib/components/griInput/GriPage";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 
 const Page = () => {
+  const criterionId = "cri-01"; // Example criterion ID
+  const criterionName = "GRI"; // Example criterion name
   return (
     <Flex
       padding={4}
@@ -13,10 +15,9 @@ const Page = () => {
     >
       <VStack gap={6} top={24} position={"fixed"}>
         <Text fontSize="2xl" fontWeight="bold" mb={4}>
-          GRI 데이터 입력
+          {criterionName} 데이터 입력
         </Text>
-        {/* <GriPage /> */}
-        <GriPage />
+        <GriPage criterionId={criterionId} criterionName={criterionName} />
       </VStack>
     </Flex>
   );

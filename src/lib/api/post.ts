@@ -1,6 +1,7 @@
 import { PartialESGData } from "../interface";
 import { apiClient } from "./client";
 import { Chart, InputChart, InteresrtChartDetail } from "./interfaces/chart";
+import { InputCriterion } from "./interfaces/criterion";
 import { DataSet } from "./interfaces/dataSets";
 import { ESGData } from "./interfaces/esgData";
 
@@ -21,7 +22,14 @@ export const postInterestReports = async (reportId: string) => {
     console.log("즐겨찾기 리포트 등록 실패", error);
   }
 };
-
+export const postCriterion = async (data: InputCriterion) => {
+  try {
+    const res = await apiClient.post(`/criteria`, data);
+    return res.data;
+  } catch (error) {
+    console.log("기준 등록 실패", error);
+  }
+};
 export const postInterestChart = async (chartId: string) => {
   try {
     const res = await apiClient.post(`/interest-charts`, { chartId });

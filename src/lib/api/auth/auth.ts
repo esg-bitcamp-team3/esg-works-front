@@ -62,14 +62,14 @@ export async function checkLogin() {
   }
 }
 
-export async function getUserInfo() {
-  try {
-    const response = await apiClient.get<User>(`/user/mypage`);
-    return response.data;
-  } catch (error) {
-    // handleApiError(error, "로그인이 필요합니다.");
-  }
-}
+// export async function getUserInfo() {
+//   try {
+//     const response = await apiClient.get<User>(`/user/mypage`);
+//     return response.data;
+//   } catch (error) {
+//     // handleApiError(error, "로그인이 필요합니다.");
+//   }
+// }
 
 export async function updateUserInfo(data: Partial<UpdateUser>) {
   try {
@@ -102,3 +102,13 @@ export async function updatePassword(password: string) {
     // handleApiError(error, "비밀번호 변경 실패");
   }
 }
+
+export const getUserInfo = async () => {
+  try {
+    const response = await apiClient.get<User>(`/my`);
+    return response.data;
+  } catch (error) {
+    // handleApiError(error, "로그인이 필요합니다.");
+    console.error("유저정보 못 가지고 옴", error);
+  }
+};

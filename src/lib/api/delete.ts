@@ -9,8 +9,6 @@ export const deleteInterestReports = async (reportId: string) => {
   }
 };
 
-import { InteresrtChartDetail } from "./interfaces/chart";
-
 export const deleteInterestChart = async (chartId: string) => {
   try {
     const res = await apiClient.delete(`/interest-charts/${chartId}`);
@@ -18,6 +16,17 @@ export const deleteInterestChart = async (chartId: string) => {
     return res.data;
   } catch (error) {
     console.error(`${chartId}차트 관심 해제 실패:`, error);
+    return null;
+  }
+};
+
+export const deleteCriterion = async (criterionId: string) => {
+  try {
+    const res = await apiClient.delete(`/criteria/${criterionId}`);
+    console.log("Delete Criterion:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error(`${criterionId}차트 관심 해제 실패:`, error);
     return null;
   }
 };
