@@ -6,6 +6,7 @@ import "./globals.css";
 import { Provider } from "@/components/ui/provider";
 import ReportModal from "@/lib/components/modal/document-modal";
 import { Box } from "@chakra-ui/react/";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,7 +50,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <div>
-          <Provider>{children}</Provider>
+          <Provider>
+            {children}
+            <Toaster />
+          </Provider>
         </div>
       </body>
     </html>

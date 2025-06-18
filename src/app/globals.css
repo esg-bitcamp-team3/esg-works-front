@@ -48,7 +48,7 @@ blockquote[dir="rtl"] {
 }
 
 /* Table styles */
-table {
+[data-slate-editor]table {
   border-collapse: collapse;
   width: 100%;
   margin: 20px 0;
@@ -57,7 +57,7 @@ table {
   table-layout: fixed;
 }
 
-th {
+[data-slate-editor]th {
   background-color: #f7fafc;
   color: #1a202c;
   font-weight: 600;
@@ -66,7 +66,7 @@ th {
   padding: 12px 10px;
   min-width: 100px;
 }
-td {
+[data-slate-editor] td {
   padding: 10px;
   border: 1px solid #e2e8f0;
   vertical-align: top;
@@ -77,21 +77,20 @@ td {
 }
 
 /* Ensure all cells have reasonable minimum dimensions */
-table td,
-table th {
+[data-slate-editor] table td,
+[data-slate-editor] table th {
   min-width: 50px;
   position: relative; /* For absolute positioning of child elements if needed */
 }
-table td:first-child,
-table th:first-child {
+[data-slate-editor] table td:first-child,
+[data-slate-editor] table th:first-child {
   min-width: 120px;
 }
-
-tr:nth-child(even) {
+[data-slate-editor] tr:nth-child(even) {
   background-color: #f8f9fa;
 }
 
-tr:hover {
+[data-slate-editor] tr:hover {
   background-color: #edf2f7;
 }
 

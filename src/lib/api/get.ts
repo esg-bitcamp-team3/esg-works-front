@@ -4,6 +4,7 @@ import {
   DataFilter,
   PartialESGData,
   Section,
+  Unit,
 } from "../interface";
 import { apiClient } from "./client";
 
@@ -343,5 +344,15 @@ export const getGriBySectionSelect = async (
     return res.data;
   } catch (error) {
     console.error("카테고리 검색 실패", error);
+  }
+};
+
+export const getAllUnits = async () => {
+  try {
+    const res = await apiClient.get<Unit[]>(`/units`);
+    return res.data;
+  } catch (error) {
+    console.error("단위 가져오기 실패:", error);
+    return [];
   }
 };
