@@ -1,5 +1,6 @@
 "use client";
 
+import StandardsPage from "@/lib/components/gri/StandardsPage";
 import GriPage from "@/lib/components/griInput/GriPage";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 
@@ -15,8 +16,8 @@ const Page = () => {
         <Text fontSize="2xl" fontWeight="bold" mb={4}>
           GRI 데이터 입력
         </Text>
+        <StandardsPage/>
         {/* <GriPage /> */}
-        <GriPage />
       </VStack>
     </Flex>
   );

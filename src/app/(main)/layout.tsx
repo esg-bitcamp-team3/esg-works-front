@@ -1,8 +1,13 @@
+'use client'
+
 import ReportModal from "@/lib/components/modal/document-modal";
 import Sidebar from "@/lib/components/Sidebar";
 import { Flex } from "@chakra-ui/react";
+import { useState } from "react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <Flex
       bg={"white"}
@@ -11,9 +16,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       justifyContent="center"
       alignItems="center"
     >
-      <Sidebar />
-      <main>{children}</main>
-       <ReportModal />
+      <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
+      <main
+        style={{
+          transition: "margin-left 0.3s ease-in-out",
+          marginLeft: isExpanded ? "200px" : "60px",
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        {children}
+      </main>
+      <ReportModal />
     </Flex>
   );
 };

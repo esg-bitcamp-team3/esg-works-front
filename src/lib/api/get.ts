@@ -6,19 +6,6 @@ import {
   Section,
 } from "../interface";
 import { apiClient } from "./client";
-
-export async function getDataByCorpYear(data: DataFilter) {
-  try {
-    const response = await apiClient.get<PartialESGData>(
-      `/esg-data/data-value`,
-      {
-        params: data,
-      }
-    );
-    return response.data;
-  } catch (error) {}
-}
-
 import { ChartDetail, InteresrtChartDetail } from "./interfaces/chart";
 
 import { CategorizedESGDataList } from "./interfaces/categorizedEsgDataList";
@@ -30,6 +17,19 @@ import {
   SortProp,
 } from "./interfaces/report";
 import { SectionCategoryESGData } from "./interfaces/gri";
+
+export const getDataByCorpYear = async (data: DataFilter) => {
+  try {
+    const response = await apiClient.get<PartialESGData>(
+      `/esg-data/data-value`,
+      {
+        params: data,
+      }
+    );
+    return response.data;
+  } catch (error) {}
+};
+
 
 // ============================section
 export const getSections = async () => {

@@ -86,7 +86,7 @@ const GriPage = () => {
   }, [searchId]);
 
   return (
-    <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"}>
+    <Box {...CARD_STYLES} p={2} w={"120%"} maxH={"80%"} >
       <Container py={4}>
         <VStack gap={8}>
           <HStack w="100%" gap={4} justifyContent="space-between">
