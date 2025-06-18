@@ -1,6 +1,5 @@
 "use client";
 
-import StandardsPage from "@/lib/components/gri/StandardsPage";
 import GriPage from "@/lib/components/griInput/GriPage";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 
