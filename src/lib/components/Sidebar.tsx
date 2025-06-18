@@ -39,8 +39,13 @@ const menuItems: MenuItem[] = [
   { label: "보고서 작성", icon: FaFile, path: "/report" },
 ];
 
-const Sidebar = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
+interface SidebarProps {
+  isExpanded: boolean;
+  setIsExpanded: (value: boolean) => void;
+}
+
+const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
+  // const [isExpanded, setIsExpanded] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const router = useRouter();
   const pathName = usePathname();
@@ -50,7 +55,8 @@ const Sidebar = () => {
   }, [profileMenuOpen]);
 
   return (
-    <Box position="relative" zIndex={1000}>
+    // <Box position="relative" zIndex={1000}>
+    <>
       <Box
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
@@ -271,7 +277,8 @@ const Sidebar = () => {
           </VStack>
         </Box>
       )}
-    </Box>
+      </>
+    // </Box>
   );
 };
 

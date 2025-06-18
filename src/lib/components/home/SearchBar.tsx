@@ -13,7 +13,9 @@ const SearchBar = ({ keyword, setKeyword, onSearch }: SearchBarProps) => (
     value={keyword}
     onChange={(e) => setKeyword(e.target.value)}
     placeholder="검색"
-    borderRadius="2xl"
+    borderColor="white"
+    bg="white"
+    _focus={{ borderColor: "white" }}
     onKeyDown={(e) => {
       if (e.key === "Enter") {
         onSearch();

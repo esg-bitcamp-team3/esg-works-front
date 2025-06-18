@@ -372,8 +372,7 @@ export default function ChartModal() {
                           </Text>
                           <Button
                             size="xs"
-                            variant="ghost"
-                            _hover={{ bg: "white" }}
+                            variant="plain"
                             onClick={() => {
                               setSelected((prev) =>
                                 prev.filter((i) => i !== item)

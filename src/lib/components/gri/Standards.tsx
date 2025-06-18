@@ -1,57 +1,50 @@
-import { Accordion, Box, Text, VStack, Skeleton } from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
-import { Section } from "@/lib/interface";
+import { Accordion, Box, Span, Icon, Text, Flex } from "@chakra-ui/react";
+import { FaChevronDown } from "react-icons/fa";
+import TableContent from "../modal/TableContent";
+import { useEffect, useState } from "react";
+import { Section, SectionList } from "@/lib/interface";
 import { getSearchSectionId } from "@/lib/api/get";
-import SubsectionAccordian from "./SubsectionAccordian";
 
-interface GriProps {
-  section: string;
+interface StandardsProps {
+  criterionId: string;
   year: string;
-  search: string;
 }
 
-const Gri = ({ section, year, search }: GriProps) => {
+const Standards = ({ criterionId, year }: StandardsProps) => {
   const [sectionList, setSectionList] = useState<Section[]>([]);
   const [value, setValue] = useState<string>("");
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const searchSection = await getSearchSectionId(section);
-      setSectionList(searchSection || []);
-    } catch (error) {
-      console.log("error", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [section]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const searchSection = await getSearchSectionId(criterionId);
+        setSectionList(searchSection || []);
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+    fetchData();
+  }, [criterionId]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  if (isLoading) {
-    return (
-      <VStack w="100%" gap={4}>
-        <Skeleton height="50px" w="100%" />
-        <Skeleton height="50px" w="100%" />
-        <Skeleton height="50px" w="100%" />
-      </VStack>
-    );
-  }
+    console.log("sectionList updated:", sectionList);
+  }, [sectionList]);
 
   return (
+    <>
+    <Box>
+        {/* {criterionList.map((criterion))} */}
+    </Box>
+    
     <Accordion.Root
       collapsible
       width="100%"
       value={[value]}
       onValueChange={(e) => setValue(e.value[0] || "")}
     >
-      {sectionList.map((item) => (
+      {sectionList.map((item, index) => (
         <Accordion.Item
-          key={item.sectionId}
+          key={index}
           value={item.sectionId}
           borderWidth="1px"
           borderColor="gray.200"
@@ -59,6 +52,7 @@ const Gri = ({ section, year, search }: GriProps) => {
           mb={4}
           overflow="hidden"
           _hover={{ borderColor: "blue.200" }}
+          transition="all 0.2s ease"
         >
           <Accordion.ItemTrigger
             p={6}
@@ -77,22 +71,19 @@ const Gri = ({ section, year, search }: GriProps) => {
             <Text textStyle={"md"} fontWeight="bold" color="gray.700">
               {item.sectionId + " : " + item.sectionName}
             </Text>
+
             <Accordion.ItemIndicator colorPalette="blue" />
           </Accordion.ItemTrigger>
-
           <Accordion.ItemContent>
             <Box p={6} bg="white">
-              <SubsectionAccordian
-                no={item.sectionId}
-                year={year}
-                search={search}
-              />
+              {/* {<TableContent no={item.sectionId} year={year} />} */}
             </Box>
           </Accordion.ItemContent>
         </Accordion.Item>
       ))}
     </Accordion.Root>
+    </>
   );
 };
 
-export default Gri;
+export default Standards;

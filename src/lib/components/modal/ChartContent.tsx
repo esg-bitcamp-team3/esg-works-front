@@ -395,7 +395,9 @@ const ChartContent = ({
           align={{ base: "flex-start", md: "center", lg: "flex-start" }}
           flex={chartAreaOpen ? "4" : "5"}
           width="100%"
-          height="100%"
+          // height="100%"
+          minHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
+          // maxHeight="50vh"
           textAlign={{ base: "left", md: "center" }}
           outline={"1px solid #E2E8F0"}
           padding={3}
@@ -434,7 +436,7 @@ const ChartContent = ({
 
         <Box
           padding={chartAreaOpen ? "3" : "0"}
-          // minHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
+          minHeight={{ base: "30vh", md: "45vh", lg: "50vh" }}
           // maxHeight={{ base: "30vh", md: "45vh", lg: "60vh" }}
           textAlign={{ base: "left", md: "center" }}
           outline={"1px solid #E2E8F0"}

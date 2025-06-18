@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Link, Text, Image, Flex, Button } from "@chakra-ui/react";
+import { Box, Link, Text, Image, Button } from "@chakra-ui/react";
 
 const Navbar = () => {
   return (
@@ -19,37 +19,28 @@ const Navbar = () => {
       boxShadow="sm"
     >
       {/* Left: Logo & Brand */}
-      <Flex align="center" gap={4}>
-        <Link href="/report">
-          <Button backgroundColor="white" p={0}>
-            <Image src="/logo-colored.png" alt="Logo" maxH="36px" />
-          </Button>
-        </Link>
+      <Link href="/report" gap="3" color="white" outlineColor="white">
+        <Image src="/logo-colored.png" alt="Logo" maxH="36px" />
         <Text
           fontSize="xl"
           color="gray.700"
           fontWeight="bold"
           alignItems={"center"}
         >
-          ESGworks
+          ESG Works
         </Text>
-      </Flex>
-
-      {/* Center: Menu Items */}
+      </Link>
 
       {/* Right: Profile Icon */}
-      <Flex align="center" gap={4}>
-        <Link href="/login">
-          <Button
-            variant="ghost"
-            borderRadius="full"
-            p={2}
-            _hover={{ bg: "gray.100" }}
-          >
-            로그인
-          </Button>
-        </Link>
-      </Flex>
+      <Link href="/login" color="white">
+        <Button
+          variant="ghost"
+          p={3}
+          _hover={{ bg: "gray.100" }}
+        >
+          로그인
+        </Button>
+      </Link>
     </Box>
   );
 };
