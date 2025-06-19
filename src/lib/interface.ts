@@ -13,6 +13,7 @@ export interface Unit {
   unitId: string;
   unitName: string;
   type: string;
+  description: string;
 }
 export interface Category {
   categoryId: string;
