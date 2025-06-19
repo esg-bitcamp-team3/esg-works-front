@@ -1,14 +1,17 @@
 import {
   Accordion,
+  Badge,
   Box,
   Button,
   Editable,
   Flex,
   HStack,
+  Icon,
   IconButton,
   Input,
   Popover,
   Portal,
+  Skeleton,
   Spinner,
   Table,
   Text,
@@ -16,18 +19,19 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-import { searchGRIData } from "@/lib/api/get";
-import { Section } from "@/lib/interface";
-import SectionSelector from "../section/SectionSelector";
+import { getCriterion, getCriterionById, searchGRIData } from "@/lib/api/get";
+import { Criterion, Section } from "@/lib/interface";
 import CategoryList from "../section/CategoryList";
 import EditableCategoryList from "./CategoryList";
-import { LuX } from "react-icons/lu";
+import { LuList, LuX } from "react-icons/lu";
 import { deleteSection } from "@/lib/api/delete";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { patchSection } from "@/lib/api/patch";
+import SectionSelector from "./SectionSelector";
 
-const CriterionEditPage = () => {
-  const [criterion, setCriterion] = useState<string>("new");
+const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
+  const [criterion, setCriterion] = useState<Criterion>();
+  const [criterionLoading, setCriterionLoading] = useState<boolean>(true);
   const [section, setSection] = useState<Section[]>([]);
   const [sectionId, setSectionId] = useState<string>("");
   const [sectionList, setSectionList] = useState<Section[]>([]);
@@ -36,6 +40,18 @@ const CriterionEditPage = () => {
   const [value, setValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [updateLoading, setUpdateLoading] = useState<string>("");
+
+  const fetchCriterion = async () => {
+    try {
+      setCriterionLoading(true);
+      const data = await getCriterionById(criterionId);
+      setCriterion(data || undefined);
+    } catch (error) {
+      console.error("Error fetching criterion data:", error);
+    } finally {
+      setCriterionLoading(false);
+    }
+  };
 
   const handleSectionChange = (sectionId: string) => {
     setSectionId(sectionId);
@@ -108,24 +124,81 @@ const CriterionEditPage = () => {
   };
 
   useEffect(() => {
+    fetchCriterion();
+  }, [criterionId]);
+
+  useEffect(() => {
     setSection(sectionList);
   }, [sectionList]);
 
   return (
-    <Box w="100%" h="100%" pt={4} pb={4} overflow={"auto"}>
-      {}
-      <HStack justifyContent="space-between" w="100%" alignItems={"center"}>
+    <Box w="100%" h="100%" overflow={"auto"}>
+      <Flex alignItems="center">
+        {criterionLoading ? (
+          <Skeleton width="200px" height="30px" borderRadius="md" />
+        ) : (
+          <Text
+            fontSize="3xl"
+            fontWeight="bold"
+            mb={4}
+            textAlign={"start"}
+            width="100%"
+          >
+            {criterion?.criterionName} 평가 항목 수정
+          </Text>
+        )}
+      </Flex>
+      <Flex
+        alignItems="center"
+        mt={6}
+        mb={2}
+        borderBottom="2px solid"
+        borderColor="gray.200"
+        pb={3}
+        justifyContent="space-between"
+        width={"100%"}
+        position={"sticky"}
+      >
+        <HStack>
+          <Icon as={LuList} fontSize="2xl" color="blue.500" />
+          <Text fontSize="lg" fontWeight="600" color="blue.500">
+            세부 항목
+          </Text>
+          <Badge
+            ml={3}
+            colorScheme="blue"
+            borderRadius="full"
+            px={2}
+            textAlign={"center"}
+            justifyContent={"center"}
+            justifyItems={"center"}
+            alignItems={"center"}
+            alignContent={"center"}
+            size={"md"}
+            fontSize={"xs"}
+          >
+            {section.length}
+          </Badge>
+        </HStack>
         <SectionSelector
           sectionList={sectionList}
           setSectionList={setSectionList}
-          criterionId={criterion}
+          criterionId={criterionId}
           value={sectionId}
           onValueChange={handleSectionChange}
           loading={loading}
           setLoading={setLoading}
         />
-      </HStack>
-      <Box>
+      </Flex>
+
+      <VStack
+        align="center"
+        width="100%"
+        gap={4}
+        padding={2}
+        overflowY="auto"
+        maxH={"60vh"}
+      >
         {loading ? (
           <Box width="100%" p={8} textAlign="center">
             <Spinner />
@@ -136,24 +209,19 @@ const CriterionEditPage = () => {
             width="100%"
             value={[value]}
             onValueChange={(e) => setValue(e.value[0])}
-            borderWidth="1px"
             size={"sm"}
+            variant={"subtle"}
+            colorPalette={"blue"}
           >
             {section.map((item, index) => (
               <Accordion.Item
                 key={index}
                 value={item.sectionId}
                 overflow="hidden"
-                _hover={{ borderColor: "blue.200" }}
                 transition="all 0.2s ease"
               >
                 <Accordion.ItemTrigger asChild>
                   <Box
-                    bg="white"
-                    _hover={{ bg: "blue.50" }}
-                    _expanded={{
-                      bg: "blue.50",
-                    }}
                     display="flex"
                     justifyContent="space-between"
                     alignItems="center"
@@ -173,6 +241,7 @@ const CriterionEditPage = () => {
                     ) : (
                       <>
                         <Editable.Root
+                          ml={4}
                           defaultValue="Double click to edit"
                           activationMode="dblclick"
                           bg="transparent"
@@ -182,11 +251,13 @@ const CriterionEditPage = () => {
                           }
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <Editable.Preview />
+                          <Editable.Preview width={"40%"} fontSize={"sm"} />
                           <Editable.Input
+                            width={"40%"}
                             borderWidth={"1px"}
                             borderColor="gray.300"
-                            bg="transparent"
+                            bg="white"
+                            fontSize={"sm"}
                             _focus={{ borderColor: "gray.300" }}
                             onBlur={() =>
                               handleSectionNameUpdate(item.sectionId)
@@ -194,7 +265,7 @@ const CriterionEditPage = () => {
                           />
                         </Editable.Root>
                         <HStack>
-                          <Popover.Root>
+                          <Popover.Root size={"xs"}>
                             <Popover.Trigger asChild>
                               <IconButton
                                 size={"xs"}
@@ -204,16 +275,28 @@ const CriterionEditPage = () => {
                                   e.stopPropagation();
                                 }}
                               >
-                                <LuX />
+                                <Icon as={LuX} color="gray.800" />
                               </IconButton>
                             </Popover.Trigger>
                             <Portal>
                               <Popover.Positioner>
-                                <Popover.Content>
+                                <Popover.Content p={4}>
                                   <Popover.Arrow />
                                   <Popover.Body>
                                     <Popover.Title fontWeight="medium">
-                                      {item.sectionName}을 삭제하시겠습니까?
+                                      {item.sectionName}
+                                      {item.sectionName
+                                        .slice(-1)
+                                        .match(/[가-힣]/)
+                                        ? [
+                                            ..."뺚뺛뺜뺝뺞뺟뺠뺡뺢뺣뺤뺥뺦뺧뺨뺩뺪뺫뺬뺭뺮뺯뺰뺱뺲뺳뺴뺵뺶뺷뺸뺹뺺뺻뺼뺽뺾뺿뻀뻁뻂뻃뻄뻅뻆뻇뻈뻉뻊뻋뻌뻍뻎뻏뻐뻑뻒뻓뻔뻕뻖뻗뻘뻙뻚뻛뻜뻝뻞뻟뻠뻡뻢뻣뻤뻥뻦뻧뻨뻩뻪뻫뻬뻭뻮뻯뻰뻱뻲뻳뻴뻵뻶뻷뻸뻹뻺뻻뻼뻽뻾뻿뼀뼁뼂뼃뼄뼅뼆뼇뼈뼉뼊뼋뼌뼍뼎뼏뼐뼑뼒뼓뼔뼕뼖뼗뼘뼙뼚뼛뼜뼝뼞뼟뼠뼡뼢뼣뼤뼥뼦뼧뼨뼩뼪뼫뼬뼭뼮뼯뼰뼱뼲뼳뼴뼵뼶뼷뼸뼹뼺뼻뼼뼽뼾뼿뽀뽁뽂뽃뽄뽅뽆뽇뽈뽉뽊뽋뽌뽍뽎뽏뽐뽑뽒뽓뽔뽕",
+                                          ].indexOf(
+                                            item.sectionName.slice(-1)
+                                          ) !== -1
+                                          ? "을"
+                                          : "를"
+                                        : "을"}{" "}
+                                      삭제하시겠습니까?
                                     </Popover.Title>
                                   </Popover.Body>
                                   <Popover.Footer
@@ -241,23 +324,22 @@ const CriterionEditPage = () => {
                     )}
                   </Box>
                 </Accordion.ItemTrigger>
-                <Accordion.ItemContent>
-                  <Accordion.ItemBody>
+                <Accordion.ItemContent padding={4}>
+                  <Accordion.ItemBody bg={"white"} p={0}>
                     {value === item.sectionId && (
                       <Table.Root
                         size="sm"
                         showColumnBorder={false}
                         variant={"line"}
                         border={"none"}
-                        bg="white"
                       >
                         <Table.Header>
-                          <Table.Row>
+                          <Table.Row my={2}>
                             <Table.ColumnHeader
                               width={"30%"}
                               justifyContent={"center"}
                               textAlign={"center"}
-                              fontSize={"sm"}
+                              fontSize={"xs"}
                             >
                               이름
                             </Table.ColumnHeader>
@@ -265,7 +347,7 @@ const CriterionEditPage = () => {
                               width={"20%"}
                               justifyContent={"center"}
                               textAlign={"center"}
-                              fontSize={"sm"}
+                              fontSize={"xs"}
                             >
                               단위
                             </Table.ColumnHeader>
@@ -273,7 +355,7 @@ const CriterionEditPage = () => {
                               width={"40%"}
                               justifyContent={"center"}
                               textAlign={"center"}
-                              fontSize={"sm"}
+                              fontSize={"xs"}
                             >
                               설명
                             </Table.ColumnHeader>
@@ -281,7 +363,7 @@ const CriterionEditPage = () => {
                               width={"10%"}
                               justifyContent={"center"}
                               textAlign={"center"}
-                              fontSize={"sm"}
+                              fontSize={"xs"}
                             >
                               {" "}
                             </Table.ColumnHeader>
@@ -301,7 +383,7 @@ const CriterionEditPage = () => {
             ))}
           </Accordion.Root>
         )}
-      </Box>
+      </VStack>
     </Box>
   );
 };
