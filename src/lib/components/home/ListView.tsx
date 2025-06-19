@@ -19,7 +19,7 @@ import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api/client";
 import { useRouter } from "next/navigation";
 import { PiStar, PiStarFill } from "react-icons/pi";
-import { Report } from "@/lib/api/interfaces/report";
+import { Report, ReportDetail } from "@/lib/api/interfaces/report";
 import { deleteInterestReports } from "@/lib/api/delete";
 import { postInterestReports } from "@/lib/api/post";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
@@ -46,9 +46,9 @@ const TabContent = ({ value, children }: TabContentProps) => {
 };
 
 interface ContentProps {
-  visibleItems: Report[];
+  visibleItems: ReportDetail[];
   goReport: (id: string) => void;
-  clickFavorite: (report: Report) => void;
+  clickFavorite: (report: ReportDetail) => void;
   loading: boolean;
 }
 
@@ -102,7 +102,7 @@ const ListContent = ({
               </HStack>
               <HStack>
                 <Text color="gray.500" fontSize="sm" ml={4}>
-                  {report.updatedBy}
+                  {report.updatedBy.name}
                 </Text>
                 <Text color="gray.500" fontSize="sm" ml={4}>
                   {formatted}
@@ -198,7 +198,7 @@ const GridContent = ({
               <Box display="flex" justifyContent="flex-end" w="100%">
                 <HStack align="flex-end">
                   <Text color="gray.500" fontSize="sm">
-                    {report.updatedBy}
+                    {report.updatedBy.name}
                   </Text>
                   <Text color="gray.500" fontSize="sm" ml={4}>
                     {formatted}
@@ -236,7 +236,7 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
   const startRange = (page - 1) * pageSize;
   const endRange = startRange + pageSize;
 
-  const [data, setData] = useState<Report[]>();
+  const [data, setData] = useState<ReportDetail[]>();
   const visibleItems = data?.slice(startRange, endRange);
 
   const [loading, setLoading] = useState(true);
@@ -257,7 +257,7 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
       .finally(() => setLoading(false));
   }, [keyword, filter]);
 
-  const clickFavorite = async (report: Report) => {
+  const clickFavorite = async (report: ReportDetail) => {
     try {
       if (report.isInterestedReport) {
         await deleteInterestReports(report.id);
