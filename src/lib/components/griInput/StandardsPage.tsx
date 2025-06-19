@@ -9,13 +9,21 @@ import CriterionAddModal from "../criterion/CriterionAddModal";
 
 const CARD_STYLES = {
   bg: "white",
-  borderRadius: "xl",
-  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-  transition: "all 0.3s ease",
+  borderRadius: "2xl",
+  boxShadow: "xl",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   _hover: {
-    boxShadow: "0 6px 25px rgba(0, 0, 0, 0.12)",
+    boxShadow: "2xl",
+    transform: "translateY(-2px)",
   },
-  overflow: "hidden",
+  border: "1px solid",
+  borderColor: "gray.100",
+};
+
+const ITEM_HOVER = {
+  bg: "blue.50",
+  borderRadius: "lg",
+  transition: "all 0.2s ease",
 };
 
 const StandardsPage = () => {
@@ -32,82 +40,111 @@ const StandardsPage = () => {
   }, []);
 
   return (
-    <Flex direction="column" gap="3">
+    <Flex direction="column" gap="6" width="full" maxWidth="1200px">
       {/* 기준 추가 버튼 */}
-      <Flex width="100%" justifyContent="end">
+      <Flex width="100%" justifyContent="end" px={4}>
         <CriterionAddModal />
       </Flex>
 
       {/* 기준 리스트 */}
       <Box
         {...CARD_STYLES}
-        p={2}
-        width="70vw"
-        minHeight="65vh"
-        maxHeight='65vh'
+        p={6}
+        width="full"
+        minHeight="70vh"
+        maxHeight="70vh"
         overflowY="auto"
-        padding="8"
-        className="custom-scrollbar"
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "4px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "var(--chakra-colors-blue-200)",
+            borderRadius: "20px",
+          },
+        }}
       >
-        <VStack align="center" width="100%">
+        <VStack align="stretch" width="100%" gap={4}>
           {loading
-            ? Array.from({
-                length: criteria.length > 0 ? criteria.length : 4,
-              }).map((_, idx) => (
-                <Box key={`skeleton-${idx}`} width="100%">
-                  <Box
-                    display="flex"
-                    gap={2}
-                    paddingLeft="2"
-                    paddingRight="2"
-                    width="100%"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Skeleton height="36px" width="100%" borderRadius="md" />
-                  </Box>
-                  {idx < (criteria.length > 0 ? criteria.length : 4) - 1 && (
-                    <Skeleton
-                      height="2px"
+            ? Array.from({ length: criteria.length > 0 ? criteria.length : 4 }).map(
+                (_, idx) => (
+                  <Box key={`skeleton-${idx}`} width="100%">
+                    <Box
+                      display="flex"
+                      gap={4}
+                      px={4}
+                      py={2}
                       width="100%"
-                      borderRadius="full"
-                      my={1}
-                    />
-                  )}
-                </Box>
-              ))
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Skeleton height="48px" width="100%" borderRadius="lg" />
+                    </Box>
+                  </Box>
+                )
+              )
             : criteria.map((std, idx) => (
-                <Box key={std.criterionId + "-wrapper"} width="100%">
+                <Box
+                  key={std.criterionId + "-wrapper"}
+                  width="100%"
+                  position="relative"
+                  _after={
+                    idx < criteria.length - 1
+                      ? {
+                          content: '""',
+                          position: "absolute",
+                          bottom: "-8px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: "96%",
+                          height: "1px",
+                          bg: "gray.100",
+                        }
+                      : {}
+                  }
+                >
                   <Box
                     display="flex"
-                    gap={2}
-                    paddingLeft="6"
-                    paddingRight="2"
+                    gap={4}
+                    px={6}
+                    py={3}
                     width="100%"
-                    height="full"
                     justifyContent="space-between"
                     alignItems="center"
+                    _hover={ITEM_HOVER}
+                    borderRadius="lg"
                   >
                     <Tooltip
                       showArrow
                       content="해당 기준의 데이터 입력 화면으로 이동"
                       positioning={{ placement: "right" }}
-                      contentProps={{ css: { "--tooltip-bg": "gray" } }}
-                      openDelay={500}
+                      contentProps={{
+                        css: {
+                          "--tooltip-bg": "rgba(0, 0, 0, 0.8)",
+                          color: "white",
+                          fontSize: "sm",
+                        },
+                      }}
+                      openDelay={300}
                       closeDelay={100}
                     >
                       <Text
                         as="button"
-                        fontSize="2xl"
+                        fontSize={{ base: "xl", md: "2xl" }}
+                        fontWeight="medium"
                         textAlign="left"
                         cursor="pointer"
                         width="fit-content"
-                        paddingTop="3"
-                        paddingBottom="3"
-                        onClick={() =>
-                          router.push(`/criterion/${std.criterionId}`)
-                        }
-                        _hover={{ color: "blue.700", fontWeight: "bold" }}
+                        py={2}
+                        onClick={() => router.push(`/criterion/${std.criterionId}`)}
+                        _hover={{
+                          color: "blue.600",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s ease"
                         background="none"
                         border="none"
                       >
@@ -117,14 +154,6 @@ const StandardsPage = () => {
 
                     <CriterionMenuButton criterionId={std.criterionId} />
                   </Box>
-                  {idx < criteria.length - 1 && (
-                    <Separator
-                      key={std.criterionId + "-separator"}
-                      width="100%"
-                      borderColor="gray.200"
-                      my={1}
-                    />
-                  )}
                 </Box>
               ))}
         </VStack>

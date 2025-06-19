@@ -43,10 +43,11 @@ const LoginPage = () => {
 
       router.push("/main");
     } catch (error) {
-      // toaster.error({
-      //   title:
-      //     error instanceof ApiError ? error.message : '알 수 없는 오류가 발생했습니다.'
-      // })
+      setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+      toaster.error({
+        title: "로그인 실패",
+        description: "아이디 또는 비밀번호를 확인해주세요.",
+      });
     }
   };
 
