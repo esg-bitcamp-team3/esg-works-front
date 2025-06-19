@@ -90,7 +90,10 @@ export default function CriterionMenuButton({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setOpen(false)}
+                    onClick={(e) => {
+                      setOpen(false);
+                      e.stopPropagation();
+                    }}
                   >
                     취소
                   </Button>
