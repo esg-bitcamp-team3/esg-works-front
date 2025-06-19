@@ -17,7 +17,7 @@ import type { Criterion } from "@/lib/interface";
 import CriterionMenuButton from "../criterion/CriterionMenuButton";
 import CriterionAddModal from "../criterion/CriterionAddModal";
 import { MdList, MdOutlineArticle } from "react-icons/md";
-import { LuClipboardList } from "react-icons/lu";
+import { LuClipboardList, LuList } from "react-icons/lu";
 const CARD_STYLES = {
   bg: "white",
   borderRadius: "xl",
@@ -34,13 +34,27 @@ const StandardsPage = () => {
   const [loading, setLoading] = useState(true);
   const highlightColor = "blue.500";
 
+  const fetchCriteria = async () => {
+    setLoading(true);
+    try {
+      const data = await getMyCriteria();
+      if (data) setCriteria(data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getMyCriteria()
-      .then((data) => {
-        if (data) setCriteria(data);
-      })
-      .finally(() => setLoading(false));
+    fetchCriteria();
   }, []);
+
+  const handleCriterionAdded = () => {
+    fetchCriteria();
+  };
+
+  const handleCriterionDeleted = () => {
+    fetchCriteria();
+  };
 
   return (
     <Box w="100%" h="100%" overflow={"auto"}>
@@ -67,7 +81,7 @@ const StandardsPage = () => {
         position={"sticky"}
       >
         <HStack>
-          <Icon as={MdList} fontSize="2xl" color={highlightColor} />
+          <Icon as={LuList} fontSize="2xl" color={highlightColor} />
           <Text fontSize="lg" fontWeight="600" color={highlightColor}>
             목록
           </Text>
@@ -87,7 +101,7 @@ const StandardsPage = () => {
             {criteria.length}
           </Badge>
         </HStack>
-        <CriterionAddModal />
+        <CriterionAddModal onCriterionAdded={handleCriterionAdded} />
       </Flex>
 
       <VStack
@@ -161,7 +175,10 @@ const StandardsPage = () => {
                   </Text>
                 </Tooltip>
 
-                <CriterionMenuButton criterionId={std.criterionId} />
+                <CriterionMenuButton
+                  criterionId={std.criterionId}
+                  onDeleted={handleCriterionDeleted}
+                />
               </HStack>
             ))}
       </VStack>

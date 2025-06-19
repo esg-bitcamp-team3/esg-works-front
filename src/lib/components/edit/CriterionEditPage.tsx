@@ -21,13 +21,13 @@ import { useEffect, useState } from "react";
 
 import { getCriterion, getCriterionById, searchGRIData } from "@/lib/api/get";
 import { Criterion, Section } from "@/lib/interface";
-import SectionSelector from "../section/SectionSelector";
 import CategoryList from "../section/CategoryList";
 import EditableCategoryList from "./CategoryList";
 import { LuList, LuX } from "react-icons/lu";
 import { deleteSection } from "@/lib/api/delete";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { patchSection } from "@/lib/api/patch";
+import SectionSelector from "./SectionSelector";
 
 const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
   const [criterion, setCriterion] = useState<Criterion>();
