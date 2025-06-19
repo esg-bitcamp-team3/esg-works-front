@@ -2,8 +2,9 @@ import {
   Category,
   Criterion,
   DataFilter,
-  PartialESGData,
+  ESGDataInput,
   Section,
+  Unit,
 } from "../interface";
 
 import { apiClient } from "./client";
@@ -22,16 +23,12 @@ import { SectionCategoryESGData } from "./interfaces/gri";
 
 export const getDataByCorpYear = async (data: DataFilter) => {
   try {
-    const response = await apiClient.get<PartialESGData>(
-      `/esg-data/data-value`,
-      {
-        params: data,
-      }
-    );
+    const response = await apiClient.get<ESGDataInput>(`/esg-data/data-value`, {
+      params: data,
+    });
     return response.data;
   } catch (error) {}
 };
-
 
 // ============================section
 export const getSections = async () => {
@@ -347,7 +344,7 @@ export const getGriBySection = async (
   }
 };
 
-export const getGriBySectionSelect = async (
+export const getGriByYearAndSectionId = async (
   year: string,
   sectionId: string
 ) => {
@@ -361,5 +358,15 @@ export const getGriBySectionSelect = async (
     return res.data;
   } catch (error) {
     console.error("카테고리 검색 실패", error);
+  }
+};
+
+export const getAllUnits = async () => {
+  try {
+    const res = await apiClient.get<Unit[]>(`/units`);
+    return res.data;
+  } catch (error) {
+    console.error("단위 가져오기 실패:", error);
+    return [];
   }
 };
