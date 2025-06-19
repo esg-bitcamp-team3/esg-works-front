@@ -1,4 +1,4 @@
-import { PartialESGData } from "../interface";
+import { ESGDataInput } from "../interface";
 import { apiClient } from "./client";
 
 export interface CategoryInput {
@@ -7,7 +7,7 @@ export interface CategoryInput {
   unitId: string;
 }
 
-export const patchESGData = async (data: PartialESGData) => {
+export const patchESGData = async (data: Partial<ESGDataInput>) => {
   try {
     const response = await apiClient.patch(`/esg-data/data-value`, data);
     return response.data;

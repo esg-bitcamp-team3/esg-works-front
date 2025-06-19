@@ -23,7 +23,7 @@ export interface Category {
   description: string;
 }
 
-export interface PartialESGData {
+export interface ESGDataInput {
   categoryId: string;
   corpId: string;
   year: string;

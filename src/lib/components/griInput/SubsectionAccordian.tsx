@@ -1,90 +1,82 @@
-import { Accordion, Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
+import {
+  Accordion,
+  Box,
+  Button,
+  HStack,
+  Separator,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import subCategory from "@/lib/data/gri";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
-import { CategoryESGData } from "@/lib/api/interfaces/gri";
-import DynamicInputForm from "./InputForm";
-import { tokenCheck } from "@/lib/api/auth/auth";
+import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
+import DynamicInputForm from "./DynamicInputForm";
+
+type SubCategoryKey = keyof typeof subCategory;
 
 interface Props {
-  categoryESGDataList: CategoryESGData[];
+  section: SectionCategoryESGData;
   year: string;
 }
 
-type subSection = Record<string, CategoryESGData[]>;
-type FieldMap = Record<string, { value: string; isExisting: boolean }>;
+type Field = Record<string, string>;
 
-const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
+const SubsectionAccordian = ({ section, year }: Props) => {
   const [value, setValue] = useState<string>("");
 
-  const [fieldValues, setFieldValues] = useState<FieldMap>({});
+  const [fieldValues, setFieldValues] = useState<Field>({});
 
-  const partedSection = useMemo(() => {
-    const groupedBySection: subSection = {};
-    Object.values(categoryESGDataList).forEach((item) => {
-      const sectionId = item.categoryId.substring(3, 5);
-      if (!groupedBySection[sectionId]) {
-        groupedBySection[sectionId] = [];
-      }
-      groupedBySection[sectionId].push(item);
-    });
-    return groupedBySection;
-  }, [categoryESGDataList]);
+  const [updateLoading, setUpdateLoading] = useState<string>("");
+  const [updated, setUpdated] = useState<string>("");
 
-  const handleFieldChange = useCallback(
-    (categoryId: string, value: string, isExisting: boolean) => {
-      setFieldValues((prev) => ({
-        ...prev,
-        [categoryId]: { value, isExisting },
-      }));
-    },
-    []
-  );
+  const fieldChange = useCallback((categoryId: string, value: string) => {
+    setFieldValues((prev) => ({
+      ...prev,
+      [categoryId]: value,
+    }));
+  }, []);
 
-  const outputList = useCallback(
-    (categoryList: CategoryESGData[]) => {
-      return categoryList.map((category) => {
-        const { value, isExisting } = fieldValues[category.categoryId] || {
-          value: "",
-          isExisting: false,
-        };
-        return { ...category, value, isExisting };
-      });
-    },
-    [fieldValues]
-  );
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
-  const handleSaveAll = useCallback(
-    async (index: number) => {
-      const user = await tokenCheck();
-      if (!user) {
-        console.error("User not authenticated");
-        return;
-      }
-      for (const item of outputList(Object.values(partedSection)[index])) {
-        console.log(item);
+  const handleSaveAll = async (key: string) => {
+    setUpdateLoading(key);
+    try {
+      console.log("Saving data for key:", key);
+      const savePromises = Object.entries(fieldValues).map(
+        async ([categoryId, value]) => {
+          const outputData = {
+            categoryId: categoryId,
+            year: year,
+            value: value,
+          };
 
-        const outputData = {
-          categoryId: item.categoryId,
-          corpId: user.corpId,
-          year: year,
-          value: item.value,
-        };
+          const existing = section.categoryESGDataList.find(
+            (cat) => cat.categoryId === categoryId
+          )?.esgData;
 
-        try {
-          if (item.isExisting) {
-            await patchESGData(outputData);
+          if (existing) {
+            return patchESGData(outputData);
           } else {
-            await postESGData(outputData);
+            return postESGData(outputData);
           }
-        } catch (error) {
-          console.error(`Error saving category ${item.categoryId}`, error);
         }
-      }
-    },
-    [outputList, partedSection]
-  );
+      );
+
+      // 모든 요청 완료까지 기다림
+      await Promise.all(savePromises);
+      await delay(2000); // 1초 대기
+      setUpdated(key);
+
+      console.log("Data saved successfully for key:", key);
+    } catch (error) {
+      console.error("Error saving data:", error);
+    } finally {
+      setUpdateLoading("");
+    }
+  };
 
   return (
     <Accordion.Root
@@ -93,9 +85,11 @@ const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
       value={[value]}
       onValueChange={(e) => setValue(e.value[0] || "")}
     >
-      {Object.entries(partedSection).map(([key, value], index) => (
+      {Object.entries(
+        subCategory[section.sectionId as SubCategoryKey] || {}
+      ).map(([key, value], index) => (
         <Accordion.Item
-          key={key}
+          key={key + index}
           value={key}
           borderWidth="1px"
           borderColor="gray.200"
@@ -108,42 +102,44 @@ const SubsectionAccordian = ({ categoryESGDataList, year }: Props) => {
           <HStack padding={4}>
             <Accordion.ItemTrigger p={2}>
               <Text fontSize="sm" fontWeight="bold" color="gray.700">
-                {subCategory[Object.values(value)[0].sectionId][key]}
+                {value}
               </Text>
             </Accordion.ItemTrigger>
             <Button
               variant={"subtle"}
-              onClick={() => handleSaveAll(index)}
+              onClick={() => handleSaveAll(key)}
               colorPalette="gray"
               px={4}
               size={"sm"}
+              loading={updateLoading === key}
             >
-              <Text fontSize="xs" color="gray.900">
-                저장
-              </Text>
+              {updated === key ? (
+                <Text fontSize="xs" color="green.500">
+                  저장 완료
+                </Text>
+              ) : (
+                <Text fontSize="xs" color="gray.900">
+                  저장
+                </Text>
+              )}
             </Button>
           </HStack>
+
           <Accordion.ItemContent>
-            <Box
-              key={key}
-              width="100%"
-              p={2}
-              borderBottomWidth="1px"
-              display="flex"
-              justifyContent="center"
-              textAlign="center"
-            >
-              <VStack>
-                {Object.values(value).map((category) => (
+            <Separator />
+            <VStack gap={2}>
+              {section?.categoryESGDataList
+                ?.filter((category) =>
+                  category.categoryId.startsWith(section.sectionId + key)
+                )
+                .map((item) => (
                   <DynamicInputForm
-                    key={category.categoryId}
-                    category={category}
-                    year={category.esgData?.year}
-                    onFieldChange={handleFieldChange}
+                    key={item.categoryId}
+                    category={item}
+                    onValueChange={fieldChange}
                   />
                 ))}
-              </VStack>
-            </Box>
+            </VStack>
           </Accordion.ItemContent>
         </Accordion.Item>
       ))}
