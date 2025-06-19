@@ -62,14 +62,24 @@ export default function CriterionAddModal() {
     <Dialog.Root initialFocusEl={() => ref.current} placement="center">
       <Dialog.Trigger asChild>
         <Button
-          size="xs"
-          p="3"
-          marginRight="1"
-          bg="#2F6EEA"
-          color="white"
-          _hover={{ backgroundColor: "#3182ce", color: "white" }}
+          size="sm"
+          px="3"
+          py="2"
+          variant={"surface"}
+          borderRadius="md"
+          _hover={{
+            backgroundColor: "rgba(200, 202, 206, 0.31)",
+            transform: "translateY(-1px)",
+          }}
+          _active={{
+            backgroundColor: "#rgba(240, 245, 255, 0.5)",
+            transform: "translateY(0)",
+          }}
+          boxShadow="0 2px 4px rgba(0, 0, 0, 0.1)"
+          transition="all 0.2s ease"
         >
-          <FaPlus size="sm" />
+          {/* <FaPlus size="xs" style={{ marginRight: "4px" }} /> 기준 추가 */}
+          항목 추가
         </Button>
       </Dialog.Trigger>
 
@@ -95,11 +105,35 @@ export default function CriterionAddModal() {
             </Dialog.Body>
             <Dialog.Footer>
               <Dialog.ActionTrigger asChild>
-                <Button variant="outline">취소</Button>
+                <Button
+                  variant="outline"
+                  borderColor="#E2E8F0"
+                  color="#4A5568"
+                  _hover={{
+                    backgroundColor: "#F7FAFC",
+                    borderColor: "#CBD5E0",
+                  }}
+                  transition="all 0.2s ease"
+                >
+                  취소
+                </Button>
               </Dialog.ActionTrigger>
               <Dialog.ActionTrigger asChild>
                 <Button
                   backgroundColor="#2F6EEA"
+                  color="white"
+                  ml="3"
+                  fontWeight="600"
+                  _hover={{
+                    backgroundColor: "#1a56c7",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  }}
+                  _active={{
+                    backgroundColor: "#164099",
+                    transform: "translateY(1px)",
+                  }}
+                  boxShadow="0 2px 4px rgba(0, 0, 0, 0.1)"
+                  transition="all 0.2s ease"
                   onClick={() => {
                     handleSave();
                   }}
@@ -109,7 +143,11 @@ export default function CriterionAddModal() {
               </Dialog.ActionTrigger>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" variant="plain" />
+              <CloseButton
+                size="sm"
+                variant="plain"
+                _hover={{ backgroundColor: "#F7FAFC", color: "#2D3748" }}
+              />
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>

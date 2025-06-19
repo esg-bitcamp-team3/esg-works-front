@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Portal, Menu } from "@chakra-ui/react";
+import { Button, Portal, Menu, Icon } from "@chakra-ui/react";
 import { useState } from "react";
 import { Criterion } from "@/lib/interface";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,9 @@ export default function CriterionMenuButton({
     try {
       if (!window.confirm("정말로 삭제하시겠습니까?")) return;
       await deleteCriterion(criterionId);
-      setCriteria((prev: Criterion[]) => prev.filter((c: Criterion) => c.criterionId !== criterionId));
+      setCriteria((prev: Criterion[]) =>
+        prev.filter((c: Criterion) => c.criterionId !== criterionId)
+      );
       if (selected === criterionId) setSelected(null);
       alert("삭제 완료!");
       window.location.reload();
@@ -46,7 +48,7 @@ export default function CriterionMenuButton({
   ];
   return (
     <Menu.Root>
-      <Menu.Trigger asChild>
+      <Menu.Trigger asChild onClick={(e) => e.stopPropagation()}>
         <Button
           height="fit-content"
           width="fit-content"
@@ -54,7 +56,7 @@ export default function CriterionMenuButton({
           alignItems="center"
           variant="plain"
         >
-          <BsThreeDotsVertical />
+          <Icon as={BsThreeDotsVertical} boxSize={5} color="gray.500" />
         </Button>
       </Menu.Trigger>
       <Portal>
