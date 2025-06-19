@@ -147,9 +147,9 @@ export const searchGRIData = async ({
 };
 
 export const searchESGData = async ({
-  year = "2020",
-  sectionId = "201",
-  categoryName = "",
+  year,
+  sectionId,
+  categoryName,
 }: {
   year: string;
   sectionId: string;
@@ -280,6 +280,15 @@ export const getInterestReports = async () => {
 export const getMyCriteria = async () => {
   try {
     const res = await apiClient.get<Criterion[]>(`/criteria/my`);
+    return res.data;
+  } catch (error) {
+    console.error("섹션 기준 가져오기 실패:", error);
+    return null;
+  }
+};
+export const getCriteria = async (criterionId: string) => {
+  try {
+    const res = await apiClient.get<Criterion>(`/criteria/${criterionId}`);
     return res.data;
   } catch (error) {
     console.error("섹션 기준 가져오기 실패:", error);
