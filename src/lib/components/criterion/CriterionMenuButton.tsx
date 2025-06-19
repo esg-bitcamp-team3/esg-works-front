@@ -6,6 +6,7 @@ import { Criterion } from "@/lib/interface";
 import { useRouter } from "next/navigation";
 import { deleteCriterion } from "@/lib/api/delete";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { LuArrowRight } from "react-icons/lu";
 
 export default function CriterionMenuButton({
   criterionId,
@@ -13,7 +14,6 @@ export default function CriterionMenuButton({
   criterionId: string;
 }) {
   const router = useRouter();
-  const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
 
   // 삭제 기능 추가
@@ -21,9 +21,6 @@ export default function CriterionMenuButton({
     try {
       if (!window.confirm("정말로 삭제하시겠습니까?")) return;
       await deleteCriterion(criterionId);
-      setCriteria((prev: Criterion[]) =>
-        prev.filter((c: Criterion) => c.criterionId !== criterionId)
-      );
       if (selected === criterionId) setSelected(null);
       alert("삭제 완료!");
       window.location.reload();
@@ -32,20 +29,6 @@ export default function CriterionMenuButton({
       alert("삭제에 실패했어요 😢");
     }
   };
-
-  // 메뉴 항목 정의
-  const links = [
-    {
-      title: "수정",
-      onClick: (criterionId: string) => {
-        router.push(`/criterion/${criterionId}/editor`);
-      },
-    },
-    {
-      title: "삭제",
-      onClick: () => handleDelete(),
-    },
-  ];
   return (
     <Menu.Root>
       <Menu.Trigger asChild onClick={(e) => e.stopPropagation()}>
@@ -61,16 +44,27 @@ export default function CriterionMenuButton({
       </Menu.Trigger>
       <Portal>
         <Menu.Positioner>
-          <Menu.Content>
-            {links.map((link) => (
-              <Menu.Item
-                key={link.title}
-                value={link.title}
-                onClick={() => link.onClick(criterionId)}
-              >
-                {link.title}
-              </Menu.Item>
-            ))}
+          <Menu.Content padding={2}>
+            <Menu.Item
+              key={"edit"}
+              value={"edit"}
+              onClick={() => {
+                router.push(`/criteria/${criterionId}/edit`);
+              }}
+              justifyContent={"space-between"}
+            >
+              {"수정"}
+              <LuArrowRight />
+            </Menu.Item>
+            <Menu.Item
+              key={"delete"}
+              value={"delete"}
+              onClick={() => {
+                handleDelete();
+              }}
+            >
+              {"삭제"}
+            </Menu.Item>
           </Menu.Content>
         </Menu.Positioner>
       </Portal>

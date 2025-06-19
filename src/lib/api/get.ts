@@ -373,3 +373,13 @@ export const getAllUnits = async () => {
     return [];
   }
 };
+
+export const getCriterionById = async (criterionId: string) => {
+  try {
+    const res = await apiClient.get<Criterion>(`/criteria/${criterionId}`);
+    return res.data;
+  } catch (error) {
+    console.error("기준 가져오기 실패:", error);
+    return null;
+  }
+};
