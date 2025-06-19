@@ -1,4 +1,4 @@
-import { PartialESGData, Password } from "../interface";
+import { Password } from "../interface";
 import { ESGDataInput } from "../interface";
 import { apiClient } from "./client";
 
@@ -23,6 +23,8 @@ export const patchPassword = async (data: Password) => {
     return response.data;
   } catch (error) {
     console.log("data patch error");
+  }
+};
 
 export const patchCategory = async (
   categoryId: string,
