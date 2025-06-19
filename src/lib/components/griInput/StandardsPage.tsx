@@ -48,9 +48,9 @@ const StandardsPage = () => {
     fetchCriteria();
   }, []);
 
-  const handleCriterionAdded = () => {
-    fetchCriteria();
-  };
+  return (
+    <Flex direction="column" gap="6" width="full" maxWidth="1200px">
+      {/* 기준 추가 버튼 */}
 
   const handleCriterionDeleted = () => {
     fetchCriteria();

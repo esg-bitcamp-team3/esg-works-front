@@ -55,7 +55,6 @@ export default function LandingPage() {
             </Text>
             <Link href="/report" passHref>
               <Box
-                as="a"
                 bg="teal.400"
                 color="white"
                 px={6}
