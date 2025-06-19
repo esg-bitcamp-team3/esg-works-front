@@ -2,7 +2,7 @@ import {
   Category,
   Criterion,
   DataFilter,
-  PartialESGData,
+  ESGDataInput,
   Section,
   Unit,
 } from "../interface";
@@ -23,12 +23,9 @@ import { SectionCategoryESGData } from "./interfaces/gri";
 
 export const getDataByCorpYear = async (data: DataFilter) => {
   try {
-    const response = await apiClient.get<PartialESGData>(
-      `/esg-data/data-value`,
-      {
-        params: data,
-      }
-    );
+    const response = await apiClient.get<ESGDataInput>(`/esg-data/data-value`, {
+      params: data,
+    });
     return response.data;
   } catch (error) {}
 };
@@ -371,5 +368,15 @@ export const getAllUnits = async () => {
   } catch (error) {
     console.error("단위 가져오기 실패:", error);
     return [];
+  }
+};
+
+export const getCriterionById = async (criterionId: string) => {
+  try {
+    const res = await apiClient.get<Criterion>(`/criteria/${criterionId}`);
+    return res.data;
+  } catch (error) {
+    console.error("기준 가져오기 실패:", error);
+    return null;
   }
 };

@@ -21,6 +21,7 @@ export async function login(data: Partial<LoginForm>) {
     const response = await apiClient.post<TokenData>("/auth/login", data);
     return response.data;
   } catch (error: any) {
+    throw error;
     // if (error.response?.status === 401) {
     //   handleApiError(error, "이메일 또는 비밀번호가 잘못되었습니다.");
     // } else {

@@ -1,4 +1,4 @@
-import { Category, PartialESGData } from "@/lib/interface";
+import { Category, ESGDataInput } from "@/lib/interface";
 import {
   Box,
   Input,
@@ -49,7 +49,7 @@ const unitTypes: Record<string, "money" | "number" | "boolean" | "string"> = {
 
 export const SubDynamicInputForm = ({ category, year }: Props) => {
   const [field, setField] = useState("");
-  const [inputData, setInputData] = useState<PartialESGData>();
+  const [inputData, setInputData] = useState<ESGDataInput>();
 
   const fieldCheck = async () => {
     try {

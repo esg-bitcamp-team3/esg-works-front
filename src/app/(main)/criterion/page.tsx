@@ -24,7 +24,7 @@ const Page = () => {
           평가 항목 리스트
         </Text>
         <StandardsPage />
-      </VStack>
+      </Box>
     </Flex>
   );
 };
