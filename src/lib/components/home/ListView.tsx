@@ -13,6 +13,8 @@ import {
   TabsContent,
   Flex,
   Skeleton,
+  Icon,
+  Image,
 } from "@chakra-ui/react";
 import { FaCopy } from "react-icons/fa6";
 import { useState, useEffect } from "react";
@@ -23,6 +25,7 @@ import { Report } from "@/lib/api/interfaces/report";
 import { deleteInterestReports } from "@/lib/api/delete";
 import { postInterestReports } from "@/lib/api/post";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
+import { LuFiles } from "react-icons/lu";
 
 interface TabContentProps {
   value: string;
@@ -61,9 +64,9 @@ const ListContent = ({
   if (loading) {
     return (
       <Box w="100%">
-        <Skeleton height="40px" mb={4} />
-        <Skeleton height="40px" mb={4} />
-        <Skeleton height="40px" mb={4} />
+        <Skeleton height="50px" mb={4} />
+        <Skeleton height="50px" mb={4} />
+        <Skeleton height="50px" mb={4} />
       </Box>
     );
   }
@@ -88,7 +91,7 @@ const ListContent = ({
             borderRadius="md"
             borderColor="black"
             w="100%"
-            h="70px"
+            h="66px"
             display="flex"
             alignItems="center"
             px={4}
@@ -97,8 +100,18 @@ const ListContent = ({
           >
             <HStack padding={4} gap={4} justifyContent="space-between" w="100%">
               <HStack>
-                <FaCopy style={{ marginRight: 8 }} />
-                <Text>{report.title}</Text>
+                <Icon
+                  size="sm"
+                  marginRight="2"
+                  color="gray.600"
+                  justifyItems="center"
+                  alignItems="center"
+                >
+                  <LuFiles />
+                </Icon>
+                <Text fontSize="sm" color="gray.600" fontWeight="semibold">
+                  {report.title}
+                </Text>
               </HStack>
               <HStack>
                 <Text color="gray.500" fontSize="sm" ml={4}>
@@ -139,24 +152,16 @@ const GridContent = ({
     return (
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} gap={10} w="100%">
         {Array.from({ length: 3 }).map((_, idx) => (
-          <Box
-            key={idx}
-            borderRadius="md"
-            shadow="md"
-            overflow="hidden"
-            w="100%"
-            gap={4}
-          >
-            <Skeleton height="130px" />
-            <Box bg="white" px={4} py={2}>
-              <HStack align="flex-end" justify="space-between">
-                <Skeleton height="20px" width="60px" />
-
-                <Skeleton height="20px" width="60px" />
-                <Skeleton height="24px" width="24px" borderRadius="full" />
-              </HStack>
-            </Box>
-          </Box>
+          // <Box
+          //   key={idx}
+          //   borderRadius="md"
+          //   shadow="md"
+          //   overflow="hidden"
+          //   w="100%"
+          //   gap={4}
+          // >
+          <Skeleton height="180px" />
+          // </Box>
         ))}
       </SimpleGrid>
     );
@@ -183,8 +188,14 @@ const GridContent = ({
             onClick={() => goReport(report.id)}
             _hover={{ cursor: "pointer", bg: "gray.100" }}
           >
-            <Box bg="blue.100" h="120px">
-              <Text color="gray.700">{report.title}</Text>
+            <Box
+              bg="blue.100"
+              h="180px"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Image height="70px" src="word-icon.png" />
             </Box>
             <Box
               bg="white"
@@ -195,13 +206,16 @@ const GridContent = ({
               alignItems="center"
               gap={2}
             >
-              <Box display="flex" justifyContent="flex-end" w="100%">
-                <HStack align="flex-end">
-                  <Text color="gray.500" fontSize="sm">
-                    {report.updatedBy}
-                  </Text>
-                  <Text color="gray.500" fontSize="sm" ml={4}>
-                    {formatted}
+              <Box
+                display="column"
+                justifyContent="space-between"
+                alignItems="center"
+                w="100%"
+                gapY='4'
+              >
+                <HStack justifyContent='space-between'>
+                  <Text truncate maxW="180px" color="gray.600" fontSize="sm">
+                    {report.title}
                   </Text>
                   <Button
                     bg={"white"}
@@ -214,6 +228,18 @@ const GridContent = ({
                       <PiStar color="gray" />
                     )}
                   </Button>
+                </HStack>
+
+                <HStack justifyContent="space-between" gapX="4">
+                   <HStack>
+                    <Text color="gray.500" fontSize="sm">
+                      {formatted}
+                    </Text>
+                  </HStack>
+                  <Text color="gray.500" fontSize="sm">
+                    {report.updatedBy}
+                  </Text>
+                 
                 </HStack>
               </Box>
             </Box>
@@ -287,7 +313,7 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
           value={filter2}
           w="100%"
           defaultValue={"list"}
-          height={"auto"}
+          // height={"auto"}
         >
           <TabContent value="list">
             <ListContent
@@ -307,7 +333,9 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
           </TabContent>
         </Tabs.Root>
       </Box>
-      <Box w="100%" display="flex" justifyContent="center" mt={4}>
+
+      {/* pagination =============== */}
+      <Box position="fixed" bottom="14" w="100%" justifyItems="center">
         <Pagination.Root
           count={data?.length}
           pageSize={pageSize}
@@ -320,7 +348,6 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
                 <HiChevronLeft />
               </IconButton>
             </Pagination.PrevTrigger>
-
             <Pagination.Items
               render={(page) => (
                 <IconButton variant={{ base: "ghost", _selected: "outline" }}>

@@ -1,4 +1,14 @@
-import { Box, VStack, Separator, Text, Skeleton, Flex } from "@chakra-ui/react";
+import {
+  Box,
+  VStack,
+  Separator,
+  Text,
+  Skeleton,
+  Flex,
+  Badge,
+  Icon,
+  HStack,
+} from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -6,30 +16,23 @@ import { getMyCriteria } from "@/lib/api/get";
 import type { Criterion } from "@/lib/interface";
 import CriterionMenuButton from "../criterion/CriterionMenuButton";
 import CriterionAddModal from "../criterion/CriterionAddModal";
-
+import { MdList, MdOutlineArticle } from "react-icons/md";
+import { LuClipboardList } from "react-icons/lu";
 const CARD_STYLES = {
   bg: "white",
-  borderRadius: "2xl",
-  boxShadow: "xl",
-  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  _hover: {
-    boxShadow: "2xl",
-    transform: "translateY(-2px)",
-  },
+  borderRadius: "xl",
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
   border: "1px solid",
   borderColor: "gray.100",
-};
-
-const ITEM_HOVER = {
-  bg: "blue.50",
-  borderRadius: "lg",
-  transition: "all 0.2s ease",
+  overflow: "hidden",
+  position: "relative",
 };
 
 const StandardsPage = () => {
   const router = useRouter();
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [loading, setLoading] = useState(true);
+  const highlightColor = "blue.500";
 
   useEffect(() => {
     getMyCriteria()
@@ -42,121 +45,133 @@ const StandardsPage = () => {
   return (
     <Flex direction="column" gap="6" width="full" maxWidth="1200px">
       {/* 기준 추가 버튼 */}
-      <Flex width="100%" justifyContent="end" px={4}>
-        <CriterionAddModal />
-      </Flex>
 
       {/* 기준 리스트 */}
-      <Box
-        {...CARD_STYLES}
-        p={6}
-        width="full"
-        minHeight="70vh"
-        maxHeight="70vh"
-        overflowY="auto"
-        css={{
-          "&::-webkit-scrollbar": {
-            width: "4px",
-          },
-          "&::-webkit-scrollbar-track": {
-            background: "transparent",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            background: "var(--chakra-colors-blue-200)",
-            borderRadius: "20px",
-          },
-        }}
-      >
-        <VStack align="stretch" width="100%" gap={4}>
+      <Box width="70vw" minHeight="65vh" maxHeight="65vh">
+        <Flex
+          alignItems="center"
+          mb={6}
+          borderBottom="2px solid"
+          borderColor="gray.200"
+          pb={3}
+          justifyContent="space-between"
+          width={"100%"}
+          position={"sticky"}
+        >
+          <HStack>
+            <Icon as={MdList} fontSize="2xl" color={highlightColor} />
+            <Text fontSize="lg" fontWeight="600" color={highlightColor}>
+              목록
+            </Text>
+            <Badge
+              ml={3}
+              colorScheme="blue"
+              borderRadius="full"
+              px={2}
+              textAlign={"center"}
+              justifyContent={"center"}
+              justifyItems={"center"}
+              alignItems={"center"}
+              alignContent={"center"}
+              size={"md"}
+              fontSize={"xs"}
+            >
+              {criteria.length}
+            </Badge>
+          </HStack>
+          <CriterionAddModal />
+        </Flex>
+
+        <VStack
+          align="center"
+          width="100%"
+          gap={4}
+          padding={2}
+          overflowY="auto"
+          maxH={"60vh"}
+        >
           {loading
-            ? Array.from({ length: criteria.length > 0 ? criteria.length : 4 }).map(
-                (_, idx) => (
-                  <Box key={`skeleton-${idx}`} width="100%">
-                    <Box
-                      display="flex"
-                      gap={4}
-                      px={4}
-                      py={2}
-                      width="100%"
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Skeleton height="48px" width="100%" borderRadius="lg" />
-                    </Box>
-                  </Box>
-                )
-              )
-            : criteria.map((std, idx) => (
-                <Box
-                  key={std.criterionId + "-wrapper"}
-                  width="100%"
-                  position="relative"
-                  _after={
-                    idx < criteria.length - 1
-                      ? {
-                          content: '""',
-                          position: "absolute",
-                          bottom: "-8px",
-                          left: "50%",
-                          transform: "translateX(-50%)",
-                          width: "96%",
-                          height: "1px",
-                          bg: "gray.100",
-                        }
-                      : {}
-                  }
-                >
+            ? Array.from({
+                length: criteria.length > 0 ? criteria.length : 4,
+              }).map((_, idx) => (
+                <Box key={`skeleton-${idx}`} width="100%">
                   <Box
                     display="flex"
-                    gap={4}
-                    px={6}
-                    py={3}
+                    gap={2}
+                    paddingLeft="2"
+                    paddingRight="2"
                     width="100%"
                     justifyContent="space-between"
                     alignItems="center"
-                    _hover={ITEM_HOVER}
-                    borderRadius="lg"
                   >
-                    <Tooltip
-                      showArrow
-                      content="해당 기준의 데이터 입력 화면으로 이동"
-                      positioning={{ placement: "right" }}
-                      contentProps={{
-                        css: {
-                          "--tooltip-bg": "rgba(0, 0, 0, 0.8)",
-                          color: "white",
-                          fontSize: "sm",
-                        },
-                      }}
-                      openDelay={300}
-                      closeDelay={100}
-                    >
-                      <Text
-                        as="button"
-                        fontSize={{ base: "xl", md: "2xl" }}
-                        fontWeight="medium"
-                        textAlign="left"
-                        cursor="pointer"
-                        width="fit-content"
-                        py={2}
-                        onClick={() => router.push(`/criterion/${std.criterionId}`)}
-                        _hover={{
-                          color: "blue.600",
-                          transform: "translateX(4px)",
-                        }}
-                        transition="all 0.2s ease"
-                        background="none"
-                        border="none"
-                      >
-                        {std.criterionName}
-                      </Text>
-                    </Tooltip>
-
-                    <CriterionMenuButton criterionId={std.criterionId} />
+                    <Skeleton height="75px" width="100%" borderRadius="md" />
                   </Box>
                 </Box>
+              ))
+            : criteria.map((std, idx) => (
+                <HStack
+                  key={std.criterionId + "-wrapper"}
+                  width="100%"
+                  borderRadius="md"
+                  border={"2px solid rgb(240, 240, 240)"}
+                  transition="all 0.2s"
+                  _hover={{
+                    bg: "gray.50",
+                    transform: "scale(1.01)",
+                  }}
+                  px={4}
+                  py={6}
+                  onClick={() => router.push(`/criterion/${std.criterionId}`)}
+                  justifyContent={"space-between"}
+                >
+                  <Tooltip
+                    showArrow
+                    content="해당 기준의 데이터 입력 화면으로 이동"
+                    positioning={{ placement: "right" }}
+                    contentProps={{ css: { "--tooltip-bg": "#4A5568" } }}
+                    openDelay={500}
+                    closeDelay={100}
+                  >
+                    <Text
+                      fontSize="md"
+                      textAlign="left"
+                      cursor="pointer"
+                      background="none"
+                      border="none"
+                      alignItems="center"
+                      justifyContent={"center"}
+                      ml={2}
+                    >
+                      <Icon
+                        as={LuClipboardList}
+                        mr={3}
+                        color="blue.500"
+                        opacity={0.7}
+                        size={"md"}
+                      />
+                      {std.criterionName}
+                    </Text>
+                  </Tooltip>
+
+                  <CriterionMenuButton criterionId={std.criterionId} />
+                </HStack>
               ))}
         </VStack>
+
+        {!loading && criteria.length === 0 && (
+          <Flex
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            height="50vh"
+            color="gray.500"
+          >
+            <Text fontSize="lg">등록된 기준이 없습니다.</Text>
+            <Text fontSize="sm" mt={2}>
+              오른쪽 상단의 추가 버튼을 통해 새 기준을 생성해 보세요.
+            </Text>
+          </Flex>
+        )}
       </Box>
     </Flex>
   );

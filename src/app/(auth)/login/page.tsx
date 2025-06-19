@@ -24,7 +24,7 @@ const LoginPage = () => {
 
   const handleSubmit = async () => {
     if (!id || !password) {
-      setError("아이디와 비밀번호를 확인해주세요요.");
+      setError("아이디와 비밀번호를 확인해주세요.");
       return;
     }
 
@@ -34,16 +34,25 @@ const LoginPage = () => {
         password: password, // 비밀번호 추가
       });
       localStorage.setItem("token", tokenData?.token ?? "");
+      if (!tokenData?.token) {
+        setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+        setPassword("");
+        toaster.error({
+          title: "로그인 실패",
+          description: "아이디 또는 비밀번호를 확인해주세요.",
+        });
+        return;
+      }
       toaster.success({
         title: "로그인 성공!",
       });
-
       // setTimeout(() => console.log('로그인 성공!'))
       // console.log(localStorage.getItem("token"));
-
-      router.push("/main");
+      router.push("/home");
+      
     } catch (error) {
       setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+      setPassword(""); 
       toaster.error({
         title: "로그인 실패",
         description: "아이디 또는 비밀번호를 확인해주세요.",

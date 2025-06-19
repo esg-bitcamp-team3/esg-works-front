@@ -10,7 +10,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Flex
-      bg={"white"}
+      bg={"#fafafa"}
       h={"100vh"}
       w={"100vw"}
       justifyContent="center"

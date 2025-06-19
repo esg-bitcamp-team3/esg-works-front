@@ -34,7 +34,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { label: "홈", icon: FaHouse, path: "/main" },
+  { label: "홈", icon: FaHouse, path: "/home" },
   { label: "데이터 입력", icon: FaPen, path: "/criterion" },
   { label: "보고서 작성", icon: FaFile, path: "/report" },
 ];
