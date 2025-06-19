@@ -11,11 +11,8 @@ import subCategory from "@/lib/data/gri";
 import { useCallback, useState } from "react";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
-import {
-  CategoryESGData,
-  SectionCategoryESGData,
-} from "@/lib/api/interfaces/gri";
-import DynamicInputForm from "./InputForm";
+import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
+import DynamicInputForm from "./DynamicInputForm";
 
 type SubCategoryKey = keyof typeof subCategory;
 
@@ -24,70 +21,62 @@ interface Props {
   year: string;
 }
 
-type FieldMap = Record<string, { value: string; isExisting: boolean }>;
+type Field = Record<string, string>;
 
 const SubsectionAccordian = ({ section, year }: Props) => {
   const [value, setValue] = useState<string>("");
 
-  const [fieldValues, setFieldValues] = useState<FieldMap>({});
+  const [fieldValues, setFieldValues] = useState<Field>({});
 
   const [updateLoading, setUpdateLoading] = useState<string>("");
+  const [updated, setUpdated] = useState<string>("");
 
-  const handleFieldChange = useCallback(
-    (categoryId: string, value: string, isExisting: boolean) => {
-      setFieldValues((prev) => ({
-        ...prev,
-        [categoryId]: { value, isExisting },
-      }));
-    },
-    []
-  );
+  const fieldChange = useCallback((categoryId: string, value: string) => {
+    setFieldValues((prev) => ({
+      ...prev,
+      [categoryId]: value,
+    }));
+  }, []);
 
-  const outputList = useCallback(
-    (categoryList: CategoryESGData[]) => {
-      return categoryList.map((category) => {
-        const { value, isExisting } = fieldValues[category.categoryId] || {
-          value: "",
-          isExisting: false,
-        };
-        return { ...category, value, isExisting };
-      });
-    },
-    [fieldValues]
-  );
-  console.log("outputList", outputList(section.categoryESGDataList));
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
-  const handleSaveAll = useCallback(
-    async (key: number) => {
-      setUpdateLoading(key.toString());
-      try {
-        for (const item of outputList(
-          section.categoryESGDataList.filter((category) =>
-            category.categoryId.startsWith(section.sectionId + key)
-          )
-        )) {
+  const handleSaveAll = async (key: string) => {
+    setUpdateLoading(key);
+    try {
+      console.log("Saving data for key:", key);
+      const savePromises = Object.entries(fieldValues).map(
+        async ([categoryId, value]) => {
           const outputData = {
-            categoryId: item.categoryId,
+            categoryId: categoryId,
             year: year,
-            value: item.value,
+            value: value,
           };
 
-          try {
-            if (item.isExisting) {
-              await patchESGData(outputData);
-            } else {
-              await postESGData(outputData);
-            }
-          } catch (error) {
-            console.error(`Error saving category ${item.categoryId}`, error);
+          const existing = section.categoryESGDataList.find(
+            (cat) => cat.categoryId === categoryId
+          )?.esgData;
+
+          if (existing) {
+            return patchESGData(outputData);
+          } else {
+            return postESGData(outputData);
           }
         }
-      } finally {
-        setUpdateLoading("");
-      }
-    },
-    [outputList, year]
-  );
+      );
+
+      // 모든 요청 완료까지 기다림
+      await Promise.all(savePromises);
+      await delay(2000); // 1초 대기
+      setUpdated(key);
+
+      console.log("Data saved successfully for key:", key);
+    } catch (error) {
+      console.error("Error saving data:", error);
+    } finally {
+      setUpdateLoading("");
+    }
+  };
 
   return (
     <Accordion.Root
@@ -118,15 +107,21 @@ const SubsectionAccordian = ({ section, year }: Props) => {
             </Accordion.ItemTrigger>
             <Button
               variant={"subtle"}
-              onClick={() => handleSaveAll(key as unknown as number)}
+              onClick={() => handleSaveAll(key)}
               colorPalette="gray"
               px={4}
               size={"sm"}
-              loading={updateLoading === key.toString() ? true : false}
+              loading={updateLoading === key}
             >
-              <Text fontSize="xs" color="gray.900">
-                저장
-              </Text>
+              {updated === key ? (
+                <Text fontSize="xs" color="green.500">
+                  저장 완료
+                </Text>
+              ) : (
+                <Text fontSize="xs" color="gray.900">
+                  저장
+                </Text>
+              )}
             </Button>
           </HStack>
 
@@ -141,8 +136,7 @@ const SubsectionAccordian = ({ section, year }: Props) => {
                   <DynamicInputForm
                     key={item.categoryId}
                     category={item}
-                    year={item.esgData?.year}
-                    onFieldChange={handleFieldChange}
+                    onValueChange={fieldChange}
                   />
                 ))}
             </VStack>
