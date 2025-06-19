@@ -35,7 +35,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { label: "홈", icon: FaHouse, path: "/main" },
-  { label: "데이터 입력", icon: FaPen, path: "/gri" },
+  { label: "데이터 입력", icon: FaPen, path: "/criterion" },
   { label: "보고서 작성", icon: FaFile, path: "/report" },
 ];
 
@@ -55,7 +55,6 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
   }, [profileMenuOpen]);
 
   return (
-    // <Box position="relative" zIndex={1000}>
     <>
       <Box
         onMouseEnter={() => setIsExpanded(true)}
@@ -73,6 +72,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
         position="fixed"
         left="0"
         top="0"
+        zIndex="1000"
       >
         <Box>
           <Box
@@ -277,8 +277,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
           </VStack>
         </Box>
       )}
-      </>
-    // </Box>
+    </>
   );
 };
 

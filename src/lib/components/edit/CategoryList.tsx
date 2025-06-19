@@ -2,22 +2,10 @@ import { InfoTip } from "@/components/ui/toggle-tip";
 import { getCategories, searchESGData } from "@/lib/api/get";
 import { CategoryDetail } from "@/lib/api/interfaces/categoryDetail";
 import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
-import {
-  Box,
-  Clipboard,
-  DataList,
-  HStack,
-  IconButton,
-  Separator,
-  Spinner,
-  Table,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Spinner, Table } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import EditableCategory from "./EditableCategory";
 import { CategoryInput, patchCategory } from "@/lib/api/patch";
-import { toaster } from "@/components/ui/toaster";
 import { deleteCategory } from "@/lib/api/delete";
 
 interface CategoryListProps {
@@ -39,7 +27,6 @@ const EditableCategoryList = ({ sectionId }: CategoryListProps) => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchData();
   }, [sectionId]);
