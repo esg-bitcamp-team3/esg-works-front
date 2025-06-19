@@ -16,11 +16,36 @@ import {
 import { getUserInfo, tokenCheck } from "@/lib/api/auth/auth";
 import { User } from "@/lib/interfaces/auth";
 import Sidebar from "@/lib/components/Sidebar";
+import { patchPassword } from "@/lib/api/patch";
 
 const MyPage = () => {
   const [user, setUser] = useState<User>();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [emailNotify, setEmailNotify] = useState(true);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChanging, setIsChanging] = useState(false);
+  const [changePasswordMessage, setChangePasswordMessage] = useState<
+    string | null
+  >(null);
+  const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
+  const handleChangePassword = async () => {
+    try {
+      setChangePasswordSuccess(false);
+      if (newPassword !== confirmPassword) {
+        setChangePasswordMessage("비밀번호가 올바르지 않습니다.");
+        return;
+      }
+      const data = await patchPassword({
+        oldPassword: currentPassword,
+        newPassword: newPassword,
+      });
+      setChangePasswordMessage(data);
+      setChangePasswordSuccess(true);
+    } catch (error) {
+      setChangePasswordSuccess(false);
+      console.error("비밀번호 연동 오류", error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +61,12 @@ const MyPage = () => {
 
   return (
     <Flex>
-      <Sidebar />
+      <Sidebar
+        isExpanded={false}
+        setIsExpanded={function (value: boolean): void {
+          throw new Error("Function not implemented.");
+        }}
+      />
 
       <Box p={5} minH="100vh" minW={"70vw"}>
         <Heading fontSize="2xl" mb={8}>
@@ -99,25 +129,54 @@ const MyPage = () => {
                 <Text fontWeight="medium" mb={1}>
                   현재 비밀번호
                 </Text>
-                <Input type="password" width={"sm"} borderRadius={"lg"} />
+                <Input
+                  type="password"
+                  width={"sm"}
+                  borderRadius={"lg"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
               </Box>
               <Box w="full" display="flex" flexDirection="row" gap={14}>
                 <Text fontWeight="medium" mb={1}>
                   새 비밀번호
                 </Text>
-                <Input type="password" width={"sm"} borderRadius={"lg"} />
+                <Input
+                  type="password"
+                  width={"sm"}
+                  borderRadius={"lg"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
               </Box>
               <Box w="full" display="flex" flexDirection="row" gap={5}>
                 <Text fontWeight="medium" mb={1}>
                   새 비밀번호 확인
                 </Text>
-                <Input type="password" width={"sm"} borderRadius={"lg"} />
+                <Input
+                  type="password"
+                  width={"sm"}
+                  borderRadius={"lg"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
               </Box>
               <Box w="full" display="flex" justifyContent="flex-end">
-                <Button colorScheme="red" variant="solid" borderRadius="lg">
+                <Button
+                  colorScheme="red"
+                  variant="solid"
+                  borderRadius="lg"
+                  loading={isChanging}
+                  onClick={handleChangePassword}
+                >
                   변경하기
                 </Button>
               </Box>
+              {changePasswordMessage && (
+                <Text color={changePasswordSuccess ? "green.500" : "red.500"}>
+                  {changePasswordMessage}
+                </Text>
+              )}
             </VStack>
           </Box>
 
