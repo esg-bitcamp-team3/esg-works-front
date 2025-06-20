@@ -1,11 +1,10 @@
-import { PartialESGData } from "../interface";
+import { ESGDataInput } from "../interface";
 import { apiClient } from "./client";
 import { Chart, InputChart, InteresrtChartDetail } from "./interfaces/chart";
 import { InputCriterion } from "./interfaces/criterion";
 import { DataSet } from "./interfaces/dataSets";
-import { ESGData } from "./interfaces/esgData";
 
-export const postESGData = async (data: PartialESGData) => {
+export const postESGData = async (data: Partial<ESGDataInput>) => {
   try {
     const response = await apiClient.post(`/esg-data/data-value`, data);
     return response.data;

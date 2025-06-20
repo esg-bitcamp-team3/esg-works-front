@@ -136,6 +136,7 @@ const StandardsPage = () => {
                 width="100%"
                 borderRadius="md"
                 border={"2px solid rgb(240, 240, 240)"}
+                bg='white'
                 transition="all 0.2s"
                 _hover={{
                   bg: "gray.50",

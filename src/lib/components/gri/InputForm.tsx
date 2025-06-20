@@ -1,4 +1,4 @@
-import { PartialESGData } from "@/lib/interface";
+import { Category, PartialESGData } from "@/lib/interface";
 import {
   Box,
   Input,
@@ -12,12 +12,12 @@ import { useForm, Controller } from "react-hook-form";
 // Update the import path below to the correct relative path if needed
 import { ToggleTip } from "@/components/ui/toggle-tip";
 import { LuInfo } from "react-icons/lu";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getDataByCorpYear } from "@/lib/api/get";
-import { CategoryESGData } from "@/lib/api/interfaces/gri";
+import { CategoryDetail } from "@/lib/api/interfaces/categoryDetail";
 
 interface Props {
-  category: CategoryESGData;
+  category: CategoryDetail;
   year: string;
   onFieldChange?: (
     categoryId: string,
@@ -48,7 +48,7 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
   const [field, setField] = useState("");
   const [inputData, setInputData] = useState<PartialESGData>();
 
-  const fieldCheck = useCallback(async () => {
+  const fieldCheck = async () => {
     try {
       const data = await getDataByCorpYear({
         categoryId: category.categoryId,
@@ -66,20 +66,19 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
         onFieldChange?.(category.categoryId, "", false);
       }
     } catch (error) {
-      return null;
+      console.log(error);
     }
-  }, [year]);
+  };
 
   const inputType = unitTypes[category.unit.unitId];
 
   useEffect(() => {
     fieldCheck();
-  }, [fieldCheck]);
+  }, [year]);
 
   return (
     <Box
-      minW="140%"
-      p={4}
+      p={6}
       borderWidth="1px"
       borderRadius="xl"
       mb={4}
@@ -87,14 +86,9 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
       transition="all 0.2s"
       _hover={{ boxShadow: "md" }}
     >
-      <HStack
-        gap={4}
-        align="stretch"
-        justifyContent={"space-between"}
-        minW="600px"
-      >
+      <HStack gap={4} align="stretch" justifyContent={"space-between"}>
         <HStack>
-          <Text fontSize={"sm"} fontWeight={"bold"} maxLines={1} pl={2}>
+          <Text fontSize={"sm"} fontWeight={"bold"} maxLines={1}>
             {category.categoryName}
           </Text>
           <ToggleTip
@@ -155,7 +149,7 @@ export const DynamicInputForm = ({ category, year, onFieldChange }: Props) => {
                     _hover={{ borderColor: "gray.400" }}
                     _focus={{ borderColor: "gray.400" }}
                     bg={"white"}
-                    w={"80%"}
+                    w={"40%"}
                     p={4}
                     placeItems={"end"}
                   />
