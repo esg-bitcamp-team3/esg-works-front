@@ -58,7 +58,7 @@ const UnitSelector = ({ value, onValueChange }: UnitSelectorProps) => {
       <Select.HiddenSelect />
       <Select.Control>
         <Select.Trigger>
-          <Select.ValueText />
+          <Select.ValueText placeholder="단위를 선택하세요" />
         </Select.Trigger>
         <Select.IndicatorGroup>
           {isLoading && (

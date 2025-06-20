@@ -19,7 +19,12 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-import { getCriterion, getCriterionById, searchGRIData } from "@/lib/api/get";
+import {
+  getCriterion,
+  getCriterionById,
+  getSectionsByCriterion,
+  searchGRIData,
+} from "@/lib/api/get";
 import { Criterion, Section } from "@/lib/interface";
 import CategoryList from "../section/CategoryList";
 import EditableCategoryList from "./CategoryList";
@@ -28,6 +33,7 @@ import { deleteSection } from "@/lib/api/delete";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { patchSection } from "@/lib/api/patch";
 import SectionSelector from "./SectionSelector";
+import SectionAddModal from "../section/SectionAddModal";
 
 const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
   const [criterion, setCriterion] = useState<Criterion>();
@@ -40,6 +46,22 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
   const [value, setValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [updateLoading, setUpdateLoading] = useState<string>("");
+
+  const getSections = async () => {
+    try {
+      setLoading(true);
+      const data = (await getSectionsByCriterion(criterionId)) || [];
+      setSectionList(data);
+    } catch (error) {
+      console.error("Error fetching sections:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getSections();
+  }, [criterionId]);
 
   const fetchCriterion = async () => {
     try {
@@ -123,6 +145,10 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
     }
   };
 
+  const handleSectionAdded = () => {
+    getSections();
+  };
+
   useEffect(() => {
     fetchCriterion();
   }, [criterionId]);
@@ -180,15 +206,19 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
             {section.length}
           </Badge>
         </HStack>
-        <SectionSelector
-          sectionList={sectionList}
-          setSectionList={setSectionList}
-          criterionId={criterionId}
-          value={sectionId}
-          onValueChange={handleSectionChange}
-          loading={loading}
-          setLoading={setLoading}
-        />
+        <HStack>
+          <SectionSelector
+            sectionList={sectionList}
+            value={sectionId}
+            onValueChange={handleSectionChange}
+            loading={loading}
+            setLoading={setLoading}
+          />
+          <SectionAddModal
+            criterionId={criterionId}
+            onSectionAdded={handleSectionAdded}
+          />
+        </HStack>
       </Flex>
 
       <VStack
@@ -203,6 +233,19 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
           <Box width="100%" p={8} textAlign="center">
             <Spinner />
           </Box>
+        ) : section.length === 0 ? (
+          <Flex
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            height="50vh"
+            color="gray.500"
+          >
+            <Text fontSize="lg">세부 평가 항목이 없습니다.</Text>
+            <Text fontSize="sm" mt={2}>
+              오른쪽 상단의 추가 버튼을 통해 세부 평가 항목을 생성해 보세요.
+            </Text>
+          </Flex>
         ) : (
           <Accordion.Root
             collapsible
@@ -211,7 +254,6 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
             onValueChange={(e) => setValue(e.value[0])}
             size={"sm"}
             variant={"subtle"}
-            colorPalette={"blue"}
           >
             {section.map((item, index) => (
               <Accordion.Item
