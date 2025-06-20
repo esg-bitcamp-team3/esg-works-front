@@ -175,28 +175,38 @@ const SectionForm = ({ criterionId }: Criterion) => {
                 overflow="hidden"
                 _hover={{ borderColor: "blue.200" }}
               >
-                <Accordion.ItemTrigger
-                  p={6}
-                  bg="white"
-                  _hover={{ bg: "blue.50" }}
-                  _expanded={{
-                    bg: "blue.50",
-                    borderBottomWidth: "1px",
-                    borderColor: "gray.200",
-                  }}
+                <Box
                   display="flex"
                   justifyContent="space-between"
                   alignItems="center"
                   width="100%"
-                  onClick={() => fetchCategories(item.sectionId)}
+                  _hover={{ bg: "blue.50" }}
+                  bg={value === index.toString() ? "blue.50" : "white"}
                 >
-                  <Text fontSize="md" fontWeight="bold" color="gray.700">
-                    {item.sectionName}
-                  </Text>
-                  <HStack gap={2}>
+                  <Accordion.ItemTrigger
+                    p={6}
+                    bg="white"
+                    _hover={{ bg: "blue.50" }}
+                    _expanded={{
+                      bg: "blue.50",
+                      borderBottomWidth: "1px",
+                      borderColor: "gray.200",
+                    }}
+                    onClick={() => fetchCategories(item.sectionId)}
+                    flex="1"
+                  >
+                    <Text fontSize="md" fontWeight="bold" color="gray.700">
+                      {item.sectionName}
+                    </Text>
+                  </Accordion.ItemTrigger>
+
+                  <HStack gap={2} p={4}>
                     <Button
                       variant="outline"
-                      onClick={() => handleSaveAll(index.toString())}
+                      onClick={(e) => {
+                        e.stopPropagation(); // 트리거 클릭 방지
+                        handleSaveAll(index.toString());
+                      }}
                       colorPalette="blue"
                       px={4}
                       size={"sm"}
@@ -215,11 +225,11 @@ const SectionForm = ({ criterionId }: Criterion) => {
                     </Button>
                     <Accordion.ItemIndicator colorPalette="blue" />
                   </HStack>
-                </Accordion.ItemTrigger>
+                </Box>
 
                 <Accordion.ItemContent>
                   <Separator />
-                  {categoryLoading || !categoryList ? (
+                  {categoryLoading ? (
                     <Box
                       display="flex"
                       justifyContent="center"

@@ -82,7 +82,7 @@ const StandardsPage = () => {
       >
         <HStack>
           <Icon as={LuList} fontSize="2xl" color={highlightColor} />
-          <Text fontSize="lg" fontWeight="600" color={highlightColor}>
+          <Text fontSize="md" fontWeight="600" color={highlightColor}>
             목록
           </Text>
           <Badge
