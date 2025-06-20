@@ -58,14 +58,9 @@ const SectionAccordian = ({ section, year, search }: Props) => {
   useEffect(() => {
     if (search && search.length > 0) {
       setSections(search);
-      // setValue(search[0].sectionId);
-      // clickSection(year, search[0].sectionId);
     } else {
-      // setSections([]);
-      // setValue("");
       fetchSections();
     }
-    // fetchSections();
   }, [fetchSections, clickSection, search]);
   useEffect(() => {
     setValue("");

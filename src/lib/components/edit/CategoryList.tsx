@@ -1,5 +1,5 @@
 import { InfoTip } from "@/components/ui/toggle-tip";
-import { getCategories, searchESGData } from "@/lib/api/get";
+import { getCategories } from "@/lib/api/get";
 import { CategoryDetail } from "@/lib/api/interfaces/categoryDetail";
 import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
 import {
