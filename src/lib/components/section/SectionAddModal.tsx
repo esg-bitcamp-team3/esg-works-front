@@ -11,38 +11,36 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useRef } from "react";
-import { postCriterion } from "@/lib/api/post";
-import { InputCriterion } from "@/lib/api/interfaces/criterion";
-import { getMyCriteria } from "@/lib/api/get";
-import { Criterion } from "@/lib/interface";
-import { v4 as uuid } from "uuid";
-import { FaPlus } from "react-icons/fa6";
+import { postCriterion, postSection } from "@/lib/api/post";
+import { InputCriterion, InputSection } from "@/lib/api/interfaces/criterion";
 import { toaster } from "@/components/ui/toaster";
 
-interface CriterionAddModalProps {
-  onCriterionAdded: () => void;
+interface SectionAddModalProps {
+  criterionId: string;
+  onSectionAdded: () => void;
 }
 
-export default function CriterionAddModal({
-  onCriterionAdded,
-}: CriterionAddModalProps) {
+export default function SectionAddModal({
+  criterionId,
+  onSectionAdded: onSectionAdded,
+}: SectionAddModalProps) {
   const ref = useRef<HTMLInputElement>(null);
-  const [newCriterion, setNewCriterion] = useState("");
+  const [newSection, setNewSection] = useState("");
 
   const handleSave = async () => {
     try {
-      const data: InputCriterion = {
-        criterionId: uuid(),
-        criterionName: newCriterion,
+      const data: InputSection = {
+        criterionId: criterionId,
+        sectionName: newSection,
       };
-      const response = await postCriterion(data);
+      const response = await postSection(data);
 
       if (response) {
         toaster.success({
           title: "저장 완료",
         });
-        onCriterionAdded();
-        setNewCriterion("");
+        onSectionAdded();
+        setNewSection("");
       }
     } catch (err) {
       console.error("저장 에러:", err);
@@ -53,8 +51,7 @@ export default function CriterionAddModal({
     <Dialog.Root initialFocusEl={() => ref.current}>
       <Dialog.Trigger asChild>
         <Button size="sm" variant="outline">
-          {/* <FaPlus size="xs" style={{ marginRight: "4px" }} /> 기준 추가 */}
-          평가 항목 추가
+          세부 평가 항목 추가
         </Button>
       </Dialog.Trigger>
 
@@ -63,22 +60,24 @@ export default function CriterionAddModal({
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title fontSize={"md"}>새로운 평가 항목 추가</Dialog.Title>
+              <Dialog.Title fontSize={"md"}>
+                새로운 세부 평가 항목 추가
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body pb="4">
               <Stack gap="4">
                 <Field.Root>
-                  <Field.Label>평가 항목 이름</Field.Label>
+                  <Field.Label>세부 평가 항목 이름</Field.Label>
                   <Input
                     ref={ref}
-                    value={newCriterion}
-                    onChange={(e) => setNewCriterion(e.target.value)}
+                    value={newSection}
+                    onChange={(e) => setNewSection(e.target.value)}
                     bg="white"
                     _focus={{ borderColor: "gray.400" }}
                     size="md"
                   />
                   <Field.HelperText mt={1} color="gray.500" fontSize="sm">
-                    평가 항목의 이름을 입력해주세요
+                    세부 평가 항목의 이름을 입력해주세요
                   </Field.HelperText>
                 </Field.Root>
               </Stack>

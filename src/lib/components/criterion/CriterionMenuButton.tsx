@@ -24,7 +24,7 @@ export default function CriterionMenuButton({
   const handleDelete = async () => {
     try {
       await deleteCriterion(criterionId);
-      toaster.info({
+      toaster.success({
         title: "삭제 완료",
       });
       if (selected === criterionId) setSelected(null);

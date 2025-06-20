@@ -1,7 +1,11 @@
 import { ESGDataInput } from "../interface";
 import { apiClient } from "./client";
 import { Chart, InputChart, InteresrtChartDetail } from "./interfaces/chart";
-import { InputCriterion } from "./interfaces/criterion";
+import {
+  InputCategory,
+  InputCriterion,
+  InputSection,
+} from "./interfaces/criterion";
 import { DataSet } from "./interfaces/dataSets";
 
 export const postESGData = async (data: Partial<ESGDataInput>) => {
@@ -56,5 +60,23 @@ export const postChart = async (data: InputChart) => {
     return res.data;
   } catch (error) {
     console.error("Chart Post Error", error);
+  }
+};
+
+export const postSection = async (data: Partial<InputSection>) => {
+  try {
+    const res = await apiClient.post(`/sections`, data);
+    return res.data;
+  } catch (error) {
+    console.log("세부 기준 등록 실패", error);
+  }
+};
+
+export const postCategory = async (data: Partial<InputCategory>) => {
+  try {
+    const res = await apiClient.post(`/categories`, data);
+    return res.data;
+  } catch (error) {
+    console.log("세부 기준 등록 실패", error);
   }
 };

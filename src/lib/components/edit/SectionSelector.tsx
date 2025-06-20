@@ -13,8 +13,6 @@ import { use, useEffect, useMemo, useState } from "react";
 
 interface SectionSelectorProps {
   sectionList: Section[];
-  setSectionList: (sections: Section[]) => void;
-  criterionId: string;
   value: string;
   onValueChange: (value: string) => void;
   loading: boolean;
@@ -23,30 +21,12 @@ interface SectionSelectorProps {
 
 const SectionSelector = ({
   sectionList,
-  setSectionList,
-  criterionId,
   value,
   onValueChange,
   loading,
   setLoading,
 }: SectionSelectorProps) => {
   const [searchValue, setSearchValue] = useState("");
-
-  const getData = async () => {
-    try {
-      setLoading(true);
-      const data = (await getSectionsByCriterion(criterionId)) || [];
-      setSectionList(data);
-    } catch (error) {
-      console.error("Error fetching sections:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getData();
-  }, [criterionId]);
 
   const sectionItems = useMemo(() => {
     return sectionList.map((item) => ({

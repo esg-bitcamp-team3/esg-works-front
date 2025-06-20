@@ -18,20 +18,14 @@ import {
   Separator,
 } from "@chakra-ui/react";
 import { getUserInfo, tokenCheck } from "@/lib/api/auth/auth";
-import { User, UserDetail } from "@/lib/interfaces/auth";
-import Sidebar from "@/lib/components/Sidebar";
 import { LuBuilding, LuKeyRound, LuUser } from "react-icons/lu";
 import { Avatar } from "@/components/ui/avatar";
 
 const MyPage = () => {
-  const [user, setUser] = useState<UserDetail>();
   const [userData, setUserData] = useState<Record<string, string>[]>([]);
   const [corporationData, setCorporationData] = useState<
     Record<string, string>[]
   >([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [emailNotify, setEmailNotify] = useState(true);
-
   useEffect(() => {
     const fetchData = async () => {
       try {

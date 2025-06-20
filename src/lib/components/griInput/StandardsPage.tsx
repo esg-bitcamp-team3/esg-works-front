@@ -136,7 +136,7 @@ const StandardsPage = () => {
                 width="100%"
                 borderRadius="md"
                 border={"2px solid rgb(240, 240, 240)"}
-                bg='white'
+                bg="white"
                 transition="all 0.2s"
                 _hover={{
                   bg: "gray.50",
@@ -192,7 +192,7 @@ const StandardsPage = () => {
           height="50vh"
           color="gray.500"
         >
-          <Text fontSize="lg">등록된 기준이 없습니다.</Text>
+          <Text fontSize="lg">등록된 평가 항목이 없습니다.</Text>
           <Text fontSize="sm" mt={2}>
             오른쪽 상단의 추가 버튼을 통해 새 기준을 생성해 보세요.
           </Text>
