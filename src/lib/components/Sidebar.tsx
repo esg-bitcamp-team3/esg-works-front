@@ -35,7 +35,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { label: "홈", icon: FaHouse, path: "/home" },
-  { label: "데이터 입력", icon: FaPen, path: "/criterion" },
+  { label: "데이터 입력", icon: FaPen, path: "/criteria" },
   { label: "보고서 작성", icon: FaFile, path: "/report" },
 ];
 
@@ -83,6 +83,8 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
             p={4}
             h="80px"
             w="80px"
+            cursor="pointer"
+            onClick={() => router.push("./home")}
           >
             <Image
               as="img"
@@ -226,6 +228,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
               _hover={{ bg: "gray.100" }}
               w="full"
               textAlign="left"
+              cursor="pointer"
               onClick={() => router.push("/mypage")}
             >
               <Flex alignItems="center">
@@ -243,6 +246,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
               _hover={{ bg: "gray.100" }}
               w="full"
               textAlign="left"
+              cursor="pointer"
               onClick={() => router.push("/settings")}
             >
               <Flex alignItems="center">
@@ -262,6 +266,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
               _hover={{ bg: "gray.100" }}
               w="full"
               textAlign="left"
+              cursor="pointer"
               onClick={() => {
                 // Add logout logic here
                 router.push("/login");
