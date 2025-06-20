@@ -48,9 +48,9 @@ const StandardsPage = () => {
     fetchCriteria();
   }, []);
 
-  return (
-    <Flex direction="column" gap="6" width="full" maxWidth="1200px">
-      {/* 기준 추가 버튼 */}
+  const handleCriterionAdded = () => {
+    fetchCriteria();
+  };
 
   const handleCriterionDeleted = () => {
     fetchCriteria();
@@ -136,6 +136,7 @@ const StandardsPage = () => {
                 width="100%"
                 borderRadius="md"
                 border={"2px solid rgb(240, 240, 240)"}
+                bg='white'
                 transition="all 0.2s"
                 _hover={{
                   bg: "gray.50",
