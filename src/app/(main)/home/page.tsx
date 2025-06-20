@@ -34,13 +34,13 @@ export default function Home() {
 
   return (
     <VStack
-      paddingTop="16"
+      paddingTop="24"
       gap={10}
       alignItems="center"
       justifyContent="center"
       w='100%'
     >
-      <Heading fontSize="4xl" fontWeight='bold'>
+      <Heading fontSize="3xl" fontWeight='bold'>
         ESG Works
       </Heading>
 

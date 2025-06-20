@@ -16,14 +16,14 @@ import {
   Icon,
   Image,
 } from "@chakra-ui/react";
-import { FaCopy } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api/client";
 import { useRouter } from "next/navigation";
 import { PiStar, PiStarFill } from "react-icons/pi";
-import { Report, ReportDetail } from "@/lib/api/interfaces/report";
+import { ReportDetail } from "@/lib/api/interfaces/report";
 import { deleteInterestReports } from "@/lib/api/delete";
 import { postInterestReports } from "@/lib/api/post";
+
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { LuFiles } from "react-icons/lu";
 
@@ -99,8 +99,8 @@ const ListContent = ({
             _hover={{ cursor: "pointer", bg: "gray.100" }}
           >
             <HStack padding={4} gap={4} justifyContent="space-between" w="100%">
-              <HStack>
-                <Icon
+              <HStack gap="6">
+                {/* <Icon
                   size="sm"
                   marginRight="2"
                   color="gray.600"
@@ -108,7 +108,10 @@ const ListContent = ({
                   alignItems="center"
                 >
                   <LuFiles />
-                </Icon>
+                </Icon> */}
+
+                <Image height="28px" src="word-icon.png" />
+
                 <Text fontSize="sm" color="gray.600" fontWeight="semibold">
                   {report.title}
                 </Text>
@@ -160,7 +163,7 @@ const GridContent = ({
           //   w="100%"
           //   gap={4}
           // >
-          <Skeleton height="180px" />
+          <Skeleton key={idx} height="180px" />
           // </Box>
         ))}
       </SimpleGrid>
@@ -190,7 +193,7 @@ const GridContent = ({
           >
             <Box
               bg="blue.100"
-              h="180px"
+              h="160px"
               display="flex"
               justifyContent="center"
               alignItems="center"
@@ -211,13 +214,33 @@ const GridContent = ({
                 justifyContent="space-between"
                 alignItems="center"
                 w="100%"
-                gapY='4'
+                gapY="4"
               >
-                <HStack justifyContent='space-between'>
-                  <Text truncate maxW="180px" color="gray.600" fontSize="sm">
-                    {report.title}
-                  </Text>
-                  <Button
+                <HStack justifyContent="space-between">
+                  <VStack>
+                    <Text
+                      truncate
+                      width="100%"
+                      color="gray.600"
+                      fontSize="sm"
+                      fontWeight="semibold"
+                    >
+                      {report.title}
+                    </Text>
+                    <HStack gapX="1" width="100%">
+                      <Text color="gray.500" fontSize="sm">
+                        {report.updatedBy.name}
+                      </Text>
+                      <Text color="gray.500" fontSize="sm">
+                        -
+                      </Text>
+                      <Text color="gray.500" fontSize="sm">
+                        {formatted}
+                      </Text>
+                    </HStack>
+                  </VStack>
+
+                  {/* <Button
                     bg={"white"}
                     onClick={() => clickFavorite(report)}
                     boxSize={6}
@@ -227,19 +250,21 @@ const GridContent = ({
                     ) : (
                       <PiStar color="gray" />
                     )}
-                  </Button>
-                </HStack>
+                  </Button> */}
 
-                <HStack justifyContent="space-between" gapX="4">
-                   <HStack>
-                    <Text color="gray.500" fontSize="sm">
-                      {formatted}
-                    </Text>
-                  </HStack>
-                  <Text color="gray.500" fontSize="sm">
-                    {report.updatedBy}
-                  </Text>
-                 
+                  <IconButton
+                    aria-label="Star"
+                    variant="plain"
+                    onClick={() => clickFavorite(report)}
+                    size="md"
+                    padding="0"
+                  >
+                    {report.isInterestedReport ? (
+                      <PiStarFill color="#FFB22C" />
+                    ) : (
+                      <PiStar color="gray" />
+                    )}
+                  </IconButton>
                 </HStack>
               </Box>
             </Box>

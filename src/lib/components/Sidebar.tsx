@@ -226,6 +226,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
               _hover={{ bg: "gray.100" }}
               w="full"
               textAlign="left"
+              cursor="pointer"
               onClick={() => router.push("/mypage")}
             >
               <Flex alignItems="center">
@@ -243,6 +244,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
               _hover={{ bg: "gray.100" }}
               w="full"
               textAlign="left"
+              cursor="pointer"
               onClick={() => router.push("/settings")}
             >
               <Flex alignItems="center">
@@ -262,6 +264,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
               _hover={{ bg: "gray.100" }}
               w="full"
               textAlign="left"
+              cursor="pointer"
               onClick={() => {
                 // Add logout logic here
                 router.push("/login");
