@@ -17,7 +17,7 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
@@ -53,6 +53,8 @@ export default function ChartModal() {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
+
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
@@ -412,7 +414,7 @@ export default function ChartModal() {
                         credentials: "include",
                         body: JSON.stringify({
                           corporationId: "000660",
-                          chartName: "임시 테이블7",
+                          chartName: "임시 테이블만들기3",
                           options: JSON.stringify({
                             responsive: true,
                             type: "table",
@@ -429,7 +431,7 @@ export default function ChartModal() {
                         body: JSON.stringify({
                           chartId: chart.chartId,
                           type: "table",
-                          label: "임시 테이블7",
+                          label: "임시 테이블만들기3",
                           esgDataIdList: esgDataIdList,
                           backgroundColor: "#4CAF50",
                           borderColor: "#388E3C",
@@ -438,82 +440,19 @@ export default function ChartModal() {
                         }),
                       });
                       alert("테이블 저장 완료");
+                      if (closeButtonRef.current) {
+                        closeButtonRef.current.click();
+                      }
                     }
                   }}
                   _hover={{ bg: "#1D4FA3" }}
                 >
                   {step === 1 ? "다음" : "생성"}
                 </Button>
-
-                {/* <Button
-                  bg="#2F6EEA"
-                  variant="solid"
-                  width="80px"
-                  onClick={async () => {
-                    if (step === 1) setStep(2);
-                    else {
-                      let esgDataIdList: string[] = [];
-                      categorizedEsgDataList.forEach((item) => {
-                        if (
-                          selected.includes(item.categoryDetailDTO.categoryId)
-                        ) {
-                          item.esgNumberDTOList.forEach((esg) => {
-                            esgDataIdList.push(esg.esgDataId);
-                            //console.log("esg DTO확인: ", esg);
-                          });
-                        }
-                      });
-
-                      //차트생성(chart)
-                      const chartRes = await fetch("/api/charts", {
-                        method: "POST",
-                        headers: {
-                          Authorization:
-                            "Bearer " + localStorage.getItem("token"),
-                          "Content-Type": "application/json",
-                        },
-                        credentials: "include",
-                        body: JSON.stringify({
-                          corporationId: "000660",
-                          chartName: "임시 테이블7",
-                          options: JSON.stringify({
-                            responsive: true,
-                            type: "table",
-                          }),
-                        }),
-                      });
-                      const chart = await chartRes.json();
-
-                      console.log("chart 생성 결과", chart);
-                      console.log("최종 esgDataIdList: ", esgDataIdList);
-
-                      //dataset 생성
-                      await fetch("/api/datasets", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({
-                          chartId: chart.chartId,
-                          type: "table",
-                          label: "임시 테이블7",
-                          esgDataIdList: esgDataIdList,
-                          backgroundColor: "#4CAF50",
-                          borderColor: "#388E3C",
-                          borderWidth: "2",
-                          fill: "true",
-                        }),
-                      });
-                      alert("테이블 저장 완료");
-                    }
-                  }}
-                  _hover={{ bg: "#1D4FA3" }}
-                >
-                  {step === 1 ? "다음" : "생성"}
-                </Button> */}
               </Flex>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" color="gray.500" />
+              <CloseButton ref={closeButtonRef} size="sm" color="gray.500" />
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>
