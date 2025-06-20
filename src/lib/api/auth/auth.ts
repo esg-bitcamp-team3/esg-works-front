@@ -4,6 +4,7 @@ import {
   TokenData,
   UpdateUser,
   User,
+  UserDetail,
 } from "@/lib/interfaces/auth";
 import { apiClient } from "../client";
 
@@ -105,10 +106,9 @@ export async function updatePassword(password: string) {
 
 export const getUserInfo = async () => {
   try {
-    const response = await apiClient.get<User>(`/my`);
+    const response = await apiClient.get<UserDetail>(`/my`);
     return response.data;
   } catch (error) {
-    // handleApiError(error, "로그인이 필요합니다.");
-    console.error("유저정보 못 가지고 옴", error);
+    console.error("getUserInfo error:", error);
   }
 };
