@@ -54,7 +54,7 @@ export default function CriterionAddModal({
       <Dialog.Trigger asChild>
         <Button size="sm" variant="outline">
           {/* <FaPlus size="xs" style={{ marginRight: "4px" }} /> 기준 추가 */}
-          평가 항목 추가
+          평가 기준 추가
         </Button>
       </Dialog.Trigger>
 

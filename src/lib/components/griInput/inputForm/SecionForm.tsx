@@ -11,12 +11,20 @@ import {
   Flex,
   Separator,
   Button,
+  Breadcrumb,
+  Icon,
+  Badge,
+  IconButton,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Criterion, Section } from "@/lib/interface";
-import SectionSelector from "../../section/SectionSelector";
-import { getSectionsByCriterion, searchESGData } from "@/lib/api/get";
+
+import {
+  getCriteria,
+  getSectionsByCriterion,
+  searchESGData,
+} from "@/lib/api/get";
 import CategoryList from "../../section/CategoryList";
 import YearSelector from "../../section/YearSelector";
 import DynamicInputForm from "../DynamicInputForm";
@@ -24,6 +32,8 @@ import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
 import { set } from "lodash";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
+import { LuCheck, LuClipboardPen, LuSave } from "react-icons/lu";
+import SectionSelector from "../../edit/SectionSelector";
 
 const CARD_STYLES = {
   bg: "white",
@@ -38,7 +48,11 @@ const CARD_STYLES = {
 
 type Field = Record<string, string>;
 
-const SectionForm = ({ criterionId }: Criterion) => {
+interface SectionFormProps {
+  criterionId: string;
+}
+
+const SectionForm = ({ criterionId }: SectionFormProps) => {
   const [section, setSection] = useState<Section[]>([]);
   const [sectionId, setSectionId] = useState<string>("");
   const [sectionList, setSectionList] = useState<Section[]>([]);
@@ -48,6 +62,33 @@ const SectionForm = ({ criterionId }: Criterion) => {
 
   const [categoryList, setCategoryList] = useState<SectionCategoryESGData>();
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
+
+  const [criterion, setCriterion] = useState<Criterion>();
+  const [criterionLoading, setCriterionLoading] = useState(true);
+
+  useEffect(() => {
+    setCriterionLoading(true);
+    getCriteria(criterionId)
+      .then((data) => {
+        if (data) setCriterion(data);
+      })
+      .finally(() => setCriterionLoading(false));
+  }, [criterionId]);
+  const getData = async () => {
+    try {
+      setLoading(true);
+      const data = (await getSectionsByCriterion(criterionId)) || [];
+      setSectionList(data);
+    } catch (error) {
+      console.error("Error fetching sections:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, [criterionId]);
 
   // selector에서 선택한 sectionId에 따라 section 보여줌
   const handleSectionChange = (sectionId: string) => {
@@ -133,26 +174,73 @@ const SectionForm = ({ criterionId }: Criterion) => {
   };
 
   return (
-    <Box {...CARD_STYLES} p={4} w={"70vw"} maxH={"80vw"}>
-      <HStack
-        justifyContent="space-between"
-        w="100%"
-        alignItems={"center"}
-        p={4}
-      >
-        <SectionSelector
-          sectionList={sectionList}
-          setSectionList={setSectionList}
-          criterionId={criterionId}
-          value={sectionId}
-          onValueChange={handleSectionChange}
-          loading={loading}
-          setLoading={setLoading}
-        />
-        <YearSelector value={year} onValueChange={setYear} />
-      </HStack>
+    <Box w="100%" h="100%" overflow={"auto"}>
+      <Flex alignItems="center">
+        {criterionLoading ? (
+          <Skeleton width="200px" height="30px" borderRadius="md" />
+        ) : (
+          <Breadcrumb.Root size="md">
+            <Breadcrumb.List>
+              <Breadcrumb.Item>
+                <Breadcrumb.Link href="/criteria">평가 기준</Breadcrumb.Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Separator />
+              <Breadcrumb.Item>
+                <Breadcrumb.Link href={`/criteria/${criterion?.criterionId}`}>
+                  {criterion?.criterionName}
+                </Breadcrumb.Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Separator />
 
-      <Box p={4} width="100%">
+              <Breadcrumb.Item>
+                <Breadcrumb.CurrentLink>{"데이터 입력"}</Breadcrumb.CurrentLink>
+              </Breadcrumb.Item>
+            </Breadcrumb.List>
+          </Breadcrumb.Root>
+        )}
+      </Flex>
+      <Flex
+        alignItems="center"
+        mb={2}
+        borderBottom="2px solid"
+        borderColor="gray.200"
+        pb={3}
+        pt={3}
+        justifyContent="space-between"
+        width={"100%"}
+        position={"sticky"}
+      >
+        <HStack>
+          <Icon as={LuClipboardPen} fontSize="xl" color="blue.500" />
+          <Text fontSize="xl" fontWeight="600" color="blue.500">
+            데이터 입력
+          </Text>
+          <Badge
+            colorScheme="blue"
+            borderRadius="full"
+            px={2}
+            textAlign={"center"}
+            justifyContent={"center"}
+            justifyItems={"center"}
+            alignItems={"center"}
+            alignContent={"center"}
+            size={"md"}
+            fontSize={"xs"}
+          >
+            {section.length}
+          </Badge>
+        </HStack>
+        <HStack>
+          <SectionSelector
+            sectionList={sectionList}
+            value={sectionId}
+            onValueChange={handleSectionChange}
+            loading={loading}
+            setLoading={setLoading}
+          />
+        </HStack>
+      </Flex>
+      <Box p={2} width="100%">
         {loading ? (
           <Box width="100%" p={8} textAlign="center">
             <Spinner />
@@ -163,56 +251,44 @@ const SectionForm = ({ criterionId }: Criterion) => {
             width="100%"
             value={[value]}
             onValueChange={(e) => setValue(e.value[0] || "")}
+            size="sm"
+            variant={"subtle"}
           >
             {section.map((item, index) => (
               <Accordion.Item
                 key={index}
                 value={index.toString()}
-                borderWidth="1px"
-                borderColor="gray.200"
-                borderRadius="lg"
-                mb={4}
                 overflow="hidden"
-                _hover={{ borderColor: "blue.200" }}
+                transition="all 0.2s ease"
               >
                 <Accordion.ItemTrigger
                   p={6}
-                  bg="white"
-                  _hover={{ bg: "blue.50" }}
-                  _expanded={{
-                    bg: "blue.50",
-                    borderBottomWidth: "1px",
-                    borderColor: "gray.200",
-                  }}
+                  _hover={{ bg: "gray.100" }}
                   display="flex"
                   justifyContent="space-between"
                   alignItems="center"
                   width="100%"
                   onClick={() => fetchCategories(item.sectionId)}
                 >
-                  <Text fontSize="md" fontWeight="bold" color="gray.700">
+                  <Text fontSize="md" color="gray.700" ml={4}>
                     {item.sectionName}
                   </Text>
                   <HStack gap={2}>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleSaveAll(index.toString())}
-                      colorPalette="blue"
-                      px={4}
-                      size={"sm"}
-                      bg="white"
+                    <IconButton
+                      variant="plain"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveAll(index.toString());
+                      }}
                       loading={updateLoading === index.toString()}
                     >
                       {updated === index.toString() ? (
-                        <Text fontSize="xs" color="green.500">
-                          저장 완료
-                        </Text>
+                        <Icon as={LuCheck} color="green.500" />
                       ) : (
-                        <Text fontSize="xs" color="gray.900">
-                          저장
-                        </Text>
+                        <Icon as={LuSave} color="gray.700" />
                       )}
-                    </Button>
+                    </IconButton>
                     <Accordion.ItemIndicator colorPalette="blue" />
                   </HStack>
                 </Accordion.ItemTrigger>
@@ -229,7 +305,7 @@ const SectionForm = ({ criterionId }: Criterion) => {
                       <Spinner size="md" color="blue.500" />
                     </Box>
                   ) : (
-                    <VStack gap={2}>
+                    <VStack gap={2} padding={4}>
                       {categoryList?.categoryESGDataList.map((item) => (
                         <DynamicInputForm
                           key={item.categoryId}

@@ -1,9 +1,32 @@
 "use client";
 
-import StandardsPage from "@/lib/components/griInput/StandardsPage";
+import { getCriteria, getMyCriteria } from "@/lib/api/get";
+import GriPage from "@/lib/components/griInput/GriPage";
+import SectionForm from "@/lib/components/griInput/inputForm/SecionForm";
+import { Criterion } from "@/lib/interface";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const Page = () => {
+  const { id } = useParams<{ id: string }>();
+  const criterionId = id ?? "";
+
+  if (criterionId === "cri-01") {
+    return (
+      <Flex
+        padding={4}
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <VStack gap={6} top={24} position={"fixed"}>
+          <GriPage criterionId={criterionId} criterionName="GRI" />
+        </VStack>
+      </Flex>
+    );
+  }
+
   return (
     <Flex direction="column" align="center" justify="center">
       <Box
@@ -13,7 +36,7 @@ const Page = () => {
         top={24}
         position={"fixed"}
       >
-        <StandardsPage />
+        <SectionForm criterionId={criterionId} />
       </Box>
     </Flex>
   );

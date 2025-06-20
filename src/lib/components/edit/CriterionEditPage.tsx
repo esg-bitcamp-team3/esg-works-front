@@ -2,6 +2,7 @@ import {
   Accordion,
   Badge,
   Box,
+  Breadcrumb,
   Button,
   Editable,
   Flex,
@@ -163,35 +164,45 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
         {criterionLoading ? (
           <Skeleton width="200px" height="30px" borderRadius="md" />
         ) : (
-          <Text
-            fontSize="3xl"
-            fontWeight="bold"
-            mb={4}
-            textAlign={"start"}
-            width="100%"
-          >
-            {criterion?.criterionName} 평가 항목 수정
-          </Text>
+          <Breadcrumb.Root size="md">
+            <Breadcrumb.List>
+              <Breadcrumb.Item>
+                <Breadcrumb.Link href="/criteria">평가 기준</Breadcrumb.Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Separator />
+              <Breadcrumb.Item>
+                <Breadcrumb.Link href={`/criteria/${criterion?.criterionId}`}>
+                  {criterion?.criterionName}
+                </Breadcrumb.Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Separator />
+
+              <Breadcrumb.Item>
+                <Breadcrumb.CurrentLink>
+                  {"세부 항목 수정"}
+                </Breadcrumb.CurrentLink>
+              </Breadcrumb.Item>
+            </Breadcrumb.List>
+          </Breadcrumb.Root>
         )}
       </Flex>
       <Flex
         alignItems="center"
-        mt={6}
         mb={2}
         borderBottom="2px solid"
         borderColor="gray.200"
         pb={3}
+        pt={3}
         justifyContent="space-between"
         width={"100%"}
         position={"sticky"}
       >
         <HStack>
-          <Icon as={LuList} fontSize="2xl" color="blue.500" />
-          <Text fontSize="lg" fontWeight="600" color="blue.500">
+          <Icon as={LuList} fontSize="xl" color="blue.500" />
+          <Text fontSize="xl" fontWeight="600" color="blue.500">
             세부 항목
           </Text>
           <Badge
-            ml={3}
             colorScheme="blue"
             borderRadius="full"
             px={2}
@@ -264,12 +275,13 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
               >
                 <Accordion.ItemTrigger asChild>
                   <Box
+                    _hover={{ bg: "gray.100" }}
                     display="flex"
                     justifyContent="space-between"
                     alignItems="center"
                     width="100%"
                     height={"100%"}
-                    p={4}
+                    p={6}
                     onClick={(e) => {
                       value !== item.sectionId
                         ? setValue(item.sectionId)
@@ -293,13 +305,17 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
                           }
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <Editable.Preview width={"40%"} fontSize={"sm"} />
+                          <Editable.Preview
+                            width={"40%"}
+                            fontSize={"md"}
+                            color="gray.700"
+                          />
                           <Editable.Input
                             width={"40%"}
                             borderWidth={"1px"}
                             borderColor="gray.300"
                             bg="white"
-                            fontSize={"sm"}
+                            fontSize={"md"}
                             _focus={{ borderColor: "gray.300" }}
                             onBlur={() =>
                               handleSectionNameUpdate(item.sectionId)
