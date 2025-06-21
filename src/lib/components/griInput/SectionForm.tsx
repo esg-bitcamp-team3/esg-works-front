@@ -5,56 +5,65 @@ import {
   VStack,
   HStack,
   Skeleton,
-  Breadcrumb,
-  Flex,
-  Icon,
   Text,
-  Badge,
-  Spinner,
   Accordion,
-  IconButton,
+  Spinner,
+  Flex,
   Separator,
+  Button,
+  Breadcrumb,
+  Icon,
+  Badge,
+  IconButton,
 } from "@chakra-ui/react";
-import { use, useCallback, useEffect, useState } from "react";
-import SectionAccordian from "./SectionAccodian";
-import Selector from "./Selector";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { Criterion, Section } from "@/lib/interface";
+
 import {
   getCriteria,
-  getGriByYearAndSectionId,
   getSectionsByCriterion,
   searchESGData,
 } from "@/lib/api/get";
+
+import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
+import { set } from "lodash";
+import { patchESGData } from "@/lib/api/patch";
+import { postESGData } from "@/lib/api/post";
 import { LuCheck, LuClipboardPen, LuSave } from "react-icons/lu";
 import SectionSelector from "../edit/SectionSelector";
-import YearSelector from "./YearSelector";
-import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
-import SubsectionAccordian from "./SubsectionAccordian";
-import SubsectionList from "./SubsectionList";
+import DynamicInputForm from "./DynamicInputForm";
 
-const sectionsSelector = [
-  { label: "전체", value: "all" },
-  { label: "GRI 200 : 경제", value: "2" },
-  { label: "GRI 300 : 환경", value: "3" },
-  { label: "GRI 400 : 사회", value: "4" },
-];
+const CARD_STYLES = {
+  bg: "white",
+  borderRadius: "xl",
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+  transition: "all 0.3s ease",
+  _hover: {
+    boxShadow: "0 6px 25px rgba(0, 0, 0, 0.12)",
+  },
+  overflow: "hidden",
+};
 
 type Field = Record<string, string>;
 
-const GriPage = ({ criterionId, criterionName }: Criterion) => {
-  const [sectionSelect, setSectionSelect] = useState("all");
-  const [year, setYear] = useState("2020");
+interface SectionFormProps {
+  criterionId: string;
+}
 
-  const [loading, setLoading] = useState(true);
-  const [sectionList, setSectionList] = useState<Section[]>([]);
+const SectionForm = ({ criterionId }: SectionFormProps) => {
   const [section, setSection] = useState<Section[]>([]);
   const [sectionId, setSectionId] = useState<string>("");
-  const [criterion, setCriterion] = useState<Criterion>();
-  const [criterionLoading, setCriterionLoading] = useState<boolean>(true);
+  const [sectionList, setSectionList] = useState<Section[]>([]);
+  const [year, setYear] = useState<string>("2020");
   const [value, setValue] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
   const [categoryList, setCategoryList] = useState<SectionCategoryESGData>();
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
+
+  const [criterion, setCriterion] = useState<Criterion>();
+  const [criterionLoading, setCriterionLoading] = useState(true);
 
   useEffect(() => {
     setCriterionLoading(true);
@@ -81,6 +90,7 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
     getData();
   }, [criterionId]);
 
+  // selector에서 선택한 sectionId에 따라 section 보여줌
   const handleSectionChange = (sectionId: string) => {
     setSectionId(sectionId);
     if (!sectionId) {
@@ -100,13 +110,13 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
     setSection(sectionList);
   }, [sectionList]);
 
+  // section 변경시마다 categoryList 변경
   const fetchCategories = useCallback(
     (sectionId: string) => {
       setCategoryLoading(true);
-      getGriByYearAndSectionId(year, sectionId)
+      searchESGData({ year, sectionId, categoryName: "" })
         .then(async (data) => {
-          console.log("Fetched categories:", data);
-          setCategoryList(data || undefined);
+          await setCategoryList(data || undefined);
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
@@ -118,16 +128,50 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
     [sectionId, year]
   );
 
-  useEffect(() => {
-    if (sectionSelect === "all") {
-      setSection(sectionList);
-    } else {
-      const filteredSections = sectionList.filter((item) =>
-        item.sectionId.startsWith(sectionSelect)
+  // categoryList 변경사항 -------------------------------------
+  const [fieldValues, setFieldValues] = useState<Field>({});
+  const [updateLoading, setUpdateLoading] = useState<string>("");
+  const [updated, setUpdated] = useState<string>("");
+
+  const fieldChange = useCallback((categoryId: string, value: string) => {
+    setFieldValues((prev) => ({
+      ...prev,
+      [categoryId]: value,
+    }));
+  }, []);
+
+  const handleSaveAll = async (key: string) => {
+    setUpdateLoading(key);
+    try {
+      const savePromises = Object.entries(fieldValues).map(
+        async ([categoryId, value]) => {
+          const outputData = {
+            categoryId: categoryId,
+            year: year,
+            value: value,
+          };
+
+          const existing = categoryList?.categoryESGDataList.find(
+            (cat) => cat.categoryId === categoryId
+          )?.esgData;
+
+          if (existing) {
+            return patchESGData(outputData);
+          } else {
+            return postESGData(outputData);
+          }
+        }
       );
-      setSection(filteredSections);
+
+      // 모든 요청 완료까지 기다림
+      await Promise.all(savePromises);
+      setUpdated(key);
+    } catch (error) {
+      console.error("Error saving data:", error);
+    } finally {
+      setUpdateLoading("");
     }
-  }, [sectionSelect]);
+  };
 
   return (
     <Box w="100%" h="100%" overflow={"auto"}>
@@ -169,7 +213,7 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
         <HStack>
           <Icon as={LuClipboardPen} fontSize="xl" color="blue.500" />
           <Text fontSize="xl" fontWeight="600" color="blue.500">
-            GRI 데이터 입력
+            데이터 입력
           </Text>
           <Badge
             colorScheme="blue"
@@ -187,12 +231,6 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
           </Badge>
         </HStack>
         <HStack>
-          <Selector
-            items={sectionsSelector}
-            // text="GRI Standards"
-            value={sectionSelect}
-            onValueChange={setSectionSelect}
-          />
           <SectionSelector
             sectionList={sectionList}
             value={sectionId}
@@ -200,10 +238,8 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
             loading={loading}
             setLoading={setLoading}
           />
-          <YearSelector value={year} onValueChange={setYear} />
         </HStack>
       </Flex>
-
       <VStack
         align="center"
         width="100%"
@@ -235,13 +271,11 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
                 <Accordion.ItemTrigger asChild>
                   <HStack
                     p={6}
-                    py={8}
                     _hover={{ bg: "gray.100" }}
                     display="flex"
                     justifyContent="space-between"
                     alignItems="center"
                     width="100%"
-                    height={"100%"}
                     onClick={() => {
                       if (index.toString() === value) {
                         setValue("");
@@ -252,10 +286,26 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
                     }}
                   >
                     <Text fontSize="md" color="gray.700" ml={4}>
-                      {item.sectionId + " : " + item.sectionName}
+                      {item.sectionName}
                     </Text>
-
-                    <Accordion.ItemIndicator colorPalette="blue" />
+                    <HStack gap={2}>
+                      <IconButton
+                        variant="plain"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSaveAll(index.toString());
+                        }}
+                        loading={updateLoading === index.toString()}
+                      >
+                        {updated === index.toString() ? (
+                          <Icon as={LuCheck} color="green.500" />
+                        ) : (
+                          <Icon as={LuSave} color="gray.700" />
+                        )}
+                      </IconButton>
+                      <Accordion.ItemIndicator colorPalette="blue" />
+                    </HStack>
                   </HStack>
                 </Accordion.ItemTrigger>
 
@@ -284,9 +334,13 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
                     </Flex>
                   ) : (
                     <VStack gap={2} padding={4}>
-                      {categoryList && (
-                        <SubsectionList section={categoryList} year={year} />
-                      )}
+                      {categoryList?.categoryESGDataList.map((item) => (
+                        <DynamicInputForm
+                          key={item.categoryId}
+                          category={item}
+                          onValueChange={fieldChange}
+                        />
+                      ))}
                     </VStack>
                   )}
                 </Accordion.ItemContent>
@@ -299,4 +353,4 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
   );
 };
 
-export default GriPage;
+export default SectionForm;

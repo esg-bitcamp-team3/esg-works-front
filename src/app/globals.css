@@ -31,7 +31,7 @@ img {
   max-height: 20em;
 }
 
-blockquote {
+[data-slate-editor] blockquote {
   border-left: 2px solid #ddd;
   margin-left: 0;
   margin-right: 0;
@@ -40,7 +40,7 @@ blockquote {
   font-style: italic;
 }
 
-blockquote[dir="rtl"] {
+[data-slate-editor] blockquote[dir="rtl"] {
   border-left: none;
   padding-left: 0;
   padding-right: 10px;
@@ -148,7 +148,7 @@ iframe {
 /* Add these styles to your existing CSS file */
 
 /* Heading styles */
-h1 {
+[data-slate-editor] h1 {
   font-size: 2rem;
   font-weight: 700;
   margin-top: 1.5rem;
@@ -157,7 +157,7 @@ h1 {
   color: #111827;
 }
 
-h2 {
+[data-slate-editor] h2 {
   font-size: 1.5rem;
   font-weight: 600;
   margin-top: 1.25rem;
@@ -167,21 +167,21 @@ h2 {
 }
 
 /* Text formatting styles */
-em {
+[data-slate-editor] em {
   font-style: italic;
   color: inherit;
 }
 
-strong {
+[data-slate-editor] strong {
   font-weight: 700;
   color: inherit;
 }
 
-u {
+[data-slate-editor] u {
   text-decoration: underline;
 }
 
-code {
+[data-slate-editor] code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.9em;
   padding: 0.2em 0.4em;
@@ -190,62 +190,57 @@ code {
 }
 
 /* List styles */
-ol {
+[data-slate-editor] ol {
   padding-left: 2em;
   margin: 0.5em 0;
   list-style-type: decimal;
 }
 
-ul {
+[data-slate-editor] ul {
   padding-left: 2em;
   margin: 0.5em 0;
   list-style-type: disc;
 }
 
-li {
+[data-slate-editor] li {
   padding: 0.25em 0;
   line-height: 1.5;
 }
 
 /* Nested lists */
-li > ol,
-li > ul {
+[data-slate-editor] li > ol,
+[data-slate-editor] li > ul {
   margin: 0.25em 0;
 }
 
-/* Chart block list styling */
-[data-layout] li {
-  margin-bottom: 0.25em;
-}
-
 /* Numbered list specific styles */
-ol {
+[data-slate-editor] ol {
   counter-reset: item;
 }
 
-ol li {
+[data-slate-editor] ol li {
   position: relative;
   display: list-item; /* Change from 'block' to 'list-item' to show numbers */
   list-style-position: outside; /* Ensure numbers are visible */
 }
 
 /* Remove the ::before pseudo-element that might be hiding numbers */
-ol li::before {
+[data-slate-editor] ol li::before {
   content: none; /* Remove any custom content that might override numbers */
 }
 
 /* Bulleted list specific styles */
-ul li {
+[data-slate-editor] ul li {
   position: relative;
 }
 
-ul li::marker {
+[data-slate-editor] ul li::marker {
   color: #111827; /* Change bullet color */
 }
 
 /* Fix list item spacing inside chart blocks */
-[data-layout] ol,
-[data-layout] ul {
+[data-slate-editor] [data-layout] ol,
+[data-slate-editor] [data-layout] ul {
   margin-top: 0;
 }
 
@@ -316,5 +311,4 @@ button[data-active="true"] {
   scrollbar-width: auto; /* 'auto' | 'thin' | 'none' */
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* 엄지색 트랙색 */
   /* 트랙을 완벽하게 투명하게 하려면 'transparent'를 사용합니다. */
-
 }
