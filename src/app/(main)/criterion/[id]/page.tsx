@@ -2,7 +2,7 @@
 
 import { getCriteria, getMyCriteria } from "@/lib/api/get";
 import GriPage from "@/lib/components/griInput/GriPage";
-import SectionForm from "@/lib/components/griInput/inputForm/SecionForm";
+import SectionForm from "@/lib/components/griInput/inputForm/SectionForm";
 import { Criterion } from "@/lib/interface";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 import { useParams } from "next/navigation";

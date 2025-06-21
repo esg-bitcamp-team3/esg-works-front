@@ -42,7 +42,7 @@ const sectionsSelector = [
 type Field = Record<string, string>;
 
 const GriPage = ({ criterionId, criterionName }: Criterion) => {
-  const [sectionSelect, setSectionSelect] = useState("200");
+  const [sectionSelect, setSectionSelect] = useState("all");
   const [year, setYear] = useState("2020");
 
   const [loading, setLoading] = useState(true);

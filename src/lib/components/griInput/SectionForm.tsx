@@ -25,15 +25,14 @@ import {
   getSectionsByCriterion,
   searchESGData,
 } from "@/lib/api/get";
-import CategoryList from "../../section/CategoryList";
-import YearSelector from "../../section/YearSelector";
-import DynamicInputForm from "../DynamicInputForm";
+
 import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
 import { set } from "lodash";
 import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
 import { LuCheck, LuClipboardPen, LuSave } from "react-icons/lu";
-import SectionSelector from "../../edit/SectionSelector";
+import SectionSelector from "../edit/SectionSelector";
+import DynamicInputForm from "./DynamicInputForm";
 
 const CARD_STYLES = {
   bg: "white",
