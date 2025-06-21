@@ -3,6 +3,8 @@ import {
   Box,
   Button,
   HStack,
+  Icon,
+  IconButton,
   Separator,
   Text,
   VStack,
@@ -13,6 +15,7 @@ import { patchESGData } from "@/lib/api/patch";
 import { postESGData } from "@/lib/api/post";
 import { SectionCategoryESGData } from "@/lib/api/interfaces/gri";
 import DynamicInputForm from "./DynamicInputForm";
+import { LuCheck, LuSave } from "react-icons/lu";
 
 type SubCategoryKey = keyof typeof subCategory;
 
@@ -23,9 +26,7 @@ interface Props {
 
 type Field = Record<string, string>;
 
-const SubsectionAccordian = ({ section, year }: Props) => {
-  const [value, setValue] = useState<string>("");
-
+const SubsectionList = ({ section, year }: Props) => {
   const [fieldValues, setFieldValues] = useState<Field>({});
 
   const [updateLoading, setUpdateLoading] = useState<string>("");
@@ -67,7 +68,6 @@ const SubsectionAccordian = ({ section, year }: Props) => {
 
       // 모든 요청 완료까지 기다림
       await Promise.all(savePromises);
-      await delay(2000); // 1초 대기
       setUpdated(key);
 
       console.log("Data saved successfully for key:", key);
@@ -79,54 +79,40 @@ const SubsectionAccordian = ({ section, year }: Props) => {
   };
 
   return (
-    <Accordion.Root
-      collapsible
-      width="100%"
-      value={[value]}
-      onValueChange={(e) => setValue(e.value[0] || "")}
-    >
+    <VStack w={"100%"}>
       {Object.entries(
         subCategory[section.sectionId as SubCategoryKey] || {}
       ).map(([key, value], index) => (
-        <Accordion.Item
-          key={key + index}
-          value={key}
-          borderWidth="1px"
-          borderColor="gray.200"
-          borderRadius="lg"
-          mb={4}
-          overflow="hidden"
-          _hover={{ borderColor: "blue.200" }}
-          transition="all 0.2s ease"
-        >
-          <HStack padding={4}>
-            <Accordion.ItemTrigger p={2}>
-              <Text fontSize="sm" color="gray.700">
-                {value}
-              </Text>
-            </Accordion.ItemTrigger>
-            <Button
-              variant={"subtle"}
-              onClick={() => handleSaveAll(key)}
-              colorPalette="gray"
-              px={4}
-              size={"sm"}
-              loading={updateLoading === key}
+        <Box key={key + index} overflow="hidden" w={"100%"}>
+          <HStack padding={4} py={6} w={"100%"} justifyContent="space-between">
+            <Text
+              flexShrink="0"
+              fontSize="sm"
+              fontWeight="600"
+              color="gray.900"
             >
-              {updated === key ? (
-                <Text fontSize="xs" color="green.500">
-                  저장 완료
-                </Text>
-              ) : (
-                <Text fontSize="xs" color="gray.900">
-                  저장
-                </Text>
-              )}
-            </Button>
-          </HStack>
+              {value}
+            </Text>
 
-          <Accordion.ItemContent>
-            <Separator />
+            <IconButton
+              variant="plain"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSaveAll(index.toString());
+              }}
+              loading={updateLoading === index.toString()}
+            >
+              {updated === index.toString() ? (
+                <Icon as={LuCheck} color="green.500" />
+              ) : (
+                <Icon as={LuSave} color="gray.700" />
+              )}
+            </IconButton>
+          </HStack>
+          <Separator flex="1" size="sm" />
+
+          <Box w={"100%"}>
             <VStack gap={2}>
               {section?.categoryESGDataList
                 ?.filter((category) =>
@@ -140,11 +126,11 @@ const SubsectionAccordian = ({ section, year }: Props) => {
                   />
                 ))}
             </VStack>
-          </Accordion.ItemContent>
-        </Accordion.Item>
+          </Box>
+        </Box>
       ))}
-    </Accordion.Root>
+    </VStack>
   );
 };
 
-export default SubsectionAccordian;
+export default SubsectionList;

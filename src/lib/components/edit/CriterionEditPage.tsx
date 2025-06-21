@@ -162,7 +162,7 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
     <Box w="100%" h="100%" overflow={"auto"}>
       <Flex alignItems="center">
         {criterionLoading ? (
-          <Skeleton width="200px" height="30px" borderRadius="md" />
+          <Skeleton width="200px" height="20px" borderRadius="md" />
         ) : (
           <Breadcrumb.Root size="md">
             <Breadcrumb.List>

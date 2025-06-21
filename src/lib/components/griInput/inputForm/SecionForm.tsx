@@ -74,6 +74,7 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
       })
       .finally(() => setCriterionLoading(false));
   }, [criterionId]);
+
   const getData = async () => {
     try {
       setLoading(true);
@@ -177,7 +178,7 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
     <Box w="100%" h="100%" overflow={"auto"}>
       <Flex alignItems="center">
         {criterionLoading ? (
-          <Skeleton width="200px" height="30px" borderRadius="md" />
+          <Skeleton width="200px" height="20px" borderRadius="md" />
         ) : (
           <Breadcrumb.Root size="md">
             <Breadcrumb.List>
@@ -240,7 +241,14 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
           />
         </HStack>
       </Flex>
-      <Box p={2} width="100%">
+      <VStack
+        align="center"
+        width="100%"
+        gap={4}
+        padding={2}
+        overflowY="auto"
+        maxH={"60vh"}
+      >
         {loading ? (
           <Box width="100%" p={8} textAlign="center">
             <Spinner />
@@ -261,41 +269,50 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
                 overflow="hidden"
                 transition="all 0.2s ease"
               >
-                <Accordion.ItemTrigger
-                  p={6}
-                  _hover={{ bg: "gray.100" }}
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  width="100%"
-                  onClick={() => fetchCategories(item.sectionId)}
-                >
-                  <Text fontSize="md" color="gray.700" ml={4}>
-                    {item.sectionName}
-                  </Text>
-                  <HStack gap={2}>
-                    <IconButton
-                      variant="plain"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSaveAll(index.toString());
-                      }}
-                      loading={updateLoading === index.toString()}
-                    >
-                      {updated === index.toString() ? (
-                        <Icon as={LuCheck} color="green.500" />
-                      ) : (
-                        <Icon as={LuSave} color="gray.700" />
-                      )}
-                    </IconButton>
-                    <Accordion.ItemIndicator colorPalette="blue" />
+                <Accordion.ItemTrigger asChild>
+                  <HStack
+                    p={6}
+                    _hover={{ bg: "gray.100" }}
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    width="100%"
+                    onClick={() => {
+                      if (index.toString() === value) {
+                        setValue("");
+                        return;
+                      }
+                      fetchCategories(item.sectionId);
+                      setValue(index.toString());
+                    }}
+                  >
+                    <Text fontSize="md" color="gray.700" ml={4}>
+                      {item.sectionName}
+                    </Text>
+                    <HStack gap={2}>
+                      <IconButton
+                        variant="plain"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSaveAll(index.toString());
+                        }}
+                        loading={updateLoading === index.toString()}
+                      >
+                        {updated === index.toString() ? (
+                          <Icon as={LuCheck} color="green.500" />
+                        ) : (
+                          <Icon as={LuSave} color="gray.700" />
+                        )}
+                      </IconButton>
+                      <Accordion.ItemIndicator colorPalette="blue" />
+                    </HStack>
                   </HStack>
                 </Accordion.ItemTrigger>
 
                 <Accordion.ItemContent>
                   <Separator />
-                  {categoryLoading || !categoryList ? (
+                  {categoryLoading ? (
                     <Box
                       display="flex"
                       justifyContent="center"
@@ -304,6 +321,18 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
                     >
                       <Spinner size="md" color="blue.500" />
                     </Box>
+                  ) : categoryList?.categoryESGDataList.length === 0 ? (
+                    <Flex
+                      direction="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      color="gray.500"
+                      padding={8}
+                    >
+                      <Text fontSize="sm" mt={2}>
+                        해당 세부 항목에 입력할 데이터가 없습니다.
+                      </Text>
+                    </Flex>
                   ) : (
                     <VStack gap={2} padding={4}>
                       {categoryList?.categoryESGDataList.map((item) => (
@@ -320,7 +349,7 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
             ))}
           </Accordion.Root>
         )}
-      </Box>
+      </VStack>
     </Box>
   );
 };

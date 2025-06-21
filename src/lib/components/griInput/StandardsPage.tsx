@@ -138,7 +138,7 @@ const StandardsPage = () => {
                 }}
                 px={4}
                 py={6}
-                onClick={() => router.push(`/criterion/${std.criterionId}`)}
+                onClick={() => router.push(`/criteria/${std.criterionId}`)}
                 justifyContent={"space-between"}
               >
                 <Tooltip

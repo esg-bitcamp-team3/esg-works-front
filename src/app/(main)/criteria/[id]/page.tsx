@@ -14,15 +14,16 @@ const Page = () => {
 
   if (criterionId === "cri-01") {
     return (
-      <Flex
-        padding={4}
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <VStack gap={6} top={24} position={"fixed"}>
+      <Flex direction="column" align="center" justify="center">
+        <Box
+          width="70vw"
+          minHeight="65vh"
+          maxHeight="65vh"
+          top={24}
+          position={"fixed"}
+        >
           <GriPage criterionId={criterionId} criterionName="GRI" />
-        </VStack>
+        </Box>
       </Flex>
     );
   }
