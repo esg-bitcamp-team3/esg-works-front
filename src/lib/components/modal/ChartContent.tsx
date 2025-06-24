@@ -41,6 +41,7 @@ import {
   Legend,
   ChartOptions,
   ChartData,
+  layouts,
 } from "chart.js";
 import BarChartColor from "./barChartColor";
 import LineChartColor from "./LineChartColor";
@@ -62,13 +63,21 @@ ChartJS.register(
 
 export interface ChartContentProps {
   categorizedEsgDataList: CategorizedESGDataList[];
+  chartData: ChartData;
+  setChartData: (data: ChartData) => void;
+  options: ChartOptions;
+  setOptions: (data: ChartOptions) => void;
 }
 
-const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
-  const [chartData, setChartData] = useState<ChartData>();
+const ChartContent = ({
+  categorizedEsgDataList,
+  chartData,
+  setChartData,
+  options,
+  setOptions,
+}: ChartContentProps) => {
   const [selectedChartType, setSelectedChartType] =
     useState<ChartType["type"]>("bar");
-  const [options, setOptions] = useState<ChartOptions>({});
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -83,6 +92,11 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
     const baseOptions = {
       responsive: true,
       maintainAspectRatio: false,
+      layout: {
+        padding: {
+          right: 40,
+        },
+      },
       plugins: {
         legend: {
           position: "top" as const,
@@ -164,11 +178,10 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
 
             newChartData = {
               // Use years from this single category as labels
-              labels: category.esgNumberDTOList.map((data) =>
-                data.year.toString()
-              ),
+              labels: category.categoryName,
               datasets: [
                 {
+                  type: selectedChartType,
                   label: category.categoryDetailDTO.categoryName,
                   data: category.esgNumberDTOList.map((data) => data.value),
                   backgroundColor: backgroundColors,
@@ -199,6 +212,7 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
               ),
               datasets: [
                 {
+                  type: selectedChartType,
                   label: `Data for ${mostRecentYear}`,
                   data: categorizedEsgDataList.map((category) => {
                     const yearData = category.esgNumberDTOList.find(
@@ -228,7 +242,7 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
 
               return {
                 // Alternate between bar and line based on index
-                type: idx % 2 === 0 ? "bar" : "line",
+                type: "line",
                 label: category.categoryDetailDTO.categoryName,
                 data: years.map((year) => {
                   const yearData = category.esgNumberDTOList.find(
@@ -284,6 +298,7 @@ const ChartContent = ({ categorizedEsgDataList }: ChartContentProps) => {
   const handleChartTypeChange = (type: ChartType["type"]) => {
     setLoading(true); // Start loading when chart type changes
     setSelectedChartType(type);
+    console.log("type: ", type);
   };
 
   const handleChartDataChange = (

@@ -1,21 +1,25 @@
 "use client";
 import React, { use } from "react";
 import Subbar from "@/lib/components/SubBar";
-import TextEditor from "@/lib/editor/TextEditor";
+
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import TextEditor from "@/lib/editor/CreateNewReport";
+import { useSearchParams } from "next/navigation";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ title: string }>;
 }
 
 const Page = ({ params }: Props) => {
-  const { id } = use(params);
+  const searchParams = useSearchParams();
+
+  const title = searchParams.get("title");
   return (
     <div>
       <DndProvider backend={HTML5Backend}>
-        {id && <TextEditor />}
         <Subbar />
+        <TextEditor title={title || ""} />
       </DndProvider>
     </div>
   );
