@@ -51,12 +51,12 @@ export const DynamicInputForm = ({ category, onValueChange }: Props) => {
       _hover={{ boxShadow: "md" }}
       justify={"space-between"}
     >
-      <HStack>
+      <HStack w={"20%"}>
         <Text fontSize={"sm"} fontWeight={"medium"} maxLines={1} pl={2}>
           {category.categoryName}
         </Text>
         <ToggleTip
-          content={category.description}
+          content={category.description || "설명이 없습니다."}
           size={"lg"}
           positioning={{ placement: "bottom-end" }}
           closeOnInteractOutside={false}
@@ -68,7 +68,7 @@ export const DynamicInputForm = ({ category, onValueChange }: Props) => {
       </HStack>
 
       {inputType === "money" || inputType === "number" ? (
-        <HStack justifyContent={"end"} padding={2}>
+        <HStack justifyContent={"end"} padding={2} w={"20%"}>
           <Input
             type="number"
             borderRadius="md"
@@ -85,8 +85,9 @@ export const DynamicInputForm = ({ category, onValueChange }: Props) => {
               setField(e.target.value);
             }}
             onBlur={() => onValueChange(category.categoryId, field)}
+            size="xs"
           />
-          <Text color={"gray.500"} fontSize="xs">
+          <Text color={"gray.500"} fontSize="xs" width={"20%"}>
             {category.unit.unitName}
           </Text>
         </HStack>
@@ -100,32 +101,52 @@ export const DynamicInputForm = ({ category, onValueChange }: Props) => {
         // />
         <> </>
       ) : inputType === "string" ? (
-        <Textarea
-          placeholder={category.unit.unitName}
-          borderRadius="md"
-          borderWidth={1}
-          borderColor="gray.300"
-          _hover={{ borderColor: "gray.400" }}
-          _focus={{ borderColor: "gray.400", boxShadow: "sm" }}
-          minH="120px"
-          maxW="80%"
-          resize="vertical"
-          bg="white"
-          transition="all 0.2s ease-in-out"
-          value={field}
-          onChange={(e) => {
-            setField(e.target.value);
-          }}
-          onBlur={() => onValueChange(category.categoryId, field)}
-        />
+        <HStack justifyContent={"end"} padding={2} w={"40%"}>
+          <Textarea
+            placeholder={category.unit.unitName}
+            borderRadius="md"
+            borderWidth={1}
+            borderColor="gray.300"
+            _hover={{ borderColor: "gray.400" }}
+            _focus={{ borderColor: "gray.400", boxShadow: "sm" }}
+            resize="vertical"
+            width={"90%"}
+            bg="white"
+            transition="all 0.2s ease-in-out"
+            value={field}
+            onChange={(e) => {
+              setField(e.target.value);
+            }}
+            onBlur={() => onValueChange(category.categoryId, field)}
+          />
+          <Text color={"gray.500"} fontSize="xs" width={"10%"}>
+            {category.unit.unitName}
+          </Text>
+        </HStack>
       ) : (
-        <Input
-          value={field}
-          onChange={(e) => {
-            setField(e.target.value);
-          }}
-          onBlur={() => onValueChange(category.categoryId, field)}
-        />
+        <HStack justifyContent={"end"} padding={2} w={"20%"}>
+          <Input
+            type="number"
+            borderRadius="md"
+            borderWidth={1}
+            borderColor="gray.300"
+            _hover={{ borderColor: "gray.400" }}
+            _focus={{ borderColor: "gray.400" }}
+            bg={"white"}
+            w={"80%"}
+            p={4}
+            placeItems={"end"}
+            value={field}
+            onChange={(e) => {
+              setField(e.target.value);
+            }}
+            onBlur={() => onValueChange(category.categoryId, field)}
+            size="xs"
+          />
+          <Text color={"gray.500"} fontSize="xs" width={"20%"}>
+            {category.unit.unitName}
+          </Text>
+        </HStack>
       )}
     </HStack>
   );

@@ -8,6 +8,7 @@ import {
   Badge,
   Icon,
   HStack,
+  Breadcrumb,
 } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
@@ -58,35 +59,27 @@ const StandardsPage = () => {
 
   return (
     <Box w="100%" h="100%" overflow={"auto"}>
-      <Flex alignItems="center">
-        <Text
-          fontSize="3xl"
-          fontWeight="bold"
-          mb={4}
-          textAlign={"start"}
-          width="100%"
-        >
-          평가 항목 리스트
-        </Text>
-      </Flex>
       <Flex
         alignItems="center"
-        mt={6}
         mb={2}
         borderBottom="2px solid"
         borderColor="gray.200"
         pb={3}
+        pt={3}
         justifyContent="space-between"
         width={"100%"}
         position={"sticky"}
       >
-        <HStack>
-          <Icon as={LuList} fontSize="2xl" color={highlightColor} />
-          <Text fontSize="md" fontWeight="600" color={highlightColor}>
-            목록
+        <HStack
+          alignItems={"center"}
+          justifyContent={"center"}
+          alignContent={"center"}
+        >
+          <Icon as={LuList} size="md" color={highlightColor} />
+          <Text fontSize="xl" fontWeight="600" color={highlightColor}>
+            평가 기준 목록
           </Text>
           <Badge
-            ml={3}
             colorScheme="blue"
             borderRadius="full"
             px={2}
@@ -109,6 +102,7 @@ const StandardsPage = () => {
         width="100%"
         gap={4}
         padding={2}
+        px={4}
         overflowY="auto"
         maxH={"60vh"}
       >
@@ -156,7 +150,7 @@ const StandardsPage = () => {
                   closeDelay={100}
                 >
                   <Text
-                    fontSize="md"
+                    fontSize="sm"
                     textAlign="left"
                     cursor="pointer"
                     background="none"
@@ -167,10 +161,9 @@ const StandardsPage = () => {
                   >
                     <Icon
                       as={LuClipboardList}
-                      mr={3}
+                      mr={2}
                       color="blue.500"
-                      opacity={0.7}
-                      size={"md"}
+                      size={"sm"}
                     />
                     {std.criterionName}
                   </Text>
@@ -192,7 +185,7 @@ const StandardsPage = () => {
           height="50vh"
           color="gray.500"
         >
-          <Text fontSize="lg">등록된 평가 항목이 없습니다.</Text>
+          <Text fontSize="lg">등록된 평가 기준이 없습니다.</Text>
           <Text fontSize="sm" mt={2}>
             오른쪽 상단의 추가 버튼을 통해 새 기준을 생성해 보세요.
           </Text>
