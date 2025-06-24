@@ -4,6 +4,7 @@ import {
   TokenData,
   UpdateUser,
   User,
+  UserDetail,
 } from "@/lib/interfaces/auth";
 import { apiClient } from "../client";
 
@@ -21,6 +22,7 @@ export async function login(data: Partial<LoginForm>) {
     const response = await apiClient.post<TokenData>("/auth/login", data);
     return response.data;
   } catch (error: any) {
+    throw error;
     // if (error.response?.status === 401) {
     //   handleApiError(error, "이메일 또는 비밀번호가 잘못되었습니다.");
     // } else {
@@ -62,14 +64,14 @@ export async function checkLogin() {
   }
 }
 
-export async function getUserInfo() {
-  try {
-    const response = await apiClient.get<User>(`/user/mypage`);
-    return response.data;
-  } catch (error) {
-    // handleApiError(error, "로그인이 필요합니다.");
-  }
-}
+// export async function getUserInfo() {
+//   try {
+//     const response = await apiClient.get<User>(`/user/mypage`);
+//     return response.data;
+//   } catch (error) {
+//     // handleApiError(error, "로그인이 필요합니다.");
+//   }
+// }
 
 export async function updateUserInfo(data: Partial<UpdateUser>) {
   try {
@@ -102,3 +104,12 @@ export async function updatePassword(password: string) {
     // handleApiError(error, "비밀번호 변경 실패");
   }
 }
+
+export const getUserInfo = async () => {
+  try {
+    const response = await apiClient.get<UserDetail>(`/my`);
+    return response.data;
+  } catch (error) {
+    console.error("getUserInfo error:", error);
+  }
+};

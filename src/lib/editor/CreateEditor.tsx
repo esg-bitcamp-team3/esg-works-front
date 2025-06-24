@@ -123,7 +123,13 @@ const isKeyHotkey = (hotkey: string, event: KeyboardEvent): boolean => {
   return modifiersPressed && keyPressed;
 };
 
-const RichTextExample = ({ documentId }: { documentId?: string }) => {
+const RichTextExample = ({
+  documentId,
+  documentTitle,
+}: {
+  documentId?: string;
+  documentTitle?: string;
+}) => {
   const renderElement = useCallback(
     (props: RenderElementProps) => <Element {...props} />,
     []
@@ -189,7 +195,9 @@ const RichTextExample = ({ documentId }: { documentId?: string }) => {
       isOver: monitor.isOver(),
     }),
   }));
-  const [title, setTitle] = useState<string>("제목 없는 문서");
+  const [title, setTitle] = useState<string>(
+    documentTitle ? documentTitle : "제목 없는 문서"
+  );
   const [value, setValue] = useState<Descendant[]>(
     documentId ? [] : initialValue
   );

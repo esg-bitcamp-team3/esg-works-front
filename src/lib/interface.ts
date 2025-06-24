@@ -13,6 +13,7 @@ export interface Unit {
   unitId: string;
   unitName: string;
   type: string;
+  description: string;
 }
 export interface Category {
   categoryId: string;
@@ -22,7 +23,7 @@ export interface Category {
   description: string;
 }
 
-export interface PartialESGData {
+export interface ESGDataInput {
   categoryId: string;
   corpId: string;
   year: string;
@@ -37,4 +38,8 @@ export interface DataFilter {
 export interface Criterion {
   criterionId: string;
   criterionName: string;
+}
+export interface Password {
+  oldPassword: string;
+  newPassword: string;
 }

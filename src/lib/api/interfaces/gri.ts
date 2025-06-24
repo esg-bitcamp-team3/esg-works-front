@@ -16,5 +16,3 @@ export interface CategoryESGData {
   description: string;
   esgData: ESGData;
 }
-
-// Make sure ESGDataDTO is defined elsewhere in your codebase.

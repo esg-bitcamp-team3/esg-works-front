@@ -22,7 +22,7 @@ import {
   FcLineChart,
   FcPieChart,
 } from "react-icons/fc";
-import ChartDataLabels from "chartjs-plugin-datalabels";
+// import ChartDataLabels from "chartjs-plugin-datalabels";
 import { getEsgData } from "@/lib/api/get";
 import { ChartType, DatasetType, DataType } from "@/lib/api/interfaces/chart";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
@@ -57,8 +57,8 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend,
-  ChartDataLabels
+  Legend
+  // ChartDataLabels
 );
 
 export interface ChartContentProps {

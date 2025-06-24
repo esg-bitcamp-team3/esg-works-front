@@ -24,7 +24,7 @@ const LoginPage = () => {
 
   const handleSubmit = async () => {
     if (!id || !password) {
-      setError("아이디와 비밀번호를 확인해주세요요.");
+      setError("아이디와 비밀번호를 확인해주세요.");
       return;
     }
 
@@ -34,22 +34,31 @@ const LoginPage = () => {
         password: password, // 비밀번호 추가
       });
       localStorage.setItem("token", tokenData?.token ?? "");
+      if (!tokenData?.token) {
+        setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+        setPassword("");
+        toaster.error({
+          title: "로그인 실패",
+          description: "아이디 또는 비밀번호를 확인해주세요.",
+        });
+        return;
+      }
       toaster.success({
         title: "로그인 성공!",
       });
-
       // setTimeout(() => console.log('로그인 성공!'))
       // console.log(localStorage.getItem("token"));
-
-      router.push("/main");
+      router.push("/home");
+      
     } catch (error) {
-      // toaster.error({
-      //   title:
-      //     error instanceof ApiError ? error.message : '알 수 없는 오류가 발생했습니다.'
-      // })
+      setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+      setPassword(""); 
+      toaster.error({
+        title: "로그인 실패",
+        description: "아이디 또는 비밀번호를 확인해주세요.",
+      });
     }
   };
-
   return (
     <Flex
       minH="100vh" // 화면 전체 높이
@@ -101,7 +110,9 @@ const LoginPage = () => {
                 color="black"
                 _placeholder={{ color: "gray.400" }}
                 borderColor="grey.300"
-                onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSubmit();
+                }}
               />
             </Box>
 
@@ -119,7 +130,9 @@ const LoginPage = () => {
                 color="black"
                 _placeholder={{ color: "gray.400" }}
                 borderColor="gray.300"
-                onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSubmit();
+                }}
               />
             </Box>
 

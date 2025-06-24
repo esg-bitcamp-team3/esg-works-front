@@ -46,9 +46,9 @@ const CategoryList = ({ year, query, sectionId }: CategoryListProps) => {
     try {
       setLoading(true);
       const data = await searchESGData({
-        year,
+        year: "2020",
+        sectionId: "201",
         categoryName: "",
-        sectionId,
       });
       console.log(data);
       setDataList(data || null);

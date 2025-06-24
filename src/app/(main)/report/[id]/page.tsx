@@ -1,7 +1,6 @@
 "use client";
 import React, { use } from "react";
 import Subbar from "@/lib/components/SubBar";
-s;
 import TextEditor from "@/lib/editor/TextEditor";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";

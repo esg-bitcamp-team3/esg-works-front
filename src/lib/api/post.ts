@@ -1,5 +1,10 @@
-import { PartialESGData } from "../interface";
+import { ESGDataInput } from "../interface";
 import { apiClient } from "./client";
+import {
+  InputCategory,
+  InputCriterion,
+  InputSection,
+} from "./interfaces/criterion";
 import {
   Chart,
   InputChart,
@@ -7,9 +12,8 @@ import {
   InteresrtChartDetail,
 } from "./interfaces/chart";
 import { DataSet } from "./interfaces/dataSets";
-import { ESGData } from "./interfaces/esgData";
 
-export const postESGData = async (data: PartialESGData) => {
+export const postESGData = async (data: Partial<ESGDataInput>) => {
   try {
     const response = await apiClient.post(`/esg-data/data-value`, data);
     return response.data;
@@ -26,7 +30,14 @@ export const postInterestReports = async (reportId: string) => {
     console.log("즐겨찾기 리포트 등록 실패", error);
   }
 };
-
+export const postCriterion = async (data: InputCriterion) => {
+  try {
+    const res = await apiClient.post(`/criteria`, data);
+    return res.data;
+  } catch (error) {
+    console.log("기준 등록 실패", error);
+  }
+};
 export const postInterestChart = async (chartId: string) => {
   try {
     const res = await apiClient.post(`/interest-charts`, { chartId });
@@ -54,5 +65,23 @@ export const postChart = async (data: InputChart) => {
     return res.data;
   } catch (error) {
     console.error("Chart Post Error", error);
+  }
+};
+
+export const postSection = async (data: Partial<InputSection>) => {
+  try {
+    const res = await apiClient.post(`/sections`, data);
+    return res.data;
+  } catch (error) {
+    console.log("세부 기준 등록 실패", error);
+  }
+};
+
+export const postCategory = async (data: Partial<InputCategory>) => {
+  try {
+    const res = await apiClient.post(`/categories`, data);
+    return res.data;
+  } catch (error) {
+    console.log("세부 기준 등록 실패", error);
   }
 };

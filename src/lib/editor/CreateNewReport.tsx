@@ -4,7 +4,7 @@ import { Flex } from "@chakra-ui/react";
 import RichTextExample from "./CreateEditor";
 import { useParams } from "next/navigation";
 
-const TextEditor = () => {
+const TextEditor = ({ title }: { title: string }) => {
   return (
     <Flex
       justifyContent={"center"}
@@ -13,7 +13,7 @@ const TextEditor = () => {
       width="100vw"
       height="100vh"
     >
-      <RichTextExample />
+      <RichTextExample documentTitle={title} />
     </Flex>
   );
 };
