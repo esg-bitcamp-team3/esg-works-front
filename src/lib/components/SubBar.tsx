@@ -92,6 +92,7 @@ const yearList = [
   { label: "2025년", value: "2025" },
 ];
 const GRIsectionList = [
+  { label: "GRI 전체", value: "" },
   { label: "GRI 200: 경제", value: "200" },
   { label: "GRI 300: 환경", value: "300" },
   { label: "GRI 400: 사회", value: "400" },
@@ -100,19 +101,20 @@ const GRIsectionList = [
 const Subbar = () => {
   const [activeIndex, setActiveIndex] = useState<number | 0>(0);
   const [selectedTab, setSelectedTab] = useState<"all" | "star">("all");
-  const [sidebarWidth, setSidebarWidth] = useState(350); // 👈 수정: 사이드바 너비 상태 추가
+  const [sidebarWidth, setSidebarWidth] = useState(430); // 👈 수정: 사이드바 너비 상태 추가
   const [chartList, setChartList] = useState<ChartDetail[] | null>([]);
   const [interestChartList, setInterestChartList] = useState<
     InteresrtChartDetail[] | null
   >([]);
   const [isOpen, setIsOpen] = useState(false);
-  const DEFAULT_SIDEBAR_WIDTH = 350;
+  const DEFAULT_SIDEBAR_WIDTH = 400;
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sectionList, setSectionList] = useState<Section[]>([]);
   const [value, setValue] = useState<string>("");
   const [year, setYear] = useState<string>("2020");
-  const [category, setCategory] = useState<string>("200");
+  const [category, setCategory] = useState<string>("");
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
 
   // 즐겨 찾기 차트 가져오기
   const fetchChart = async () => {
@@ -129,7 +131,7 @@ const Subbar = () => {
     }
   };
 
-  const fetchSection = async (category: string) => {
+  const fetchSection = async (category?: string) => {
     try {
       const searchSection = await getSearchSectionId(category);
       setSectionList(searchSection || []);
@@ -169,14 +171,32 @@ const Subbar = () => {
     }
   };
 
+  // 차트 검색 기능
+  const filteredChartList = chartList?.filter((chart) =>
+    chart.chartName?.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
+  const filteredInterestChartList = interestChartList?.filter((chart) =>
+    chart.chartDetail?.chartName
+      ?.toLowerCase()
+      .includes(searchKeyword.toLowerCase())
+  );
+
+  const filteredSectionList = sectionList?.filter((section) =>
+    section.sectionName?.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
   useEffect(() => {
     if (activeIndex === 0) {
       setSidebarWidth(600); // 0일 때 넓게 고정 초기화
+    } else {
+      setSidebarWidth(430);
     }
   }, [activeIndex]);
 
   // 컴포넌트 마운트 시 무조건 실행
   useEffect(() => {
+    fetchSection();
     fetchChart();
   }, []);
 
@@ -193,8 +213,8 @@ const Subbar = () => {
     <>
       <Box
         position="fixed"
-        right={isOpen ? `${sidebarWidth}px` : "0px"} // isOpen이 true일 때 sidebarWidth만큼 오른쪽으로 이동
-        top="10"
+        right={isOpen ? `${sidebarWidth}px` : 0} // isOpen이 true일 때 sidebarWidth만큼 오른쪽으로 이동
+        top={10}
         zIndex={1000}
       >
         <Box
@@ -228,10 +248,10 @@ const Subbar = () => {
       {isOpen !== false && (
         <Resizable
           defaultSize={{
-            width: activeIndex === 0 ? 600 : 350,
+            width: activeIndex === 0 ? 600 : 430,
             height: window.innerHeight,
           }}
-          minWidth={activeIndex === 0 ? 600 : 350}
+          minWidth={activeIndex === 0 ? 600 : 430}
           maxWidth={activeIndex === 0 ? 1200 : 900}
           enable={{ left: true }}
           onResize={(e, dir, ref) => {
@@ -243,7 +263,6 @@ const Subbar = () => {
             top: 0,
             zIndex: 1000,
             backgroundColor: "white",
-            overflowY: "scroll",
           }}
         >
           <Box
@@ -283,8 +302,8 @@ const Subbar = () => {
               />
             </HStack>
 
-            {/* 검색창 */}
-            {/* <Box>
+            {/* 기준 검색 */}
+            <Box>
               <InputGroup
                 startElement={
                   <Box pl="4" display="flex">
@@ -299,27 +318,11 @@ const Subbar = () => {
                   bg={"white"}
                   borderWidth="1px" // 테두리 두께를 1px로 설정
                   marginX={4}
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
                 />
               </InputGroup>
-              <Box
-                position="absolute"
-                top="100%"
-                mt={1}
-                w="100%"
-                bg="white"
-                border="1px solid #e2e8f0"
-                borderRadius="md"
-                boxShadow="md"
-                zIndex={10}
-                maxH="200px"
-              >
-                <VStack gap={0} align="stretch">
-                  <Box>
-                    <Text></Text>
-                  </Box>
-                </VStack>
-              </Box>
-            </Box> */}
+            </Box>
 
             {/* 전체 버튼 */}
             {activeIndex !== 0 && (
@@ -405,11 +408,11 @@ const Subbar = () => {
             {activeIndex === 1 && (
               <>
                 {selectedTab === "all" && (
-                  <Box mt={6} flex="1" overflowY="auto">
+                  <Box mt={6} flex="1" overflowY="scroll">
                     <Flex flexDirection="column" gap={5}>
                       <Box py={4}>
                         {loading ? (
-                          Array(2)
+                          Array(5)
                             .fill(0)
                             .map((_, index) => (
                               <Skeleton
@@ -419,7 +422,8 @@ const Subbar = () => {
                                 borderRadius="md"
                               />
                             ))
-                        ) : chartList && chartList.length === 0 ? (
+                        ) : filteredChartList &&
+                          filteredChartList.length === 0 ? (
                           <Text
                             textAlign="center"
                             mt={10}
@@ -429,8 +433,8 @@ const Subbar = () => {
                             차트가 없습니다.
                           </Text>
                         ) : (
-                          chartList &&
-                          chartList.map((data, index) => {
+                          filteredChartList &&
+                          filteredChartList.map((data, index) => {
                             const isFilled =
                               interestChartList?.some(
                                 (item) => item.chartId === data.chartId
@@ -488,7 +492,7 @@ const Subbar = () => {
                 )}
 
                 {selectedTab === "star" && (
-                  <Box mt={6} flex="1" overflowY="auto">
+                  <Box mt={6} flex="1" overflowY="scroll">
                     <Flex flexDirection="column" gap={5}>
                       <Box py={4}>
                         {loading ? (
@@ -502,8 +506,8 @@ const Subbar = () => {
                                 borderRadius="md"
                               />
                             ))
-                        ) : interestChartList &&
-                          interestChartList.length === 0 ? (
+                        ) : filteredInterestChartList &&
+                          filteredInterestChartList.length === 0 ? (
                           <Text
                             textAlign="center"
                             mt={10}
@@ -513,8 +517,8 @@ const Subbar = () => {
                             차트가 없습니다.
                           </Text>
                         ) : (
-                          interestChartList &&
-                          interestChartList.map((data, index) => {
+                          filteredInterestChartList &&
+                          filteredInterestChartList.map((data, index) => {
                             const isFilled =
                               interestChartList?.some(
                                 (item) => item.chartId === data.chartId
