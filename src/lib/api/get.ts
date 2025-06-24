@@ -7,6 +7,7 @@ import {
 } from "../interface";
 import { apiClient } from "./client";
 import { ESGData } from "./interfaces/esgData";
+
 export async function getSearchSectionId(sectionId?: string) {
   try {
     if (sectionId) {
@@ -47,18 +48,6 @@ import {
 } from "./interfaces/report";
 import { SectionCategoryESGData } from "./interfaces/gri";
 
-export const getDataByCorpYear = async (data: DataFilter) => {
-  try {
-    const response = await apiClient.get<PartialESGData>(
-      `/esg-data/data-value`,
-      {
-        params: data,
-      }
-    );
-    return response.data;
-  } catch (error) {}
-};
-
 // ============================section
 export const getSections = async () => {
   try {
@@ -76,17 +65,6 @@ export const getSectionsByCriterion = async (criterionId: string) => {
       `/sections/by-criterion/${criterionId}`
     );
     return res.data;
-  } catch (error) {
-    console.error("섹션 가져오기 실패:", error);
-    return [];
-  }
-};
-export const getSearchSectionId = async (sectionId: string) => {
-  try {
-    const response = await apiClient.get<Section[]>(
-      `/sections/search/${sectionId}`
-    );
-    return response.data;
   } catch (error) {
     console.error("섹션 가져오기 실패:", error);
     return [];
@@ -371,5 +349,14 @@ export const getGriBySectionSelect = async (
     return res.data;
   } catch (error) {
     console.error("카테고리 검색 실패", error);
+  }
+};
+
+export const getTemplete = async () => {
+  try {
+    const res = await apiClient.get<string>("/reports/txt");
+    return res.data;
+  } catch (error) {
+    console.error("templete실패");
   }
 };

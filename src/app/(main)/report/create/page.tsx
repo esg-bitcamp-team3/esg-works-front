@@ -1,22 +1,22 @@
 "use client";
 import React, { use } from "react";
 import Subbar from "@/lib/components/SubBar";
-s;
-import TextEditor from "@/lib/editor/TextEditor";
+
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import TextEditor from "@/lib/editor/CreateNewReport";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ title: string }>;
 }
 
 const Page = ({ params }: Props) => {
-  const { id } = use(params);
+  const { title } = use(params);
   return (
     <div>
       <DndProvider backend={HTML5Backend}>
-        {id && <TextEditor />}
         <Subbar />
+        <TextEditor />
       </DndProvider>
     </div>
   );

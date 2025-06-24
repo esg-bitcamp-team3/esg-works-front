@@ -409,7 +409,7 @@ const Subbar = () => {
             {activeIndex === 1 && (
               <>
                 {selectedTab === "all" && (
-                  <Box mt={6} flex="1" minH="100%" minW="100%" overflowY="auto">
+                  <Box mt={6} flex="1" overflowY="scroll">
                     <Flex flexDirection="column" gap={5}>
                       <Box py={4}>
                         {loading ? (
@@ -493,7 +493,7 @@ const Subbar = () => {
                 )}
 
                 {selectedTab === "star" && (
-                  <Box mt={6} flex="1" overflowY="auto">
+                  <Box mt={6} flex="1" overflowY="scroll">
                     <Flex flexDirection="column" gap={5}>
                       <Box py={4}>
                         {loading ? (
