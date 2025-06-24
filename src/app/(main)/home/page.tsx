@@ -134,6 +134,7 @@ export default function Home() {
               as={LuStretchHorizontal}
               size="2xs"
               variant="plain"
+              cursor='pointer'
               onClick={() => setActiveFilter2("list")}
               color={activeFilter2 === "list" ? "#2F6EEA" : "gray.600"}
             />
@@ -141,6 +142,7 @@ export default function Home() {
               as={LuLayoutGrid}
               variant="plain"
               size="2xs"
+              cursor='pointer'
               onClick={() => setActiveFilter2("layout")}
               color={activeFilter2 === "layout" ? "#2F6EEA" : "gray.600"}
             />
