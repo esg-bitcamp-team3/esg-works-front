@@ -16,6 +16,7 @@ interface Props {
 const SubTableContent = ({ no, year }: Props) => {
   const categoryNo = no as SubCategoryKey;
   const [categoryList, setCategoryList] = useState<CategoryDetail[]>([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {

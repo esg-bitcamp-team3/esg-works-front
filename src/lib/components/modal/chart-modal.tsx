@@ -21,7 +21,12 @@ import { useEffect, useState } from "react";
 import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 
-import { ChartType } from "@/lib/api/interfaces/chart";
+import {
+  ChartType,
+  DataSet,
+  InputChart,
+  InputDataSet,
+} from "@/lib/api/interfaces/chart";
 import { getSections, getCategories, getEsgData } from "@/lib/api/get";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
 import ChartContent from "./ChartContent";
@@ -29,6 +34,8 @@ import MoveToTableButton from "./MoveToTableButton";
 import TabContent from "./TabContent";
 import MoveToChartButton from "./MoveToChartButton";
 import ContentBox from "./ContentBox";
+import { CategoryScale, ChartData, ChartOptions } from "chart.js";
+import { postChart, postDataSet } from "@/lib/api/post";
 
 const chartType: ChartType[] = [
   { type: "bar", label: "막대 차트", icons: FaChartPie },
@@ -40,24 +47,80 @@ const chartType: ChartType[] = [
 
 export default function ChartModal() {
   const [selected, setSelected] = useState<string[]>([]);
-
   const [step, setStep] = useState<1 | 2>(1);
-
   const [selectedTab, setSelectedTab] = useState<string>("chart");
-
   const [sections, setSections] = useState<Section[]>([]);
-
   const [categories, setCategories] = useState<CategoryDetail[]>([]);
-
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
-
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
   >([]);
-
   const [dataLoading, setDataLoading] = useState<boolean>(false);
+  const [chartData, setChartData] = useState<ChartData>({
+    labels: [],
+    datasets: [],
+  });
+  const [options, setOptions] = useState<ChartOptions>({});
+
+  const createChartWithDataSets = async (
+    options: ChartOptions,
+    chartData: ChartData,
+    categorizedEsgDataList: CategorizedESGDataList[]
+  ) => {
+    try {
+      // 1. 차트 생성
+      const chartName = String(options.plugins?.title?.text ?? "제목 없음");
+      const optionsString = JSON.stringify(options);
+      const newChart: InputChart = {
+        chartName,
+        options: optionsString,
+      };
+
+      const result = await postChart(newChart);
+      const chartId = result?.chartId;
+
+      if (!chartId) {
+        console.error("chartId를 받지 못했습니다.", result);
+        return;
+      }
+
+      console.log("생성된 chartId:", chartId);
+
+      // 2. 데이터셋 생성
+      for (const item of chartData.datasets) {
+        const sortedEsgDataList = [
+          ...categorizedEsgDataList[0].esgNumberDTOList,
+        ].sort((a, b) => {
+          // 연도 기준 오름차순 정렬 (year이 string이라면 숫자로 변환 후 비교)
+          return Number(a.year) - Number(b.year);
+        });
+
+        const newDataSet: InputDataSet = {
+          chartId,
+          type: item.type ?? "bar",
+          label: item.label ?? "",
+          esgDataIdList: sortedEsgDataList.map((esg) => esg.esgDataId),
+          backgroundColor:
+            typeof item.backgroundColor === "string"
+              ? item.backgroundColor
+              : "#36A2EB", // 기본값 설정
+          borderColor:
+            typeof item.borderColor === "string" ? item.borderColor : "#000000",
+          borderWidth:
+            item.borderWidth != null ? String(item.borderWidth) : "1",
+          fill: typeof item.stack === "boolean" ? item.stack : false,
+        };
+
+        await postDataSet(newDataSet);
+      }
+
+      console.log("Chart와 모든 DataSet 생성 완료");
+    } catch (error) {
+      console.error("Chart 또는 DataSet 생성 실패:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -353,6 +416,10 @@ export default function ChartModal() {
                       >
                         <ChartContent
                           categorizedEsgDataList={categorizedEsgDataList}
+                          chartData={chartData}
+                          setChartData={setChartData}
+                          options={options}
+                          setOptions={setOptions}
                         />
                       </ContentBox>
                     </TabContent>
@@ -396,7 +463,13 @@ export default function ChartModal() {
                   width="80px"
                   onClick={() => {
                     if (step === 1) setStep(2);
-                    else console.log("차트 생성 시작", selected);
+                    else {
+                      createChartWithDataSets(
+                        options,
+                        chartData,
+                        categorizedEsgDataList
+                      );
+                    }
                   }}
                   _hover={{ bg: "#1D4FA3" }}
                 >

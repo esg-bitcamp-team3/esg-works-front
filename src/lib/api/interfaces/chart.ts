@@ -106,3 +106,14 @@ export interface InputChart {
   chartName: string;
   options: string; // 또는 options: any;
 }
+
+export interface InputDataSet {
+  chartId: string;
+  type: string;
+  label: string;
+  esgDataIdList: string[];
+  backgroundColor: string;
+  borderColor: string;
+  borderWidth: string;
+  fill: boolean;
+}

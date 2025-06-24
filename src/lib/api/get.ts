@@ -8,6 +8,24 @@ import {
 } from "../interface";
 
 import { apiClient } from "./client";
+import { ESGData } from "./interfaces/esgData";
+
+export async function getSearchSectionId(sectionId?: string) {
+  try {
+    if (sectionId) {
+      const response = await apiClient.get<Section[]>(
+        `/sections/search/${sectionId}`
+      );
+      return response.data;
+    } else {
+      const response = await apiClient.get<Section[]>(`/sections`);
+      return response.data;
+    }
+  } catch (error) {
+    console.log("section을 가져오는데 실패했습니다!: ", error);
+  }
+}
+
 import { ChartDetail, InteresrtChartDetail } from "./interfaces/chart";
 
 import { CategorizedESGDataList } from "./interfaces/categorizedEsgDataList";
@@ -47,17 +65,6 @@ export const getSectionsByCriterion = async (criterionId: string) => {
       `/sections/by-criterion/${criterionId}`
     );
     return res.data;
-  } catch (error) {
-    console.error("섹션 가져오기 실패:", error);
-    return [];
-  }
-};
-export const getSearchSectionId = async (sectionId: string) => {
-  try {
-    const response = await apiClient.get<Section[]>(
-      `/sections/search/${sectionId}`
-    );
-    return response.data;
   } catch (error) {
     console.error("섹션 가져오기 실패:", error);
     return [];
@@ -387,5 +394,14 @@ export const getCriterionById = async (criterionId: string) => {
   } catch (error) {
     console.error("기준 가져오기 실패:", error);
     return null;
+  }
+};
+
+export const getTemplete = async () => {
+  try {
+    const res = await apiClient.get<string>("/reports/txt");
+    return res.data;
+  } catch (error) {
+    console.error("templete실패");
   }
 };
