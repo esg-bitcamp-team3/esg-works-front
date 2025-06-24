@@ -1,7 +1,7 @@
 import { ESGData } from "./esgData";
 
 export interface ChartType {
-  type: "bar" | "line" | "pie" | "doughnut" | "mixed" | "table";
+  type: "bar" | "line" | "pie" | "doughnut" | "mixed";
   label: string;
   icons: React.ComponentType<any>;
 }

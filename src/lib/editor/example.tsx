@@ -87,6 +87,9 @@ const HOTKEYS: Record<string, CustomTextKey> = {
   "mod+`": "code",
 };
 
+import TableChart from "../components/chart/TableChart";
+import ChartChart from "../components/chart/Chart";
+
 const LIST_TYPES = ["numbered-list", "bulleted-list"] as const;
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"] as const;
 
@@ -154,6 +157,22 @@ const RichTextExample = ({ documentId }: { documentId?: string }) => {
           datasets: item.data.dataSets.map((dataset) => ({
             label: dataset.label,
             data: dataset.esgDataList.map((item) => parseFloat(item.value)),
+          })),
+        };
+      }
+      // 새로 추가한 부분
+      else if (item.chartType === "table") {
+        const dataSets = item.data.dataSets || [];
+
+        chartData = {
+          ...item.data,
+          dataSets: dataSets.map((ds: any) => ({
+            ...ds,
+            esgDataList: ds.esgDataList.map((e: any) =>
+              typeof e === "object" && e.year && e.value
+                ? e
+                : { year: "2024", value: "0" }
+            ),
           })),
         };
       } else {
@@ -1384,6 +1403,16 @@ const Chart = ({
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = React.useRef<ChartJS | null>(null);
 
+  if (chartType === "table") {
+    return (
+      <div {...attributes}>
+        {children}
+        <div contentEditable={false}>
+          <TableChart chartData={data} />
+        </div>
+      </div>
+    );
+  }
   // Create a memoized and safe version of the chart data
   const safeChartData = React.useMemo(() => {
     // Create deep clone of data to avoid reference issues

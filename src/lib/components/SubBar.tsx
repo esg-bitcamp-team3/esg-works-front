@@ -194,514 +194,335 @@ const Subbar = () => {
   }, []);
 
   return (
-    <>
-      <Box
-        position="fixed"
-        right={isOpen ? `${sidebarWidth}px` : "0px"} // isOpen이 true일 때 sidebarWidth만큼 오른쪽으로 이동
-        top="10"
-        zIndex={1000}
-      >
+    <DndProvider backend={HTML5Backend}>
+      <>
         <Box
-          w="40px"
-          h="30vh"
-          bg="white"
-          borderTopLeftRadius="xl"
-          borderBottomLeftRadius="xl"
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-        >
-          {items.map((item, idx) => (
-            <Button
-              key={idx}
-              variant="ghost"
-              color="#2F6EEA"
-              onClick={() => {
-                setActiveIndex(idx);
-                setIsOpen(true);
-              }}
-              w={"100%"}
-            >
-              {item.icon}
-            </Button>
-          ))}
-        </Box>
-      </Box>
-
-      {isOpen !== false && (
-        <Resizable
-          defaultSize={{
-            width: activeIndex === 0 ? 600 : 350,
-            height: window.innerHeight,
-          }}
-          minWidth={activeIndex === 0 ? 600 : 350}
-          maxWidth={activeIndex === 0 ? 1200 : 900}
-          enable={{ left: true }}
-          onResize={(e, dir, ref) => {
-            setSidebarWidth(ref.offsetWidth);
-          }}
-          style={{
-            position: "fixed",
-            right: 0,
-            top: 0,
-            zIndex: 1000,
-            backgroundColor: "white",
-            overflowY: "scroll",
-          }}
+          position="fixed"
+          right={isOpen ? `${sidebarWidth}px` : "0px"} // isOpen이 true일 때 sidebarWidth만큼 오른쪽으로 이동
+          top="10"
+          zIndex={1000}
         >
           <Box
-            height="100vh"
-            width="100%"
+            w="40px"
+            h="30vh"
             bg="white"
-            padding="5"
+            borderTopLeftRadius="xl"
+            borderBottomLeftRadius="xl"
             display="flex"
             flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
           >
-            <HStack mb={4} justifyContent="space-between">
-              <HStack>
-                <Box
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  gap={2}
-                >
-                  {items[activeIndex].titleIcon}
-                  <Text
-                    mb={0}
-                    fontSize="md"
-                    fontWeight="bold"
-                    color="#2F6EEA"
-                    position="relative"
-                    style={{ verticalAlign: "bottom" }}
-                  >
-                    {items[activeIndex].title}
-                  </Text>
-                </Box>
-              </HStack>
-              <CloseButton
+            {items.map((item, idx) => (
+              <Button
+                key={idx}
+                variant="ghost"
+                color="#2F6EEA"
                 onClick={() => {
-                  setIsOpen(false);
-                  setSidebarWidth(DEFAULT_SIDEBAR_WIDTH); // 👈 유지보수성 굿
+                  setActiveIndex(idx);
+                  setIsOpen(true);
                 }}
-              />
-            </HStack>
-
-            {/* 검색창 */}
-            <Box>
-              <InputGroup
-                startElement={
-                  <Box pl="4" display="flex">
-                    <FaSearch color="#2F6EEA" />
-                  </Box>
-                }
-                alignItems="start"
-                w="100%"
+                w={"100%"}
               >
-                <Input
-                  flex={1}
-                  bg={"white"}
-                  borderWidth="1px" // 테두리 두께를 1px로 설정
-                  marginX={4}
-                />
-              </InputGroup>
-              <Box
-                position="absolute"
-                top="100%"
-                mt={1}
-                w="100%"
-                bg="white"
-                border="1px solid #e2e8f0"
-                borderRadius="md"
-                boxShadow="md"
-                zIndex={10}
-                maxH="200px"
-              >
-                <VStack gap={0} align="stretch">
-                  <Box>
-                    <Text></Text>
+                {item.icon}
+              </Button>
+            ))}
+          </Box>
+        </Box>
+
+        {isOpen !== false && (
+          <Resizable
+            defaultSize={{
+              width: activeIndex === 0 ? 600 : 350,
+              height: window.innerHeight,
+            }}
+            minWidth={activeIndex === 0 ? 600 : 350}
+            maxWidth={activeIndex === 0 ? 1200 : 900}
+            enable={{ left: true }}
+            onResize={(e, dir, ref) => {
+              setSidebarWidth(ref.offsetWidth);
+            }}
+            style={{
+              position: "fixed",
+              right: 0,
+              top: 0,
+              zIndex: 1000,
+              backgroundColor: "white",
+              overflowY: "scroll",
+            }}
+          >
+            <Box
+              height="100vh"
+              width="100%"
+              bg="white"
+              padding="5"
+              display="flex"
+              flexDirection="column"
+            >
+              <HStack mb={4} justifyContent="space-between">
+                <HStack>
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                    gap={2}
+                  >
+                    {items[activeIndex].titleIcon}
+                    <Text
+                      mb={0}
+                      fontSize="md"
+                      fontWeight="bold"
+                      color="#2F6EEA"
+                      position="relative"
+                      style={{ verticalAlign: "bottom" }}
+                    >
+                      {items[activeIndex].title}
+                    </Text>
                   </Box>
-                </VStack>
-              </Box>
-            </Box>
-
-            {/* 전체 버튼 */}
-            {activeIndex !== 0 && (
-              <>
-                <HStack
-                  w="100%"
-                  justifyContent="space-around"
-                  alignItems="center"
-                >
-                  <Button
-                    bg="white"
-                    onClick={() => setSelectedTab("all")}
-                    display="flex"
-                    gap="3"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    {selectedTab === "all" ? (
-                      <PiSquaresFourBold color="#2F6EEA" size="12px" />
-                    ) : (
-                      <PiSquaresFour color="gray" size="12px" />
-                    )}
-                    <Text
-                      fontSize={{ base: "xs", md: "sm", lg: "md" }}
-                      color={selectedTab === "all" ? "#2F6EEA" : "gray"}
-                      fontWeight={selectedTab === "all" ? "bold" : "normal"}
-                    >
-                      전체
-                    </Text>
-                  </Button>
-
-                  {/* 즐겨찾기 버튼 */}
-                  <Button
-                    bg="white"
-                    gap="2"
-                    onClick={() => setSelectedTab("star")}
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    paddingRight={12}
-                  >
-                    {selectedTab === "star" ? (
-                      <PiStarBold color="#2F6EEA" size="12px" />
-                    ) : (
-                      <PiStar color="gray" size="12px" />
-                    )}
-                    <Text
-                      fontSize={{ base: "xs", md: "sm", lg: "md" }}
-                      color={selectedTab === "star" ? "#2F6EEA" : "gray"}
-                      fontWeight={selectedTab === "star" ? "bold" : "normal"}
-                    >
-                      즐겨찾기
-                    </Text>
-                  </Button>
-                  {/* 테이블 만들기 */}
-                  <div>
-                    <TableModal />
-                  </div>
                 </HStack>
+                <CloseButton
+                  onClick={() => {
+                    setIsOpen(false);
+                    setSidebarWidth(DEFAULT_SIDEBAR_WIDTH); // 👈 유지보수성 굿
+                  }}
+                />
+              </HStack>
 
+              {/* 검색창 */}
+              <Box>
+                <InputGroup
+                  startElement={
+                    <Box pl="4" display="flex">
+                      <FaSearch color="#2F6EEA" />
+                    </Box>
+                  }
+                  alignItems="start"
+                  w="100%"
+                >
+                  <Input
+                    flex={1}
+                    bg={"white"}
+                    borderWidth="1px" // 테두리 두께를 1px로 설정
+                    marginX={4}
+                  />
+                </InputGroup>
                 <Box
-                  width="100%"
-                  height="4px"
-                  display="flex"
-                  // mt="2"
+                  position="absolute"
+                  top="100%"
+                  mt={1}
+                  w="100%"
+                  bg="white"
+                  border="1px solid #e2e8f0"
                   borderRadius="md"
-                  overflow="auto"
-                  paddingRight="12"
+                  boxShadow="md"
+                  zIndex={10}
+                  maxH="200px"
                 >
-                  <Box
-                    flex="1"
-                    bg={selectedTab === "all" ? "#2F6EEA" : "gray.200"}
-                    transition="background-color 0.3s ease"
-                  />
-                  <Box
-                    flex="1"
-                    bg={selectedTab === "star" ? "#2F6EEA" : "gray.200"}
-                    transition="background-color 0.3s ease"
-                  />
+                  <VStack gap={0} align="stretch">
+                    <Box>
+                      <Text></Text>
+                    </Box>
+                  </VStack>
                 </Box>
-              </>
-            )}
+              </Box>
 
-            {activeIndex === 0 && (
-              <>
-                <Box w="100%" pt={4} pb={4}>
-                  <HStack spaceX={6} align="center" justify="space-between">
-                    <Selector
-                      items={GRIsectionList}
-                      text="GRI Standards"
-                      selected={(value) => {
-                        setCategory(value);
-                        refreshSection(value);
-                      }}
-                      width="100%"
-                    />
-                    <Selector
-                      items={yearList}
-                      text="연도"
-                      selected={(value) => setYear(value)}
-                      width="100%"
-                    />
-                  </HStack>
-                </Box>
-              </>
-            )}
-
-            {/* Section 기준 항목 */}
-            {activeIndex === 0 && (
-              <>
-                <Accordion.Root
-                  collapsible
-                  width="100%"
-                  value={[value]}
-                  onValueChange={(e) => setValue(e.value[0] || "")}
-                >
-                  {sectionList.map((item, index) => (
-                    <Accordion.Item
-                      key={index}
-                      value={item.sectionId}
-                      borderWidth="1px"
-                      borderColor="gray.200"
-                      borderRadius="lg"
-                      mb={4}
-                      overflow="hidden"
-                      _hover={{ borderColor: "blue.200" }}
-                      transition="all 0.2s ease"
+              {/* 전체 버튼 */}
+              {activeIndex !== 0 && (
+                <>
+                  <HStack
+                    w="100%"
+                    justifyContent="space-around"
+                    alignItems="center"
+                  >
+                    <Button
+                      bg="white"
+                      onClick={() => setSelectedTab("all")}
+                      display="flex"
+                      gap="3"
+                      alignItems="center"
+                      justifyContent="center"
                     >
-                      <Accordion.ItemTrigger
-                        p={6}
-                        bg="white"
-                        _hover={{ bg: "blue.50" }}
-                        _expanded={{
-                          bg: "blue.50",
-                          borderBottomWidth: "1px",
-                          borderColor: "gray.200",
-                        }}
-                        display="flex"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        width="100%"
+                      {selectedTab === "all" ? (
+                        <PiSquaresFourBold color="#2F6EEA" size="12px" />
+                      ) : (
+                        <PiSquaresFour color="gray" size="12px" />
+                      )}
+                      <Text
+                        fontSize={{ base: "xs", md: "sm", lg: "md" }}
+                        color={selectedTab === "all" ? "#2F6EEA" : "gray"}
+                        fontWeight={selectedTab === "all" ? "bold" : "normal"}
                       >
-                        <Text
-                          textStyle={"md"}
-                          fontWeight="bold"
-                          color="gray.700"
+                        전체
+                      </Text>
+                    </Button>
+
+                    {/* 즐겨찾기 버튼 */}
+                    <Button
+                      bg="white"
+                      gap="2"
+                      onClick={() => setSelectedTab("star")}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      paddingRight={12}
+                    >
+                      {selectedTab === "star" ? (
+                        <PiStarBold color="#2F6EEA" size="12px" />
+                      ) : (
+                        <PiStar color="gray" size="12px" />
+                      )}
+                      <Text
+                        fontSize={{ base: "xs", md: "sm", lg: "md" }}
+                        color={selectedTab === "star" ? "#2F6EEA" : "gray"}
+                        fontWeight={selectedTab === "star" ? "bold" : "normal"}
+                      >
+                        즐겨찾기
+                      </Text>
+                    </Button>
+                    {/* 테이블 만들기 */}
+                    <div>
+                      <TableModal />
+                    </div>
+                  </HStack>
+
+                  <Box
+                    width="100%"
+                    height="4px"
+                    display="flex"
+                    // mt="2"
+                    borderRadius="md"
+                    overflow="auto"
+                    paddingRight="12"
+                  >
+                    <Box
+                      flex="1"
+                      bg={selectedTab === "all" ? "#2F6EEA" : "gray.200"}
+                      transition="background-color 0.3s ease"
+                    />
+                    <Box
+                      flex="1"
+                      bg={selectedTab === "star" ? "#2F6EEA" : "gray.200"}
+                      transition="background-color 0.3s ease"
+                    />
+                  </Box>
+                </>
+              )}
+
+              {activeIndex === 0 && (
+                <>
+                  <Box w="100%" pt={4} pb={4}>
+                    <HStack spaceX={6} align="center" justify="space-between">
+                      <Selector
+                        items={GRIsectionList}
+                        text="GRI Standards"
+                        selected={(value) => {
+                          setCategory(value);
+                          refreshSection(value);
+                        }}
+                        width="100%"
+                      />
+                      <Selector
+                        items={yearList}
+                        text="연도"
+                        selected={(value) => setYear(value)}
+                        width="100%"
+                      />
+                    </HStack>
+                  </Box>
+                </>
+              )}
+
+              {/* Section 기준 항목 */}
+              {activeIndex === 0 && (
+                <>
+                  <Accordion.Root
+                    collapsible
+                    width="100%"
+                    value={[value]}
+                    onValueChange={(e) => setValue(e.value[0] || "")}
+                  >
+                    {sectionList.map((item, index) => (
+                      <Accordion.Item
+                        key={index}
+                        value={item.sectionId}
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                        borderRadius="lg"
+                        mb={4}
+                        overflow="hidden"
+                        _hover={{ borderColor: "blue.200" }}
+                        transition="all 0.2s ease"
+                      >
+                        <Accordion.ItemTrigger
+                          p={6}
+                          bg="white"
+                          _hover={{ bg: "blue.50" }}
+                          _expanded={{
+                            bg: "blue.50",
+                            borderBottomWidth: "1px",
+                            borderColor: "gray.200",
+                          }}
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          width="100%"
                         >
-                          {item.sectionId + " : " + item.sectionName}
-                        </Text>
-
-                        <Accordion.ItemIndicator colorPalette="blue" />
-                      </Accordion.ItemTrigger>
-                      <Accordion.ItemContent>
-                        <Box p={6} bg="white">
-                          {<SubTableContent no={item.sectionId} year={year} />}
-                        </Box>
-                      </Accordion.ItemContent>
-                    </Accordion.Item>
-                  ))}
-                </Accordion.Root>
-              </>
-            )}
-
-            {/* 차트 목록 */}
-            {activeIndex === 1 && (
-              <>
-                {selectedTab === "all" && (
-                  <Box mt={6} flex="1" overflowY="auto">
-                    <Flex flexDirection="column" gap={5}>
-                      <Box py={4}>
-                        {loading ? (
-                          Array(2)
-                            .fill(0)
-                            .map((_, index) => (
-                              <Skeleton
-                                key={index}
-                                height="150px"
-                                mb={4}
-                                borderRadius="md"
-                              />
-                            ))
-                        ) : chartList && chartList.length === 0 ? (
                           <Text
-                            textAlign="center"
-                            mt={10}
-                            color="gray.500"
-                            fontSize="lg"
+                            textStyle={"md"}
+                            fontWeight="bold"
+                            color="gray.700"
                           >
-                            차트가 없습니다.
+                            {item.sectionId + " : " + item.sectionName}
                           </Text>
-                        ) : (
-                          chartList &&
-                          chartList.map((data, index) => {
-                            const isFilled =
-                              interestChartList?.some(
-                                (item) => item.chartId === data.chartId
-                              ) ?? false;
-                            return (
-                              <Flex
-                                key={index}
-                                flexDirection="row"
-                                gap={5}
-                                minH={200}
-                                marginBottom={5}
-                              >
-                                <DraggableChartIcon
-                                  chartType={"line"} // 동적으로 타입 전달
-                                  data={data}
-                                >
-                                  <SingleChart chartData={data || []} />
-                                </DraggableChartIcon>
-                                <StarToggleIcon
-                                  filled={isFilled}
-                                  onToggle={async (filled) => {
-                                    if (filled) {
-                                      try {
-                                        await handleAdd(data.chartId);
-                                        console.log(
-                                          `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                          "⭐ 관심 차트로 등록되었습니다."
-                                        );
-                                      } catch (e) {
-                                        console.error(
-                                          "❌ 관심 차트 등록 실패:",
-                                          e
-                                        );
-                                      }
-                                    } else {
-                                      try {
-                                        await handleDelete(data.chartId);
-                                        console.log("💔 관심 차트 해제됨");
-                                      } catch (e) {
-                                        console.error(
-                                          "❌ 관심 차트 해제 실패:",
-                                          e
-                                        );
-                                      }
-                                    }
-                                  }}
+
+                          <Accordion.ItemIndicator colorPalette="blue" />
+                        </Accordion.ItemTrigger>
+                        <Accordion.ItemContent>
+                          <Box p={6} bg="white">
+                            {
+                              <SubTableContent
+                                no={item.sectionId}
+                                year={year}
+                              />
+                            }
+                          </Box>
+                        </Accordion.ItemContent>
+                      </Accordion.Item>
+                    ))}
+                  </Accordion.Root>
+                </>
+              )}
+
+              {/* 차트 목록 */}
+              {activeIndex === 1 && (
+                <>
+                  {selectedTab === "all" && (
+                    <Box mt={6} flex="1" overflowY="auto">
+                      <Flex flexDirection="column" gap={5}>
+                        <Box py={4}>
+                          {loading ? (
+                            Array(2)
+                              .fill(0)
+                              .map((_, index) => (
+                                <Skeleton
+                                  key={index}
+                                  height="150px"
+                                  mb={4}
+                                  borderRadius="md"
                                 />
-                              </Flex>
-                            );
-                          })
-                        )}
-                      </Box>
-                    </Flex>
-                  </Box>
-                )}
-
-                {selectedTab === "star" && (
-                  <Box mt={6} flex="1" overflowY="auto">
-                    <Flex flexDirection="column" gap={5}>
-                      <Box py={4}>
-                        {loading ? (
-                          Array(5)
-                            .fill(0)
-                            .map((_, index) => (
-                              <Skeleton
-                                key={index}
-                                height="150px"
-                                mb={4}
-                                borderRadius="md"
-                              />
-                            ))
-                        ) : interestChartList &&
-                          interestChartList.length === 0 ? (
-                          <Text
-                            textAlign="center"
-                            mt={10}
-                            color="gray.500"
-                            fontSize="lg"
-                          >
-                            차트가 없습니다.
-                          </Text>
-                        ) : (
-                          interestChartList &&
-                          interestChartList.map((data, index) => {
-                            const isFilled =
-                              interestChartList?.some(
-                                (item) => item.chartId === data.chartId
-                              ) ?? false;
-                            return (
-                              <Flex
-                                key={index}
-                                flexDirection="row"
-                                gap={5}
-                                minH={200}
-                                marginBottom={5}
-                              >
-                                <DraggableChartIcon
-                                  chartType={"line"} // 동적으로 타입 전달
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-                                <StarToggleIcon
-                                  filled={isFilled}
-                                  onToggle={async (filled) => {
-                                    if (filled) {
-                                      try {
-                                        await handleAdd(data.chartId);
-                                        console.log(
-                                          `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                          "⭐ 관심 차트로 등록되었습니다."
-                                        );
-                                      } catch (e) {
-                                        console.error(
-                                          "❌ 관심 차트 등록 실패:",
-                                          e
-                                        );
-                                      }
-                                    } else {
-                                      try {
-                                        await handleDelete(data.chartId);
-                                        console.log("💔 관심 차트 해제됨");
-                                      } catch (e) {
-                                        console.error(
-                                          "❌ 관심 차트 해제 실패:",
-                                          e
-                                        );
-                                      }
-                                    }
-                                  }}
-                                />
-                              </Flex>
-                            );
-                          })
-                        )}
-                      </Box>
-                    </Flex>
-                  </Box>
-                )}
-              </>
-            )}
-
-            {/* 테이블 목록 */}
-            {activeIndex === 2 && (
-              <>
-                {selectedTab === "all" && (
-                  <Box mt={6} flex="1" overflowY="auto">
-                    <Flex flexDirection="column" gap={5}>
-                      <Box py={4}>
-                        {loading ? (
-                          Array(2)
-                            .fill(0)
-                            .map((_, index) => (
-                              <Skeleton
-                                key={index}
-                                height="150px"
-                                mb={4}
-                                borderRadius="md"
-                              />
-                            ))
-                        ) : chartList &&
-                          chartList.filter(
-                            (chart) =>
-                              chart.options &&
-                              JSON.parse(chart.options).type === "table"
-                          ).length === 0 ? (
-                          <Text
-                            textAlign="center"
-                            mt={10}
-                            color="gray.500"
-                            fontSize="lg"
-                          >
-                            테이블이 없습니다.
-                          </Text>
-                        ) : (
-                          chartList &&
-                          chartList
-                            .filter(
-                              (chart) =>
-                                chart.options &&
-                                JSON.parse(chart.options).type === "table"
-                            )
-                            .map((data, index) => {
+                              ))
+                          ) : chartList && chartList.length === 0 ? (
+                            <Text
+                              textAlign="center"
+                              mt={10}
+                              color="gray.500"
+                              fontSize="lg"
+                            >
+                              차트가 없습니다.
+                            </Text>
+                          ) : (
+                            chartList &&
+                            chartList.map((data, index) => {
                               const isFilled =
                                 interestChartList?.some(
                                   (item) => item.chartId === data.chartId
@@ -715,7 +536,7 @@ const Subbar = () => {
                                   marginBottom={5}
                                 >
                                   <DraggableChartIcon
-                                    chartType={"table"} // 동적으로 타입 전달
+                                    chartType={"line"} // 동적으로 타입 전달
                                     data={data}
                                   >
                                     <SingleChart chartData={data || []} />
@@ -752,103 +573,289 @@ const Subbar = () => {
                                 </Flex>
                               );
                             })
-                        )}
-                      </Box>
-                    </Flex>
-                  </Box>
-                )}
+                          )}
+                        </Box>
+                      </Flex>
+                    </Box>
+                  )}
 
-                {selectedTab === "star" && (
-                  <Box mt={6} flex="1" overflowY="auto">
-                    <Flex flexDirection="column" gap={5}>
-                      <Box py={4}>
-                        {loading ? (
-                          Array(5)
-                            .fill(0)
-                            .map((_, index) => (
-                              <Skeleton
-                                key={index}
-                                height="150px"
-                                mb={4}
-                                borderRadius="md"
-                              />
-                            ))
-                        ) : interestChartList &&
-                          interestChartList.length === 0 ? (
-                          <Text
-                            textAlign="center"
-                            mt={10}
-                            color="gray.500"
-                            fontSize="lg"
-                          >
-                            테이블이 없습니다.
-                          </Text>
-                        ) : (
-                          interestChartList &&
-                          interestChartList.map((data, index) => {
-                            const isFilled =
-                              interestChartList?.some(
-                                (item) => item.chartId === data.chartId
-                              ) ?? false;
-                            return (
-                              <Flex
-                                key={index}
-                                flexDirection="row"
-                                gap={5}
-                                minH={200}
-                                marginBottom={5}
-                              >
-                                <DraggableChartIcon
-                                  chartType={"line"} // 동적으로 타입 전달
-                                  data={data.chartDetail}
-                                >
-                                  <SingleChart
-                                    chartData={data.chartDetail || []}
-                                  />
-                                </DraggableChartIcon>
-                                <StarToggleIcon
-                                  filled={isFilled}
-                                  onToggle={async (filled) => {
-                                    if (filled) {
-                                      try {
-                                        await handleAdd(data.chartId);
-                                        console.log(
-                                          `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                          "⭐ 관심 차트로 등록되었습니다."
-                                        );
-                                      } catch (e) {
-                                        console.error(
-                                          "❌ 관심 차트 등록 실패:",
-                                          e
-                                        );
-                                      }
-                                    } else {
-                                      try {
-                                        await handleDelete(data.chartId);
-                                        console.log("💔 관심 차트 해제됨");
-                                      } catch (e) {
-                                        console.error(
-                                          "❌ 관심 차트 해제 실패:",
-                                          e
-                                        );
-                                      }
-                                    }
-                                  }}
+                  {selectedTab === "star" && (
+                    <Box mt={6} flex="1" overflowY="auto">
+                      <Flex flexDirection="column" gap={5}>
+                        <Box py={4}>
+                          {loading ? (
+                            Array(5)
+                              .fill(0)
+                              .map((_, index) => (
+                                <Skeleton
+                                  key={index}
+                                  height="150px"
+                                  mb={4}
+                                  borderRadius="md"
                                 />
-                              </Flex>
-                            );
-                          })
-                        )}
-                      </Box>
-                    </Flex>
-                  </Box>
-                )}
-              </>
-            )}
-          </Box>
-        </Resizable>
-      )}
-    </>
+                              ))
+                          ) : interestChartList &&
+                            interestChartList.length === 0 ? (
+                            <Text
+                              textAlign="center"
+                              mt={10}
+                              color="gray.500"
+                              fontSize="lg"
+                            >
+                              차트가 없습니다.
+                            </Text>
+                          ) : (
+                            interestChartList &&
+                            interestChartList.map((data, index) => {
+                              const isFilled =
+                                interestChartList?.some(
+                                  (item) => item.chartId === data.chartId
+                                ) ?? false;
+                              return (
+                                <Flex
+                                  key={index}
+                                  flexDirection="row"
+                                  gap={5}
+                                  minH={200}
+                                  marginBottom={5}
+                                >
+                                  <DraggableChartIcon
+                                    chartType={"line"} // 동적으로 타입 전달
+                                    data={data.chartDetail}
+                                  >
+                                    <SingleChart
+                                      chartData={data.chartDetail || []}
+                                    />
+                                  </DraggableChartIcon>
+                                  <StarToggleIcon
+                                    filled={isFilled}
+                                    onToggle={async (filled) => {
+                                      if (filled) {
+                                        try {
+                                          await handleAdd(data.chartId);
+                                          console.log(
+                                            `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
+                                            "⭐ 관심 차트로 등록되었습니다."
+                                          );
+                                        } catch (e) {
+                                          console.error(
+                                            "❌ 관심 차트 등록 실패:",
+                                            e
+                                          );
+                                        }
+                                      } else {
+                                        try {
+                                          await handleDelete(data.chartId);
+                                          console.log("💔 관심 차트 해제됨");
+                                        } catch (e) {
+                                          console.error(
+                                            "❌ 관심 차트 해제 실패:",
+                                            e
+                                          );
+                                        }
+                                      }
+                                    }}
+                                  />
+                                </Flex>
+                              );
+                            })
+                          )}
+                        </Box>
+                      </Flex>
+                    </Box>
+                  )}
+                </>
+              )}
+
+              {/* 테이블 목록 */}
+              {activeIndex === 2 && (
+                <>
+                  {selectedTab === "all" && (
+                    <Box mt={6} flex="1" overflowY="auto">
+                      <Flex flexDirection="column" gap={5}>
+                        <Box py={4}>
+                          {loading ? (
+                            Array(2)
+                              .fill(0)
+                              .map((_, index) => (
+                                <Skeleton
+                                  key={index}
+                                  height="150px"
+                                  mb={4}
+                                  borderRadius="md"
+                                />
+                              ))
+                          ) : chartList &&
+                            chartList.filter(
+                              (chart) =>
+                                chart.options &&
+                                JSON.parse(chart.options).type === "table"
+                            ).length === 0 ? (
+                            <Text
+                              textAlign="center"
+                              mt={10}
+                              color="gray.500"
+                              fontSize="lg"
+                            >
+                              테이블이 없습니다.
+                            </Text>
+                          ) : (
+                            chartList &&
+                            chartList
+                              .filter(
+                                (chart) =>
+                                  chart.options &&
+                                  JSON.parse(chart.options).type === "table"
+                              )
+                              .map((data, index) => {
+                                const isFilled =
+                                  interestChartList?.some(
+                                    (item) => item.chartId === data.chartId
+                                  ) ?? false;
+                                return (
+                                  <Flex
+                                    key={index}
+                                    flexDirection="row"
+                                    gap={5}
+                                    minH={200}
+                                    marginBottom={5}
+                                  >
+                                    <DraggableChartIcon
+                                      chartType={"table"} // 동적으로 타입 전달
+                                      data={data}
+                                    >
+                                      <SingleChart chartData={data || []} />
+                                    </DraggableChartIcon>
+                                    <StarToggleIcon
+                                      filled={isFilled}
+                                      onToggle={async (filled) => {
+                                        if (filled) {
+                                          try {
+                                            await handleAdd(data.chartId);
+                                            console.log(
+                                              `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
+                                              "⭐ 관심 차트로 등록되었습니다."
+                                            );
+                                          } catch (e) {
+                                            console.error(
+                                              "❌ 관심 차트 등록 실패:",
+                                              e
+                                            );
+                                          }
+                                        } else {
+                                          try {
+                                            await handleDelete(data.chartId);
+                                            console.log("💔 관심 차트 해제됨");
+                                          } catch (e) {
+                                            console.error(
+                                              "❌ 관심 차트 해제 실패:",
+                                              e
+                                            );
+                                          }
+                                        }
+                                      }}
+                                    />
+                                  </Flex>
+                                );
+                              })
+                          )}
+                        </Box>
+                      </Flex>
+                    </Box>
+                  )}
+
+                  {selectedTab === "star" && (
+                    <Box mt={6} flex="1" overflowY="auto">
+                      <Flex flexDirection="column" gap={5}>
+                        <Box py={4}>
+                          {loading ? (
+                            Array(5)
+                              .fill(0)
+                              .map((_, index) => (
+                                <Skeleton
+                                  key={index}
+                                  height="150px"
+                                  mb={4}
+                                  borderRadius="md"
+                                />
+                              ))
+                          ) : interestChartList &&
+                            interestChartList.length === 0 ? (
+                            <Text
+                              textAlign="center"
+                              mt={10}
+                              color="gray.500"
+                              fontSize="lg"
+                            >
+                              테이블이 없습니다.
+                            </Text>
+                          ) : (
+                            interestChartList &&
+                            interestChartList.map((data, index) => {
+                              const isFilled =
+                                interestChartList?.some(
+                                  (item) => item.chartId === data.chartId
+                                ) ?? false;
+                              return (
+                                <Flex
+                                  key={index}
+                                  flexDirection="row"
+                                  gap={5}
+                                  minH={200}
+                                  marginBottom={5}
+                                >
+                                  <DraggableChartIcon
+                                    chartType={"line"} // 동적으로 타입 전달
+                                    data={data.chartDetail}
+                                  >
+                                    <SingleChart
+                                      chartData={data.chartDetail || []}
+                                    />
+                                  </DraggableChartIcon>
+                                  <StarToggleIcon
+                                    filled={isFilled}
+                                    onToggle={async (filled) => {
+                                      if (filled) {
+                                        try {
+                                          await handleAdd(data.chartId);
+                                          console.log(
+                                            `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
+                                            "⭐ 관심 차트로 등록되었습니다."
+                                          );
+                                        } catch (e) {
+                                          console.error(
+                                            "❌ 관심 차트 등록 실패:",
+                                            e
+                                          );
+                                        }
+                                      } else {
+                                        try {
+                                          await handleDelete(data.chartId);
+                                          console.log("💔 관심 차트 해제됨");
+                                        } catch (e) {
+                                          console.error(
+                                            "❌ 관심 차트 해제 실패:",
+                                            e
+                                          );
+                                        }
+                                      }
+                                    }}
+                                  />
+                                </Flex>
+                              );
+                            })
+                          )}
+                        </Box>
+                      </Flex>
+                    </Box>
+                  )}
+                </>
+              )}
+            </Box>
+          </Resizable>
+        )}
+      </>
+    </DndProvider>
   );
 };
 

@@ -3,17 +3,12 @@
 import { Table } from "@chakra-ui/react";
 import { ChartDetail } from "@/lib/api/interfaces/chart";
 
-// chartData 구조 예시 (아래에서 활용)
-// chartData.dataSets = [
-//   { label: "매출", esgDataList: [{ year: "2020", value: 100 }, ...] },
-//   { label: "이익", esgDataList: [{ year: "2020", value: 50 }, ...] },
-// ]
-
 interface Props {
   chartData: ChartDetail;
 }
 
 export default function TableChart({ chartData }: Props) {
+  console.log("TableChart", chartData);
   if (!chartData || !chartData.dataSets || chartData.dataSets.length === 0) {
     return <div style={{ padding: 24 }}>데이터 없음</div>;
   }

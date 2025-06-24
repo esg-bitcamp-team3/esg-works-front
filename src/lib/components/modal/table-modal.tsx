@@ -414,7 +414,7 @@ export default function ChartModal() {
                         credentials: "include",
                         body: JSON.stringify({
                           corporationId: "000660",
-                          chartName: "임시 테이블만들기3",
+                          chartName: "임시 테이블001",
                           options: JSON.stringify({
                             responsive: true,
                             type: "table",
@@ -431,7 +431,7 @@ export default function ChartModal() {
                         body: JSON.stringify({
                           chartId: chart.chartId,
                           type: "table",
-                          label: "임시 테이블만들기3",
+                          label: "임시 테이블001_1",
                           esgDataIdList: esgDataIdList,
                           backgroundColor: "#4CAF50",
                           borderColor: "#388E3C",

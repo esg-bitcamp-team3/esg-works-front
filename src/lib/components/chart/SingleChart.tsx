@@ -48,6 +48,7 @@ export default function SingleChart({ chartData }: Props) {
   }
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstance = useRef<Chart<keyof ChartTypeRegistry> | null>(null);
+  // const chartInstance = useRef<Chart | null>(null);
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext("2d");
