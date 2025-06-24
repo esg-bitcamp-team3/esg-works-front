@@ -147,6 +147,7 @@ const RichTextExample = ({ documentId }: { documentId?: string }) => {
     drop: (item: { chartType: string; data: ChartDetail }) => {
       let chartData;
       if (item.chartType === "pie" || item.chartType === "doughnut") {
+        console.log("Processing pie/doughnut chart data");
         // For pie or doughnut charts, use dataset labels as chart labels
         // and pick the first value from each dataset
         chartData = {
@@ -157,6 +158,7 @@ const RichTextExample = ({ documentId }: { documentId?: string }) => {
           })),
         };
       } else {
+        console.log("Processing standard chart data");
         // For other chart types, flatten years as labels and map all values
         chartData = {
           labels: item.data.dataSets
@@ -165,13 +167,10 @@ const RichTextExample = ({ documentId }: { documentId?: string }) => {
           datasets: item.data.dataSets.map((dataset) => ({
             label: dataset.label,
             data: dataset.esgDataList.map((item) => parseFloat(item.value)),
-            backgroundColor: dataset.backgroundColor,
-            borderColor: dataset.borderColor,
-            borderWidth: parseFloat(dataset.borderWidth),
-            fill: dataset.fill === "true",
           })),
         };
       }
+      console.log("Processed chart data:", chartData);
       const chartElement: ChartElement = {
         type: "chart",
         chartType: item.chartType,
@@ -183,10 +182,12 @@ const RichTextExample = ({ documentId }: { documentId?: string }) => {
         layout: "full", // Default to full layout
         children: [chartElement],
       };
+      console.log("Inserting chart block:", chartBlock);
       Transforms.insertNodes(editor, chartBlock);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
     }),
   }));
   const [title, setTitle] = useState<string>("제목 없는 문서");
