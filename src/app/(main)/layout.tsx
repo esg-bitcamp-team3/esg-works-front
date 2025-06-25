@@ -10,19 +10,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Flex
-      bg={"#fafafa"}
+      bg={"white"}
       h={"100vh"}
       w={"100vw"}
-      // justifyContent="center"
-      // alignItems="center"
-      overflowY={"auto"}
-      overflowX={"hidden"}
+      justifyContent="center"
+      alignItems="center"
     >
       <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
       <main
         style={{
           transition: "margin-left 0.3s ease-in-out",
-          // marginLeft: isExpanded ? "200px" : "60px",
+          marginLeft: isExpanded ? "200px" : "60px",
           width: "100%",
           height: "100%",
         }}

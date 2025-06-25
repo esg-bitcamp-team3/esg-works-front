@@ -14,6 +14,7 @@ import {
   InputGroup,
   Checkbox,
   Tabs,
+  Spinner,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
 import { useEffect, useState } from "react";
@@ -43,6 +44,7 @@ import { CategoryScale, ChartData, ChartOptions } from "chart.js";
 import { postChart, postDataSet } from "@/lib/api/post";
 import { RiResetLeftFill } from "react-icons/ri";
 import { Criterion } from "@/lib/interface";
+import { set } from "lodash";
 
 const chartType: ChartType[] = [
   { type: "bar", label: "막대 차트", icons: FaChartPie },
@@ -53,7 +55,9 @@ const chartType: ChartType[] = [
 ];
 
 export default function ChartModal() {
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selectedCategoryList, setSelectedCategoryList] = useState<
+    CategoryDetail[]
+  >([]);
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedTab, setSelectedTab] = useState<string>("chart");
   const [criterion, setCriterion] = useState<Criterion[]>([]);
@@ -65,11 +69,6 @@ export default function ChartModal() {
   const [selectedCriterionId, setSelectedCriterionId] = useState<
     string | null
   >();
-  const [allCategories, setAllCategories] = useState<CategoryDetail[]>([]);
-  // criterion에 속한 모든 section의 모든 category를 담는 state
-  const [criterionCategories, setCriterionCategories] = useState<
-    CategoryDetail[]
-  >([]);
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
   >([]);
@@ -84,6 +83,13 @@ export default function ChartModal() {
   );
   const [selectedChartType, setSelectedChartType] =
     useState<ChartType["type"]>("bar");
+  const [criterionLoading, setCriterionLoading] = useState<boolean>(false);
+  const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
+  const [sectionLoading, setSectionLoading] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filteredCategories, setFilteredCategories] = useState<
+    CategoryDetail[]
+  >([]);
 
   const createChartWithDataSets = async (
     options: ChartOptions,
@@ -183,17 +189,19 @@ export default function ChartModal() {
 
   useEffect(() => {
     const fetchCriterion = async () => {
+      setCriterionLoading(true);
       try {
         const criterion = await getCriterion();
-        console.log("Fetched criterion:", criterion);
         setCriterion(criterion);
       } catch (error) {
         console.error("평가 기준 가져오기 실패:", error);
         setCriterion([]);
+      } finally {
+        setCriterionLoading(false);
       }
     };
     fetchCriterion();
-  });
+  }, []);
 
   const criteria = createListCollection({
     items: criterion
@@ -204,64 +212,22 @@ export default function ChartModal() {
       })),
   });
 
-  // criterionId가 변경될 때만 section을 불러오고, 초기화도 여기에 포함
-  useEffect(() => {
-    if (!selectedCriterionId) {
-      setSections([]);
-      setSelectedSectionId(null);
-      setCategories([]);
-      return;
-    }
-    const fetchSections = async () => {
-      const response = await getSectionsByCriterion(selectedCriterionId);
-      setSections(response);
-      setSelectedSectionId(null);
-      setCategories([]);
-    };
-    fetchSections();
-  }, [selectedCriterionId]);
-
-  // useEffect(() => {
-  //   const fetchSections = async () => {
-  //     try {
-  //       const sections = await getSections();
-  //       console.log("Fetched sections:", sections);
-  //       setSections(sections);
-  //     } catch (error) {
-  //       console.error("섹션 가져오기 실패:", error);
-  //       setSections([]); // Set to empty array on error
-  //     }
-  //   };
-  //   fetchSections();
-  // }, []);
-
-  // 최초 렌더링 시 전체 카테고리 가져오기Add commentMore actions
-  // useEffect(() => {
-  //   const fetchAllCategories = async () => {
-  //     const all = await getCategories();
-  //     setAllCategories(all);
-  //   };
-  //   fetchAllCategories();
-  // }, []);
-
-  // 섹션 목록 가져오기
-  useEffect(() => {
-    const fetchSections = async () => {
-      const secs = await getSections();
-      setSections(secs);
-    };
-    fetchSections();
-  }, []);
-
   // Section이 선택된 경우: 해당 section의 카테고리만 fetch
   useEffect(() => {
     if (!selectedSectionId) {
-      setCategories([]);
       return;
     }
     const fetchCategories = async () => {
-      const data = await getCategories(selectedSectionId);
-      setCategories(data);
+      setCategoryLoading(true);
+      try {
+        const data = await getCategories(selectedSectionId);
+        setCategories(data);
+      } catch {
+        console.error("카테고리 불러오기 실패");
+        setCategories([]);
+      } finally {
+        setCategoryLoading(false);
+      }
     };
     fetchCategories();
   }, [selectedSectionId]);
@@ -269,41 +235,64 @@ export default function ChartModal() {
   // Criterion만 선택된 경우: criterion에 속한 모든 section의 모든 category를 fetch & 합침
   useEffect(() => {
     // section이 선택된 경우에는 동작하지 않음
-    if (!selectedCriterionId || selectedSectionId) {
-      setCriterionCategories([]);
+    if (!selectedCriterionId) {
       return;
     }
+
+    const fetchSections = async () => {
+      setSectionLoading(true);
+      try {
+        const response = await getSectionsByCriterion(selectedCriterionId);
+        setSections(response);
+        setSelectedSectionId(null);
+      } catch (error) {
+        console.error("섹션 불러오기 실패:", error);
+        setSections([]);
+      } finally {
+        setSectionLoading(false);
+      }
+    };
+    fetchSections();
+
     const fetchAllCategoriesInCriterion = async () => {
       // criterion에 속한 모든 section id를 불러와서, 각 섹션의 카테고리 fetch 후 합침
-      const secs = await getSectionsByCriterion(selectedCriterionId);
-      if (!secs || secs.length === 0) {
-        setCriterionCategories([]);
-        return;
+      setCategoryLoading(true);
+      try {
+        const secs = await getSectionsByCriterion(selectedCriterionId);
+        if (!secs || secs.length === 0) {
+          setCategories([]);
+          return;
+        }
+        // 모든 section의 카테고리 fetch
+        const all = await Promise.all(
+          secs.map((sec) => getCategories(sec.sectionId))
+        );
+        // 2차원 배열을 1차원으로 평탄화
+        const flat = all.flat();
+        setCategories(flat);
+      } catch (error) {
+        console.error("카테고리 불러오기 실패:", error);
+        setCategories([]);
+      } finally {
+        setCategoryLoading(false);
       }
-      // 모든 section의 카테고리 fetch
-      const all = await Promise.all(
-        secs.map((sec) => getCategories(sec.sectionId))
-      );
-      // 2차원 배열을 1차원으로 평탄화
-      const flat = all.flat();
-      setCriterionCategories(flat);
     };
     fetchAllCategoriesInCriterion();
-  }, [selectedCriterionId, selectedSectionId]);
+  }, [selectedCriterionId]);
 
   // 선택된 criterionId에 해당하는 section만 표시
-  const gristandards = createListCollection({
-    items: sections
-      .filter((section) => section.sectionId && section.sectionName)
-      .map((section) => ({
-        label: section.sectionName,
-        value: section.sectionId,
-      })),
+  const sectionCollection = createListCollection({
+    items: sections.map((section) => ({
+      label: section.sectionName,
+      value: section.sectionId,
+    })),
   });
 
   const getData = async () => {
     setDataLoading(true);
-    Promise.all(selected.map((id) => getEsgData(id)))
+    Promise.all(
+      selectedCategoryList.map((category) => getEsgData(category.categoryId))
+    )
       .then((results) => {
         const validResults = results.filter(
           (result): result is CategorizedESGDataList => result !== null
@@ -318,24 +307,27 @@ export default function ChartModal() {
       });
   };
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
-
-  // 표시할 카테고리 배열 분기
-  // section이 선택된 경우: 해당 section의 카테고리만, section 미선택 시 criterion 내 모든 section의 모든 category
-  let displayedCategories: CategoryDetail[] = [];
-  if (selectedCriterionId && selectedSectionId) {
-    displayedCategories = categories;
-  } else if (selectedCriterionId && !selectedSectionId) {
-    displayedCategories = criterionCategories;
-  } else {
-    displayedCategories = [];
-  }
-
   useEffect(() => {
-    if (selected.length > 0) {
+    if (selectedCategoryList.length > 0) {
       getData();
     }
-  }, [selected]);
+  }, [selectedCategoryList]);
+
+  const handleSearch = () => {
+    if (searchTerm.trim() === "") {
+      // 검색어가 비어있으면 모든 카테고리 표시
+      setFilteredCategories(categories);
+    } else {
+      // 검색어가 있을 때 필터링된 카테고리만 표시
+      setFilteredCategories(
+        categories.filter((category) =>
+          category.categoryName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+  };
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
@@ -408,13 +400,19 @@ export default function ChartModal() {
                       <Select.Control>
                         <Select.Trigger>
                           <Select.ValueText
-                            paddingLeft="2"
-                            paddingRight="2"
                             placeholder="평가 기준"
-                            fontSize={{ base: "sm", md: "md", lg: "md" }}
+                            fontSize={{ base: "xs", md: "sm", lg: "sm" }}
+                            fontWeight={"500"}
                           />
                         </Select.Trigger>
-                        <Select.IndicatorGroup paddingRight="2">
+                        <Select.IndicatorGroup>
+                          {criterionLoading && (
+                            <Spinner
+                              size="xs"
+                              borderWidth="1.5px"
+                              color="fg.muted"
+                            />
+                          )}
                           <Select.Indicator />
                         </Select.IndicatorGroup>
                       </Select.Control>
@@ -430,11 +428,8 @@ export default function ChartModal() {
                                 setSelectedCriterionId(criteria.value || null);
                                 setSelectedSectionId(null);
                               }}
-                              paddingLeft="2"
-                              paddingRight="2"
-                              paddingY={2}
                               rounded="md"
-                              fontSize={{ base: "sm", md: "md", lg: "md" }}
+                              fontSize={{ base: "xs", md: "sm", lg: "sm" }}
                               justifyContent={"space-between"}
                             >
                               {criteria.label}
@@ -446,7 +441,7 @@ export default function ChartModal() {
                     </Select.Root>
                     {/* Section Select ============================================== */}
                     <Select.Root
-                      collection={gristandards}
+                      collection={sectionCollection}
                       disabled={!selectedCriterionId}
                       h="100%"
                       w="100%"
@@ -456,38 +451,44 @@ export default function ChartModal() {
                       <Select.Control>
                         <Select.Trigger>
                           <Select.ValueText
-                            paddingLeft="2"
-                            paddingRight="2"
                             placeholder="세부 평가"
-                            fontSize={{ base: "sm", md: "md", lg: "md" }}
+                            fontSize={{ base: "xs", md: "sm", lg: "sm" }}
+                            fontWeight={"500"}
                           />
                         </Select.Trigger>
-                        <Select.IndicatorGroup paddingRight="2">
+                        <Select.IndicatorGroup>
+                          {sectionLoading && (
+                            <Spinner
+                              size="xs"
+                              borderWidth="1.5px"
+                              color="fg.muted"
+                            />
+                          )}
                           <Select.Indicator />
                         </Select.IndicatorGroup>
                       </Select.Control>
 
                       <Select.Positioner>
                         <Select.Content p={2}>
-                          {gristandards.items.map((gristandard) => (
+                          {sectionCollection.items.length === 0 && (
+                            <Text fontSize="xs" color="gray.500">
+                              선택된 평가 기준에 해당하는 세부 평가 기준이
+                              없습니다.
+                            </Text>
+                          )}
+                          {sectionCollection.items.map((item) => (
                             <Select.Item
-                              item={gristandard}
-                              key={gristandard.value}
+                              item={item}
+                              key={item.value}
                               onClick={() => {
-                                console.log(
-                                  "📌 선택된 섹션 ID:",
-                                  gristandard.value
-                                );
-                                setSelectedSectionId(gristandard.value || null);
+                                console.log("📌 선택된 섹션 ID:", item.value);
+                                setSelectedSectionId(item.value || null);
                               }}
-                              paddingLeft="2"
-                              paddingRight="2"
-                              paddingY={2}
                               rounded="md"
-                              fontSize={{ base: "sm", md: "md", lg: "md" }}
+                              fontSize={{ base: "xs", md: "sm", lg: "sm" }}
                               justifyContent={"space-between"}
                             >
-                              {gristandard.label}
+                              {item.label}
                               <Select.ItemIndicator />
                             </Select.Item>
                           ))}
@@ -498,7 +499,7 @@ export default function ChartModal() {
                     {/* 검색 */}
                     <InputGroup
                       startElement={
-                        <Box paddingLeft="3" display="flex" alignItems="center">
+                        <Box>
                           <FaSearch />
                         </Box>
                       }
@@ -508,30 +509,56 @@ export default function ChartModal() {
                     >
                       <Input
                         placeholder="검색"
-                        fontSize="md"
+                        fontSize="sm"
                         w="100%"
                         value={searchTerm}
                         disabled={!selectedCriterionId}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        _focus={{ borderColor: "gray.400" }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleSearch();
+                          }
+                        }}
                       />
                     </InputGroup>
                   </Flex>
 
                   {/* 체크박스 목록 영역 */}
-                  <Box
-                    flex="1"
-                    display="flex"
-                    flexDirection="column"
-                    gap="2"
-                    borderRadius="md"
-                    borderWidth="1px"
-                    width="100%"
-                    minHeight={{ base: "45vh", md: "35vh", lg: "45vh" }}
-                    maxHeight={{ base: "50vh", md: "40vh", lg: "45vh" }}
-                    padding="4"
-                    overflowY="auto"
-                  >
-                    {/* {displayedCategories
+                  {categoryLoading ? (
+                    <Box
+                      flex="1"
+                      display="flex"
+                      flexDirection="column"
+                      gap="2"
+                      borderRadius="md"
+                      borderWidth="1px"
+                      width="100%"
+                      minHeight={{ base: "45vh", md: "35vh", lg: "45vh" }}
+                      maxHeight={{ base: "50vh", md: "40vh", lg: "45vh" }}
+                      padding="4"
+                      overflowY="auto"
+                      justifyContent={"center"}
+                      justifyItems={"center"}
+                      alignItems={"center"}
+                    >
+                      <Spinner size="md" color="#2F6EEA" />
+                    </Box>
+                  ) : (
+                    <Box
+                      flex="1"
+                      display="flex"
+                      flexDirection="column"
+                      gap="2"
+                      borderRadius="md"
+                      borderWidth="1px"
+                      width="100%"
+                      minHeight={{ base: "45vh", md: "35vh", lg: "45vh" }}
+                      maxHeight={{ base: "50vh", md: "40vh", lg: "45vh" }}
+                      padding="4"
+                      overflowY="auto"
+                    >
+                      {/* {displayedCategories
                       .filter((category) => category.categoryName !== "비고")
                       .filter(
                         (category) =>
@@ -540,49 +567,42 @@ export default function ChartModal() {
                             .toLowerCase()
                             .includes(searchTerm.toLowerCase())
                       ) */}
-                    {displayedCategories
-                      .filter((category) => category.categoryName !== "비고")
-                      .filter(
-                        (category) =>
-                          !!category.categoryName &&
-                          category.categoryName
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase())
-                      )
-                      .map((category) => (
-                        <Box key={category.categoryId}>
-                          <Checkbox.Root
-                            checked={selected.includes(category.categoryId)}
-                            onCheckedChange={() => {
-                              const isChecked = selected.includes(
-                                category.categoryId
-                              );
-                              if (isChecked) {
-                                setSelected((prev) =>
-                                  prev.filter((i) => i !== category.categoryId)
-                                );
-                              } else {
-                                setSelected((prev) => [
-                                  ...prev,
-                                  category.categoryId,
-                                ]);
-                              }
-                            }}
-                          >
-                            <Checkbox.HiddenInput />
-                            <Checkbox.Control
-                              _checked={{
-                                bg: "#2F6EEA",
-                                borderColor: "#2F6EEA",
+                      {filteredCategories
+                        .filter((category) => category.categoryName !== "비고")
+                        .map((category) => (
+                          <Box key={category.categoryId}>
+                            <Checkbox.Root
+                              checked={selectedCategoryList.includes(category)}
+                              onCheckedChange={() => {
+                                const isChecked =
+                                  selectedCategoryList.includes(category);
+                                if (isChecked) {
+                                  setSelectedCategoryList((prev) =>
+                                    prev.filter((i) => i !== category)
+                                  );
+                                } else {
+                                  setSelectedCategoryList((prev) => [
+                                    ...prev,
+                                    category,
+                                  ]);
+                                }
                               }}
-                            />
-                            <Checkbox.Label>
-                              {category.categoryName}
-                            </Checkbox.Label>
-                          </Checkbox.Root>
-                        </Box>
-                      ))}
-                  </Box>
+                            >
+                              <Checkbox.HiddenInput />
+                              <Checkbox.Control
+                                _checked={{
+                                  bg: "#2F6EEA",
+                                  borderColor: "#2F6EEA",
+                                }}
+                              />
+                              <Checkbox.Label>
+                                {category.categoryName}
+                              </Checkbox.Label>
+                            </Checkbox.Root>
+                          </Box>
+                        ))}
+                    </Box>
+                  )}
 
                   {/* 태그 영역 */}
                   <Flex
@@ -597,24 +617,22 @@ export default function ChartModal() {
                     borderWidth="1px"
                     rounded="md"
                   >
-                    {selected &&
-                      selected.map((item, index) => (
+                    {selectedCategoryList &&
+                      selectedCategoryList.map((item, index) => (
                         <Flex
                           key={index}
                           alignItems="center"
                           height="fit-content"
                         >
                           <Text fontSize="sm" minWidth="fit-content">
-                            {allCategories.find(
-                              (cat) => cat.categoryId === item
-                            )?.categoryName || item}
+                            {item.categoryName}
                           </Text>
                           <Button
                             size="xs"
                             variant="ghost"
                             _hover={{ bg: "white" }}
                             onClick={() => {
-                              setSelected((prev) =>
+                              setSelectedCategoryList((prev) =>
                                 prev.filter((i) => i !== item)
                               );
 
@@ -625,7 +643,8 @@ export default function ChartModal() {
                               checkboxes.forEach((checkbox) => {
                                 if (
                                   checkbox.nextElementSibling
-                                    ?.nextElementSibling?.textContent === item
+                                    ?.nextElementSibling?.textContent ===
+                                  item.categoryName
                                 ) {
                                   checkbox.checked = false;
                                 }
@@ -716,7 +735,7 @@ export default function ChartModal() {
                     colorScheme="gray"
                     variant="ghost"
                     color="#2F6EEA"
-                    onClick={() => setSelected([])}
+                    onClick={() => setSelectedCategoryList([])}
                     _hover={{ bg: "white" }}
                   >
                     <RiResetLeftFill /> 초기화
