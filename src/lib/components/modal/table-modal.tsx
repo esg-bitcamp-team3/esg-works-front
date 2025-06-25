@@ -61,6 +61,26 @@ export default function ChartModal() {
   >([]);
 
   const [dataLoading, setDataLoading] = useState<boolean>(false);
+  const [chartTitle, setChartTitle] = useState<string>("");
+  const [chartList, setChartList] = useState<any[]>([]); // 전체 차트 목록 저장용
+
+  useEffect(() => {
+    // 차트 목록 불러오기(중복 체크용)
+    async function fetchCharts() {
+      try {
+        const res = await fetch("/api/charts", {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        });
+        const charts = await res.json();
+        setChartList(charts);
+      } catch (e) {
+        setChartList([]);
+      }
+    }
+    fetchCharts();
+  }, []);
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -339,6 +359,21 @@ export default function ChartModal() {
                   </Flex>
                 </Flex>
               )}
+              <Flex
+                flexDirection={{ base: "column", md: "row" }}
+                alignItems={{ base: "stretch", md: "center" }}
+                justifyContent="flex-start"
+                width="100%"
+                gap={3}
+              >
+                {/* ... (기존 Select 등) */}
+                <Input
+                  placeholder="차트 제목 입력"
+                  value={chartTitle}
+                  onChange={(e) => setChartTitle(e.target.value)}
+                  width={{ base: "100%", md: "40%" }}
+                />
+              </Flex>
 
               {/* 다음 페이지 (차트 & 테이블) ======================================================================================= */}
               {step === 2 && (
@@ -372,78 +407,96 @@ export default function ChartModal() {
                   variant="solid"
                   width="80px"
                   onClick={async () => {
-                    if (step === 1) setStep(2);
-                    else {
-                      // 1. 모든 ESGDataDTO 불러오기
-                      const allEsgDataRes = await fetch("/api/esg-data", {
-                        headers: {
-                          Authorization:
-                            "Bearer " + localStorage.getItem("token"),
-                        },
-                      });
-                      const allEsgDataList = await allEsgDataRes.json();
+                    if (step === 1) {
+                      setStep(2);
+                      return;
+                    }
+                    if (!chartTitle.trim()) {
+                      alert("차트 제목을 입력해주세요.");
+                      return;
+                    }
+                    const isDuplicate = chartList.some(
+                      (c) => c.chartName === chartTitle.trim()
+                    );
+                    if (isDuplicate) {
+                      alert(
+                        "이미 존재하는 차트명입니다. 다른 이름을 입력하세요."
+                      );
+                      return;
+                    }
+                    const allEsgDataRes = await fetch("/api/esg-data", {
+                      headers: {
+                        Authorization:
+                          "Bearer " + localStorage.getItem("token"),
+                      },
+                    });
+                    const allEsgDataList = await allEsgDataRes.json();
 
-                      let esgDataIdList = [];
+                    let esgDataIdList = [];
 
-                      for (const item of categorizedEsgDataList) {
-                        if (
-                          selected.includes(item.categoryDetailDTO.categoryId)
-                        ) {
-                          for (const esg of item.esgNumberDTOList) {
-                            const match = allEsgDataList.find(
-                              (data) =>
-                                data.categoryId === esg.categoryId &&
-                                data.corpId === "000660" &&
-                                data.year === esg.year
-                            );
-                            if (match) {
-                              esgDataIdList.push(match.esgDataId);
-                            }
+                    for (const item of categorizedEsgDataList) {
+                      if (
+                        selected.includes(item.categoryDetailDTO.categoryId)
+                      ) {
+                        for (const esg of item.esgNumberDTOList) {
+                          const match = allEsgDataList.find(
+                            (data: {
+                              categoryId: string;
+                              corpId: string;
+                              year: string;
+                            }) =>
+                              data.categoryId === esg.categoryId &&
+                              data.corpId === "000660" &&
+                              data.year === esg.year
+                          );
+                          if (match) {
+                            esgDataIdList.push(match.esgDataId);
                           }
                         }
                       }
-
-                      // 차트 생성(chart)
-                      const chartRes = await fetch("/api/charts", {
-                        method: "POST",
-                        headers: {
-                          Authorization:
-                            "Bearer " + localStorage.getItem("token"),
-                          "Content-Type": "application/json",
-                        },
-                        credentials: "include",
-                        body: JSON.stringify({
-                          corporationId: "000660",
-                          chartName: "임시 테이블001",
-                          options: JSON.stringify({
-                            responsive: true,
-                            type: "table",
-                          }),
-                        }),
-                      });
-                      const chart = await chartRes.json();
-
-                      // 데이터셋 생성
-                      await fetch("/api/datasets", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({
-                          chartId: chart.chartId,
-                          type: "table",
-                          label: "임시 테이블001_1",
-                          esgDataIdList: esgDataIdList,
-                          backgroundColor: "#4CAF50",
-                          borderColor: "#388E3C",
-                          borderWidth: "2",
-                          fill: "true",
-                        }),
-                      });
-                      alert("테이블 저장 완료");
-                      if (closeButtonRef.current) {
-                        closeButtonRef.current.click();
-                      }
                     }
+
+                    // 차트 생성(chart)
+                    const chartRes = await fetch("/api/charts", {
+                      method: "POST",
+                      headers: {
+                        Authorization:
+                          "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                      },
+                      credentials: "include",
+                      body: JSON.stringify({
+                        corporationId: "000660",
+                        chartName: chartTitle.trim(), // <-- 여기 chartTitle!
+                        options: JSON.stringify({
+                          responsive: true,
+                          type: "table",
+                        }),
+                      }),
+                    });
+                    const chart = await chartRes.json();
+
+                    // 데이터셋 생성
+                    await fetch("/api/datasets", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      credentials: "include",
+                      body: JSON.stringify({
+                        chartId: chart.chartId,
+                        type: "table",
+                        label: chartTitle.trim(),
+                        esgDataIdList: esgDataIdList,
+                        backgroundColor: "#4CAF50",
+                        borderColor: "#388E3C",
+                        borderWidth: "2",
+                        fill: "true",
+                      }),
+                    });
+                    alert("테이블 저장 완료");
+                    if (closeButtonRef.current) {
+                      closeButtonRef.current.click();
+                    }
+                    // =============== 기존 생성 로직 끝 ===============
                   }}
                   _hover={{ bg: "#1D4FA3" }}
                 >

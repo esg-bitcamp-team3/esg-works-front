@@ -69,6 +69,50 @@ import SubTableContent from "./section/SubTableContent";
 import TableModal from "@/lib/components/modal/table-modal";
 import Selector from "./gri/Selector";
 
+function normalizeChartData(data) {
+  // type 파싱
+  let type = "bar";
+  if (data.options) {
+    try {
+      type = JSON.parse(data.options).type;
+    } catch {
+      // ignore
+    }
+  } else if (data.chartType) {
+    type = data.chartType;
+  }
+  // ------ 타입별로 변환 ------
+  switch (type) {
+    case "table":
+      // TableChart가 기대하는 구조로!
+      return data; // 이미 맞다면
+    case "bar":
+    case "line":
+    case "pie":
+    case "doughnut":
+      // Chart.js용 구조로 변환
+      return {
+        labels:
+          data.dataSets?.[0]?.esgDataList?.map((item) => item.year) ||
+          data.labels ||
+          [],
+        datasets:
+          data.dataSets?.map((dataset) => ({
+            label: dataset.label,
+            data: dataset.esgDataList.map((item) =>
+              typeof item.value === "string" ? Number(item.value) : item.value
+            ),
+            backgroundColor: dataset.backgroundColor,
+            borderColor: dataset.borderColor,
+            borderWidth: Number(dataset.borderWidth),
+            fill: dataset.fill === "true",
+          })) || [],
+      };
+    default:
+      return data; // 그냥 반환
+  }
+}
+
 const items = [
   {
     icon: <IoSearch />,
@@ -536,8 +580,8 @@ const Subbar = () => {
                                   marginBottom={5}
                                 >
                                   <DraggableChartIcon
-                                    chartType={"line"} // 동적으로 타입 전달
-                                    data={data}
+                                    chartType={JSON.parse(data.options).type}
+                                    data={normalizeChartData(data)}
                                   >
                                     <SingleChart chartData={data || []} />
                                   </DraggableChartIcon>
@@ -619,6 +663,12 @@ const Subbar = () => {
                                   minH={200}
                                   marginBottom={5}
                                 >
+                                  {/* <DraggableChartIcon
+                                    chartType={JSON.parse(data.options).type}
+                                    data={normalizeChartData(data)}
+                                  >
+                                    <SingleChart chartData={data || []} />
+                                  </DraggableChartIcon> */}
                                   <DraggableChartIcon
                                     chartType={"line"} // 동적으로 타입 전달
                                     data={data.chartDetail}
@@ -721,8 +771,8 @@ const Subbar = () => {
                                     marginBottom={5}
                                   >
                                     <DraggableChartIcon
-                                      chartType={"table"} // 동적으로 타입 전달
-                                      data={data}
+                                      chartType={JSON.parse(data.options).type}
+                                      data={normalizeChartData(data)}
                                     >
                                       <SingleChart chartData={data || []} />
                                     </DraggableChartIcon>
