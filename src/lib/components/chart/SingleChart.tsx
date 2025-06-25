@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChartDetail } from "@/lib/api/interfaces/chart";
 import {
   Chart as ChartJS,
@@ -14,12 +14,10 @@ import {
   Tooltip,
   Legend,
   ChartData,
-  Chart,
-  ChartTypeRegistry,
 } from "chart.js";
 
 import { Box } from "@chakra-ui/react";
-import TableChart from "./TableChart";
+import { Chart } from "react-chartjs-2";
 
 ChartJS.register(
   LineController,
@@ -40,18 +38,6 @@ interface Props {
 type ChartTypeUnion = "bar" | "line" | "pie" | "doughnut";
 
 export default function SingleChart({ chartData }: Props) {
-  // 1. 차트 타입 확인 (options에서 type 꺼내기)
-  let chartType = "bar"; // 기본값
-  try {
-    chartType = JSON.parse(chartData.options)?.type ?? "bar";
-  } catch {}
-
-  // 2. 테이블이면 TableChart 렌더 & 나머지는 기존대로
-  if (chartType === "table") {
-    return <TableChart chartData={chartData} />;
-  }
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const chartInstance = useRef<Chart<keyof ChartTypeRegistry> | null>(null);
   const [chartWithOptions, setChartWithOptions] = useState<
     ChartData<ChartTypeUnion, number[], string>
   >({

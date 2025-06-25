@@ -1,12 +1,10 @@
-import { getMyCriteria, getSectionsByCriterion } from "@/lib/api/get";
-import { Criterion, Section } from "@/lib/interface";
 import {
   createListCollection,
   Portal,
   Select,
   Spinner,
 } from "@chakra-ui/react";
-import { use, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 interface YearSelectorProps {
   value: string;
