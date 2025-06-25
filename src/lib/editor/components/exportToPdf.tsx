@@ -2,6 +2,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { Descendant, Text, Element as SlateElement } from "slate";
 import Chart from "chart.js/auto";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
 // Function to render actual charts in the export container
 const renderCharts = async (container: HTMLElement) => {
@@ -60,10 +61,26 @@ const renderCharts = async (container: HTMLElement) => {
           ctx.scale(pixelRatio, pixelRatio);
         }
 
+        // Parse chart options from the data
+        const chartOptionsStr = chartElement.getAttribute("data-chart-options");
+        let originalChartOptions = {};
+        try {
+          if (chartOptionsStr) {
+            originalChartOptions = JSON.parse(chartOptionsStr);
+          }
+        } catch (error) {
+          console.warn("Failed to parse chart options:", error);
+        }
+
+        // Extract datalabels options for reuse
+        const datalabelsOptions =
+          (originalChartOptions as any)?.plugins?.datalabels || {};
+
         // Create and render the chart with improved quality settings
         new Chart(canvas, {
           type: chartType as any,
           data: chartData,
+          plugins: [ChartDataLabels], // Register the datalabels plugin
           options: {
             responsive: false,
             maintainAspectRatio: false,
@@ -83,6 +100,106 @@ const renderCharts = async (container: HTMLElement) => {
               },
               tooltip: {
                 enabled: false, // Disable tooltips for PDF export
+              },
+              datalabels: {
+                display: true,
+                color: "#000000",
+                font: {
+                  size: 12 * pixelRatio, // PDF 화질에 맞게 폰트 크기 조정
+                  weight: "bold",
+                  family: "Arial, sans-serif",
+                },
+                align: "center",
+                anchor: "center",
+                offset: 0,
+                formatter: (value: number, context: any) => {
+                  // Extract format options from original chart options
+                  const format = datalabelsOptions.format || "number";
+                  const prefix = datalabelsOptions.prefix || "";
+                  const postfix = datalabelsOptions.postfix || "";
+                  const decimals = datalabelsOptions.decimals || 2;
+                  const digits = datalabelsOptions.digits || 0;
+
+                  let formattedValue: string | number = value;
+
+                  // 숫자 단위 적용
+                  let divider = 1;
+                  let unitSuffix = "";
+
+                  switch (digits) {
+                    case 1: // 천 단위
+                      divider = 1000;
+                      unitSuffix = "K";
+                      break;
+                    case 2: // 백만 단위
+                      divider = 1000000;
+                      unitSuffix = "M";
+                      break;
+                    case 3: // 십억 단위
+                      divider = 1000000000;
+                      unitSuffix = "B";
+                      break;
+                  }
+
+                  // 단위 변환 적용
+                  if (divider > 1) {
+                    formattedValue = value / divider;
+                  }
+
+                  // 포맷 적용
+                  switch (format) {
+                    case "percent":
+                      const total = context.dataset.data.reduce(
+                        (sum: number, val: number) => sum + val,
+                        0
+                      );
+                      formattedValue = ((value / total) * 100).toFixed(
+                        decimals
+                      );
+                      if (!postfix && unitSuffix === "") {
+                        unitSuffix = "%";
+                      }
+                      break;
+                    case "currency":
+                      formattedValue = new Intl.NumberFormat("ko-KR", {
+                        style: "currency",
+                        currency: "KRW",
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                      }).format(formattedValue as number);
+                      // 이미 통화 형식에 포함된 경우 단위 접미사는 추가하지 않음
+                      unitSuffix = "";
+                      break;
+                    case "number":
+                      formattedValue = new Intl.NumberFormat("ko-KR", {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                      }).format(formattedValue as number);
+                      break;
+                    default:
+                      formattedValue = (formattedValue as number).toFixed(
+                        decimals
+                      );
+                  }
+
+                  return `${prefix}${formattedValue}${unitSuffix}${postfix}`;
+                },
+                // Override with original datalabels options if they exist
+                ...(datalabelsOptions.display !== undefined && {
+                  display: datalabelsOptions.display,
+                }),
+                ...(datalabelsOptions.align && {
+                  align: datalabelsOptions.align,
+                }),
+                ...(datalabelsOptions.anchor && {
+                  anchor: datalabelsOptions.anchor,
+                }),
+                ...(datalabelsOptions.offset !== undefined && {
+                  offset: datalabelsOptions.offset,
+                }),
+                ...(datalabelsOptions.color && {
+                  color: datalabelsOptions.color,
+                }),
               },
             },
             elements: {
@@ -375,12 +492,14 @@ const slateToHtml = (nodes: Descendant[]): string => {
         const chartWidth = node.width || 300;
         const chartHeight = node.height || 300;
         const chartData = JSON.stringify(node.data || {});
+        const chartOptions = JSON.stringify(node.options || {});
         const chartType = node.chartType || "bar";
 
         return `<div class="chart-visualization" 
               style="width: ${chartWidth}px; height: ${chartHeight}px; background-color: #f9f9f9; border-radius: 4px; min-width: 300px; overflow: hidden;"
               data-chart-type="${chartType}"
               data-chart-data='${chartData}'
+              data-chart-options='${chartOptions}'
               data-width="${chartWidth}"
               data-height="${chartHeight}">
             <div style="text-align: center; color: #666; padding: 20px;">

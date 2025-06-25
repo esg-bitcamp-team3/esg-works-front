@@ -14,10 +14,12 @@ import {
   Tooltip,
   Legend,
   ChartData,
+  ArcElement, // Add ArcElement for pie/doughnut charts
 } from "chart.js";
-
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import { Box } from "@chakra-ui/react";
 import { Chart } from "react-chartjs-2";
+import { ESGData } from "@/lib/api/interfaces/esgData";
 
 ChartJS.register(
   LineController,
@@ -28,99 +30,226 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement,
+  ChartDataLabels
 );
 
 interface Props {
   chartData: ChartDetail;
 }
 
-type ChartTypeUnion = "bar" | "line" | "pie" | "doughnut";
+type ChartTypeUnion = "bar" | "line" | "pie" | "doughnut" | "mixed";
 
 export default function SingleChart({ chartData }: Props) {
-  const [chartWithOptions, setChartWithOptions] = useState<
-    ChartData<ChartTypeUnion, number[], string>
-  >({
-    labels: [],
-    datasets: [],
-  });
+  const [data, setData] = useState<ChartData>();
+  const [chartType, setChartType] = useState<ChartTypeUnion>();
 
-  const options = JSON.parse(chartData.options);
+  // Parse options safely with a fallback
+  const parsedOptions = chartData.options ? JSON.parse(chartData.options) : {};
+
+  // Create options with formatter
+  const options = {
+    ...parsedOptions,
+    plugins: {
+      ...parsedOptions.plugins,
+      datalabels: {
+        ...parsedOptions.plugins?.datalabels,
+        formatter: (value: number, context: any) => {
+          const datalabelsOptions = parsedOptions.plugins?.datalabels || {};
+
+          // Extract format options from the parsed options
+          const format = datalabelsOptions.format || "number";
+          const prefix = datalabelsOptions.prefix || "";
+          const postfix = datalabelsOptions.postfix || "";
+          const decimals = datalabelsOptions.decimals || 2;
+          const digits = datalabelsOptions.digits || 0;
+
+          let formattedValue: string | number = value;
+
+          // 숫자 단위 적용
+          let divider = 1;
+          let unitSuffix = "";
+
+          switch (digits) {
+            case 1: // 천 단위
+              divider = 1000;
+              unitSuffix = "K";
+              break;
+            case 2: // 백만 단위
+              divider = 1000000;
+              unitSuffix = "M";
+              break;
+            case 3: // 십억 단위
+              divider = 1000000000;
+              unitSuffix = "B";
+              break;
+          }
+
+          // 단위 변환 적용
+          if (divider > 1) {
+            formattedValue = value / divider;
+          }
+
+          // 포맷 적용
+          switch (format) {
+            case "percent":
+              const total = context.dataset.data.reduce(
+                (sum: number, val: number) => sum + val,
+                0
+              );
+              formattedValue = ((value / total) * 100).toFixed(decimals);
+              if (!postfix && unitSuffix === "") {
+                unitSuffix = "%";
+              }
+              break;
+            case "currency":
+              formattedValue = new Intl.NumberFormat("ko-KR", {
+                style: "currency",
+                currency: "KRW",
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+              }).format(formattedValue as number);
+              // 이미 통화 형식에 포함된 경우 단위 접미사는 추가하지 않음
+              unitSuffix = "";
+              break;
+            case "number":
+              formattedValue = new Intl.NumberFormat("ko-KR", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+              }).format(formattedValue as number);
+              break;
+            default:
+              formattedValue = (formattedValue as number).toFixed(decimals);
+          }
+
+          return `${prefix}${formattedValue}${unitSuffix}${postfix}`;
+        },
+      },
+    },
+  };
 
   useEffect(() => {
-    const years = Array.from(
-      new Set(
-        chartData.dataSets.flatMap((dataSet) =>
-          dataSet.esgDataList.map((data) => data.year)
-        )
-      )
-    ).sort();
+    setChartType(chartData.type as ChartTypeUnion);
 
-    let newChartData: ChartData<ChartTypeUnion, number[], string> | undefined;
+    const newChartData = {
+      labels: chartData.labels,
+      datasets: chartData.dataSets.map((dataset) => {
+        // Get properties from chartProperties object if it exists
+        const properties = dataset.chartProperties || {};
 
-    const chartType = chartData.dataSets[0]?.type;
+        // Create base dataset with required properties
+        const chartDataset: any = {
+          label: properties.label || dataset.label,
+          data: dataset.esgDataList.map((item: ESGData) =>
+            parseFloat(item.value)
+          ),
+        };
 
-    if (chartType === "bar" || chartType === "line") {
-      newChartData = {
-        labels: years.map((year) => year.toString()),
-        datasets: chartData.dataSets.map((dataSet) => ({
-          type: dataSet.type as "bar" | "line",
-          label: dataSet.label,
-          data: years.map((year) => {
-            const yearData = dataSet.esgDataList.find(
-              (data) => data.year === year
-            );
-            return yearData ? parseFloat(yearData.value) || 0 : 0;
-          }),
-          borderColor: dataSet.borderColor,
-          backgroundColor: dataSet.backgroundColor,
-          borderWidth: Number(dataSet.borderWidth),
-          fill: dataSet.fill === "true" || dataSet.fill === "1",
-        })),
-      };
-    } else if (chartType === "pie" || chartType === "doughnut") {
-      const dataSet = chartData.dataSets[0];
-      newChartData = {
-        labels: dataSet.esgDataList.map((data) => data.year),
-        datasets: [
-          {
-            type: dataSet.type as "pie" | "doughnut",
-            label: dataSet.label,
-            data: dataSet.esgDataList.map(
-              (data) => parseFloat(data.value) || 0
-            ),
-            backgroundColor: Array.isArray(dataSet.backgroundColor)
-              ? dataSet.backgroundColor
-              : [dataSet.backgroundColor],
-            borderColor: Array.isArray(dataSet.borderColor)
-              ? dataSet.borderColor
-              : [dataSet.borderColor],
-            borderWidth: Number(dataSet.borderWidth),
-            hoverOffset: 10,
-          },
-        ],
-      };
-    }
+        // Only add backgroundColor if it exists
+        if (properties.backgroundColor) {
+          chartDataset.backgroundColor = Array.isArray(
+            properties.backgroundColor
+          )
+            ? properties.backgroundColor
+            : [properties.backgroundColor];
+        }
 
-    if (newChartData) {
-      setChartWithOptions(newChartData);
-    }
+        // Only add borderColor if it exists
+        if (properties.borderColor) {
+          chartDataset.borderColor = Array.isArray(properties.borderColor)
+            ? properties.borderColor
+            : [properties.borderColor];
+        }
+
+        // Add other properties only if they exist and have values
+        if (properties.borderWidth) {
+          chartDataset.borderWidth = parseFloat(properties.borderWidth);
+        }
+
+        if (properties.fill === "true") {
+          chartDataset.fill = true;
+        } else if (properties.fill === "false") {
+          chartDataset.fill = false;
+        }
+
+        // Add line chart specific properties only if they exist
+        if (properties.tension) {
+          chartDataset.tension = parseFloat(properties.tension);
+        }
+
+        if (properties.pointBackgroundColor) {
+          chartDataset.pointBackgroundColor = properties.pointBackgroundColor;
+        }
+
+        if (properties.pointBorderColor) {
+          chartDataset.pointBorderColor = properties.pointBorderColor;
+        }
+
+        if (properties.pointHoverBackgroundColor) {
+          chartDataset.pointHoverBackgroundColor =
+            properties.pointHoverBackgroundColor;
+        }
+
+        if (properties.pointHoverBorderColor) {
+          chartDataset.pointHoverBorderColor = properties.pointHoverBorderColor;
+        }
+
+        if (properties.pointRadius) {
+          chartDataset.pointRadius = parseFloat(properties.pointRadius);
+        }
+
+        if (properties.pointHoverRadius) {
+          chartDataset.pointHoverRadius = parseFloat(
+            properties.pointHoverRadius
+          );
+        }
+
+        if (properties.pointStyle) {
+          chartDataset.pointStyle = properties.pointStyle;
+        }
+
+        // Pie/Doughnut specific fields
+        if (properties.hoverOffset) {
+          chartDataset.hoverOffset = parseFloat(properties.hoverOffset);
+        }
+
+        if (properties.offset) {
+          chartDataset.offset = parseFloat(properties.offset);
+        }
+
+        if (properties.circumference) {
+          chartDataset.circumference = parseFloat(properties.circumference);
+        }
+
+        if (properties.rotation) {
+          chartDataset.rotation = parseFloat(properties.rotation);
+        }
+
+        if (properties.cutout) {
+          chartDataset.cutout = properties.cutout;
+        }
+
+        if (properties.weight) {
+          chartDataset.weight = parseFloat(properties.weight);
+        }
+
+        return chartDataset;
+      }),
+    };
+
+    setData(newChartData);
   }, [chartData]);
 
   return (
-    <Box>
-      <Chart
-        type={
-          !chartData.dataSets ||
-          chartData.dataSets.length === 0 ||
-          !chartData.dataSets[0].type ||
-          chartData.dataSets[0].type.trim() === ""
-            ? ("line" as ChartTypeUnion)
-            : (chartData.dataSets[0].type as ChartTypeUnion)
-        }
-        data={chartWithOptions}
-        options={options}
-      />
+    <Box height="200px" width="100%">
+      {data && chartType && (
+        <Chart
+          type={chartType === "mixed" ? "bar" : chartType}
+          data={data}
+          options={options}
+        />
+      )}
     </Box>
   );
 }

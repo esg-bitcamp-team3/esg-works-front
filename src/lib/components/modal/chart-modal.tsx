@@ -63,6 +63,11 @@ export default function ChartModal() {
     datasets: [],
   });
   const [options, setOptions] = useState<ChartOptions>({});
+  const [formatOptions, setFormatOptions] = useState<Record<string, Object>>(
+    {}
+  );
+  const [selectedChartType, setSelectedChartType] =
+    useState<ChartType["type"]>("bar");
 
   const createChartWithDataSets = async (
     options: ChartOptions,
@@ -72,10 +77,16 @@ export default function ChartModal() {
     try {
       // 1. 차트 생성
       const chartName = String(options.plugins?.title?.text ?? "제목 없음");
-      const optionsString = JSON.stringify(options);
+
       const newChart: InputChart = {
+        type: selectedChartType,
         chartName,
-        options: optionsString,
+        options: JSON.stringify(options),
+        formatOptions: JSON.stringify(formatOptions),
+        labels:
+          chartData.labels?.map((label) =>
+            label !== null && label !== undefined ? label.toString() : ""
+          ) || [],
       };
 
       const result = await postChart(newChart);
@@ -86,34 +97,66 @@ export default function ChartModal() {
         return;
       }
 
-      console.log("생성된 chartId:", chartId);
+      if (categorizedEsgDataList.length === 1) {
+        const category = categorizedEsgDataList[0];
+        const sortedEsgDataList = [...category.esgNumberDTOList].sort(
+          (a, b) => {
+            // 연도 기준 오름차순 정렬 (year이 string이라면 숫자로 변환 후 비교)
+            return Number(a.year) - Number(b.year);
+          }
+        );
 
-      // 2. 데이터셋 생성
-      for (const item of chartData.datasets) {
-        const sortedEsgDataList = [
-          ...categorizedEsgDataList[0].esgNumberDTOList,
-        ].sort((a, b) => {
-          // 연도 기준 오름차순 정렬 (year이 string이라면 숫자로 변환 후 비교)
-          return Number(a.year) - Number(b.year);
-        });
+        for (const item of chartData.datasets) {
+          const newDataSet: Record<string, any> = {
+            ...item,
+            chartId,
+            esgDataIdList: sortedEsgDataList.map((esg) => esg.esgDataId),
+          };
 
-        const newDataSet: InputDataSet = {
-          chartId,
-          type: item.type ?? "bar",
-          label: item.label ?? "",
-          esgDataIdList: sortedEsgDataList.map((esg) => esg.esgDataId),
-          backgroundColor:
-            typeof item.backgroundColor === "string"
-              ? item.backgroundColor
-              : "#36A2EB", // 기본값 설정
-          borderColor:
-            typeof item.borderColor === "string" ? item.borderColor : "#000000",
-          borderWidth:
-            item.borderWidth != null ? String(item.borderWidth) : "1",
-          fill: typeof item.stack === "boolean" ? item.stack : false,
-        };
+          await postDataSet(newDataSet);
+        }
+      } else if (categorizedEsgDataList.length > 1) {
+        const years = categorizedEsgDataList.flatMap((category) =>
+          category.esgNumberDTOList.map((data) => data.year)
+        );
+        const mostRecentYear = Math.max(
+          ...years.map((year) => Number(year))
+        ).toString();
+        // Handle multiple categories - useful for pie/doughnut charts that compare categories
 
-        await postDataSet(newDataSet);
+        // For pie/doughnut charts with multiple categories, create a dataset where each slice represents a category
+        if (selectedChartType === "pie" || selectedChartType === "doughnut") {
+          // Create one dataset with multiple categories as data points
+          const newDataSet: Record<string, any> = {
+            ...chartData.datasets[0],
+            chartId,
+            // Get the latest year's data from each category
+            esgDataIdList: categorizedEsgDataList.map((category) => {
+              const yearData = category.esgNumberDTOList.find(
+                (data) => data.year === mostRecentYear
+              );
+              return yearData ? yearData.esgDataId : 0;
+            }),
+          };
+
+          await postDataSet(newDataSet);
+        } else {
+          const sortedEsgDataList = [
+            ...categorizedEsgDataList[0].esgNumberDTOList,
+          ].sort((a, b) => {
+            // 연도 기준 오름차순 정렬 (year이 string이라면 숫자로 변환 후 비교)
+            return Number(a.year) - Number(b.year);
+          });
+          for (const item of chartData.datasets) {
+            const newDataSet: Record<string, any> = {
+              chartId,
+              ...item,
+              esgDataIdList: sortedEsgDataList.map((esg) => esg.esgDataId),
+            };
+
+            await postDataSet(newDataSet);
+          }
+        }
       }
 
       console.log("Chart와 모든 DataSet 생성 완료");
@@ -372,7 +415,8 @@ export default function ChartModal() {
                           </Text>
                           <Button
                             size="xs"
-                            variant="plain"
+                            variant="ghost"
+                            _hover={{ bg: "white" }}
                             onClick={() => {
                               setSelected((prev) =>
                                 prev.filter((i) => i !== item)
@@ -415,11 +459,15 @@ export default function ChartModal() {
                         }
                       >
                         <ChartContent
+                          selectedChartType={selectedChartType}
+                          setSelectedChartType={setSelectedChartType}
                           categorizedEsgDataList={categorizedEsgDataList}
                           chartData={chartData}
                           setChartData={setChartData}
                           options={options}
                           setOptions={setOptions}
+                          formatOptions={formatOptions}
+                          setFormatOptions={setFormatOptions}
                         />
                       </ContentBox>
                     </TabContent>

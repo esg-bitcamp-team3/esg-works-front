@@ -79,6 +79,7 @@ const Subbar = () => {
     setLoading(true);
     try {
       const response = await getChart();
+      console.log("Chart data:", response);
       setChartList(response || []);
       const interestResponse = await getInterestChart();
       setInterestChartList(interestResponse || []);
@@ -400,7 +401,7 @@ const Subbar = () => {
                                 >
                                   <HStack>
                                     <DraggableChartIcon
-                                      chartType={"line"} // 동적으로 타입 전달
+                                      chartType={data.type} // 동적으로 타입 전달
                                       data={data}
                                     >
                                       <SingleChart chartData={data || []} />
