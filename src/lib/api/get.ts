@@ -285,6 +285,16 @@ export const getInterestReports = async () => {
   }
 };
 
+export const getInterestReport = async (id: string) => {
+  try {
+    const res = await apiClient.get<boolean>(`/interest-reports/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("리포트 리스트 가져오기 실패");
+    return null;
+  }
+};
+
 export const getMyCriteria = async () => {
   try {
     const res = await apiClient.get<Criterion[]>(`/criteria/my`);
