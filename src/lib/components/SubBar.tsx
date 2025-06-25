@@ -9,9 +9,12 @@ import {
   Input,
   InputGroup,
   Skeleton,
+  Dialog,
   Text,
+  Table,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
+import { FaPlus } from "react-icons/fa";
 import { Resizable } from "re-resizable";
 import DraggableChartIcon from "./DraggableChartIcon";
 import { getChart, getInterestChart, getSearchSectionId } from "../api/get";
@@ -33,6 +36,7 @@ import { IoSearch } from "react-icons/io5";
 import { FaSearch } from "react-icons/fa";
 import { Section } from "../interface";
 import DataTab from "./section/DataTab";
+import TableModal from "@/lib/components/modal/table-modal";
 import ChartModal from "./modal/chart-modal";
 
 const items = [
