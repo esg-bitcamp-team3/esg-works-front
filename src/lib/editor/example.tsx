@@ -75,6 +75,10 @@ import { LuStar } from "react-icons/lu";
 import isUrl from "is-url";
 import { data } from "react-router-dom";
 import { ESGData } from "../api/interfaces/esgData";
+import { getInterestReport } from "../api/get";
+import { PiStar, PiStarFill } from "react-icons/pi";
+import { deleteInterestReports } from "../api/delete";
+import { postInterestReports } from "../api/post";
 
 export interface Report {
   id: string;
@@ -125,7 +129,28 @@ const isKeyHotkey = (hotkey: string, event: KeyboardEvent): boolean => {
   return modifiersPressed && keyPressed;
 };
 
-const RichTextExample = ({ documentId }: { documentId?: string }) => {
+const RichTextExample = ({ documentId }: { documentId: string }) => {
+  const [check, setCheck] = useState<boolean>(false);
+
+  const checkInterest = useCallback(async () => {
+    const data = await getInterestReport(documentId);
+    setCheck(Boolean(data));
+  }, [documentId]);
+
+  const clickInterest = useCallback(async () => {
+    if (check) {
+      await deleteInterestReports(documentId);
+      setCheck(false);
+    } else {
+      await postInterestReports(documentId);
+      setCheck(true);
+    }
+  }, [check, documentId]);
+
+  useEffect(() => {
+    checkInterest();
+  }, [checkInterest]);
+
   const renderElement = useCallback(
     (props: RenderElementProps) => <Element {...props} />,
     []
@@ -489,7 +514,7 @@ const RichTextExample = ({ documentId }: { documentId?: string }) => {
               ) : (
                 <EditableTitle title={title} onChange={setTitle} />
               )}
-              <Icon
+              {/* <Icon
                 style={{
                   cursor: "pointer",
                   marginLeft: "8px",
@@ -503,7 +528,14 @@ const RichTextExample = ({ documentId }: { documentId?: string }) => {
                 }}
               >
                 star_outline
-              </Icon>
+              </Icon> */}
+              <Button backgroundColor={"transparent"} onClick={clickInterest}>
+                {check ? (
+                  <PiStarFill color="#FFB22C" />
+                ) : (
+                  <PiStar color="gray" />
+                )}
+              </Button>
             </HStack>
 
             <FileBar
