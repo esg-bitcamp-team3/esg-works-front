@@ -1,7 +1,7 @@
 import { ESGData } from "./esgData";
 
 export interface ChartType {
-  type: "bar" | "line" | "pie" | "doughnut" | "mixed";
+  type: "bar" | "line" | "pie" | "doughnut" | "mixed" | "table";
   label: string;
   icons: React.ComponentType<any>;
 }
@@ -74,6 +74,10 @@ export interface DataSet {
   fill: string;
 }
 
+export interface DataSetMap {
+  [key: string]: any;
+}
+
 export interface IChart {
   chart: Chart;
   dataSet: DataSet;
@@ -81,10 +85,13 @@ export interface IChart {
 
 export interface ChartDetail {
   chartId: string;
+  type: string;
   corporationId: string;
   chartName: string;
-  dataSets: DataSet[];
+  dataSets: DataSetMap[];
   options: string;
+  formatOptions: string; // JSON string (formatter 함수들과 관련 옵션들)
+  labels: string[];
   updatedAt: Date;
   updatedBy: string;
   createdAt: Date;
@@ -103,8 +110,11 @@ export interface InteresrtChartDetail {
 }
 
 export interface InputChart {
+  type: string; // "bar" | "line" | "pie" | "doughnut" | "mixed"
   chartName: string;
-  options: string; // 또는 options: any;
+  options: string; // JSON string (순수한 옵션, 함수 제외)
+  formatOptions: string; // JSON string (formatter 함수들과 관련 옵션들)
+  labels: string[];
 }
 
 export interface InputDataSet {
@@ -115,5 +125,20 @@ export interface InputDataSet {
   backgroundColor: string;
   borderColor: string;
   borderWidth: string;
-  fill: boolean;
+  fill: string; // Changed from boolean to string
+  borderRadius?: string;
+  barThickness?: string;
+  barPercentage?: string;
+  hoverOffset?: string;
+  tension?: string;
+  pointStyle?: string;
+  pointRadius?: string;
+  pointHoverRadius?: string;
+  pointBackgroundColor?: string;
+  pointBorderColor?: string;
+  borderDash?: string; // JSON string of array
+  rotation?: string;
+  radius?: string;
+  cutout?: string;
+  offset?: string; // JSON string of array
 }

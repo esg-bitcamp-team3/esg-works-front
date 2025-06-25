@@ -97,6 +97,8 @@ interface ChartSettingsDrawerProps {
   options: ChartOptions<"bar">;
   setOptions: (chartOptions: ChartOptions<"bar">) => void;
   onChartTypeChange?: () => void;
+  formatOptions: Record<string, Object>;
+  setFormatOptions: (options: Record<string, Object>) => void;
 }
 // 바 차트의 색상/옵션 (주요 상태 관리)
 const BarChartColor = ({
@@ -104,6 +106,8 @@ const BarChartColor = ({
   setChartData,
   options,
   setOptions,
+  formatOptions,
+  setFormatOptions,
 }: ChartSettingsDrawerProps) => {
   // Option 상태 관리 (타이틀, 범례 등)
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
@@ -465,16 +469,22 @@ const BarChartColor = ({
       let formattedValue: string | number = value;
 
       // 현재 상태와 업데이트를 합쳐서 사용
-      const format =
-        updates.format !== undefined ? updates.format : dataLabelFormat;
-      const prefix =
-        updates.prefix !== undefined ? updates.prefix : dataLabelPrefix;
-      const postfix =
-        updates.postfix !== undefined ? updates.postfix : dataLabelPostfix;
-      const decimals =
-        updates.decimals !== undefined ? updates.decimals : dataLabelDecimals;
-      const digits =
-        updates.digits !== undefined ? updates.digits : dataLabelDigits;
+      const format = updates.format ?? dataLabelFormat;
+      const prefix = updates.prefix ?? dataLabelPrefix;
+      const postfix = updates.postfix ?? dataLabelPostfix;
+      const decimals = updates.decimals ?? dataLabelDecimals;
+      const digits = updates.digits ?? dataLabelDigits;
+
+      const newFormatOptions: Record<string, string | number | FormatType> = {
+        format,
+        prefix,
+        postfix,
+        decimals,
+        digits,
+      };
+
+      // Update the format options state
+      setFormatOptions({ ...formatOptions, ...newFormatOptions });
 
       // 숫자 단위 적용
       let divider = 1;

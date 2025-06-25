@@ -48,7 +48,7 @@ export const postInterestChart = async (chartId: string) => {
   }
 };
 
-export const postDataSet = async (data: InputDataSet) => {
+export const postDataSet = async (data: Record<string, any>) => {
   try {
     const res = await apiClient.post(`/datasets`, data);
     console.log("dataSet 등록 성공:", res.data);

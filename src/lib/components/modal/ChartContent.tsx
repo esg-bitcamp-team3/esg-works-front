@@ -43,6 +43,7 @@ import {
   ChartData,
   layouts,
 } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import BarChartColor from "./barChartColor";
 import LineChartColor from "./LineChartColor";
 import PieChartColor from "./PieChartColor";
@@ -57,27 +58,32 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
-  // ChartDataLabels
+  Legend,
+  ChartDataLabels // Register the ChartDataLabels plugin
 );
-
 export interface ChartContentProps {
+  selectedChartType: ChartType["type"];
+  setSelectedChartType: (type: ChartType["type"]) => void;
   categorizedEsgDataList: CategorizedESGDataList[];
   chartData: ChartData;
   setChartData: (data: ChartData) => void;
   options: ChartOptions;
   setOptions: (data: ChartOptions) => void;
+  formatOptions: Record<string, Object>;
+  setFormatOptions: (options: Record<string, Object>) => void;
 }
 
 const ChartContent = ({
+  selectedChartType,
+  setSelectedChartType,
   categorizedEsgDataList,
   chartData,
   setChartData,
   options,
   setOptions,
+  formatOptions,
+  setFormatOptions,
 }: ChartContentProps) => {
-  const [selectedChartType, setSelectedChartType] =
-    useState<ChartType["type"]>("bar");
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -426,7 +432,11 @@ const ChartContent = ({
             >
               <Chart
                 key={refreshKey} // Use refreshKey to force re-render
-                type={selectedChartType === "mixed" ? "bar" : selectedChartType}
+                type={
+                  selectedChartType === "mixed" || selectedChartType === "table"
+                    ? "bar"
+                    : selectedChartType
+                }
                 data={chartData}
                 options={options}
               />
@@ -472,6 +482,8 @@ const ChartContent = ({
                   setOptions={
                     setOptions as (chartOptions: ChartOptions<"bar">) => void
                   }
+                  formatOptions={formatOptions}
+                  setFormatOptions={setFormatOptions}
                 />
               )}
               {selectedChartType === "line" && (
@@ -489,6 +501,8 @@ const ChartContent = ({
                   setOptions={
                     setOptions as (chartOptions: ChartOptions<"line">) => void
                   }
+                  formatOptions={formatOptions}
+                  setFormatOptions={setFormatOptions}
                 />
               )}
               {selectedChartType === "pie" && (
@@ -510,6 +524,8 @@ const ChartContent = ({
                       chartOptions: ChartOptions<"pie" | "doughnut">
                     ) => void
                   }
+                  formatOptions={formatOptions}
+                  setFormatOptions={setFormatOptions}
                 />
               )}
               {selectedChartType === "doughnut" && (
@@ -531,6 +547,8 @@ const ChartContent = ({
                       chartOptions: ChartOptions<"pie" | "doughnut">
                     ) => void
                   }
+                  formatOptions={formatOptions}
+                  setFormatOptions={setFormatOptions}
                 />
               )}
               {selectedChartType === "mixed" && (
@@ -553,6 +571,8 @@ const ChartContent = ({
                     ) => void
                   }
                   onChartTypeChange={onChartTypeChange}
+                  formatOptions={formatOptions}
+                  setFormatOptions={setFormatOptions}
                 />
               )}
             </>

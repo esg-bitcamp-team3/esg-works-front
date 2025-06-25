@@ -1,22 +1,8 @@
 import React from "react";
-import { createContext } from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Provider } from "@/components/ui/provider";
-import ReportModal from "@/lib/components/modal/document-modal";
-import { Box } from "@chakra-ui/react/";
 import { Toaster } from "@/components/ui/toaster";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "ESG Works",
@@ -37,11 +23,12 @@ export default function RootLayout({
         style={{
           width: "100%",
           height: "100%",
-          // display: "flex",
+          display: "flex",
           backgroundColor: "white",
           flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
+          // justifyContent: "center",
+          // alignItems: "center",
+          padding: 0,
           margin: 0,
         }}
       >
