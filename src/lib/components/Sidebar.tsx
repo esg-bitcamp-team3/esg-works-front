@@ -84,7 +84,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
             h="80px"
             w="80px"
             cursor="pointer"
-            onClick={() => router.push("./home")}
+            onClick={() => router.push("/home")}
           >
             <Image
               as="img"

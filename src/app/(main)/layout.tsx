@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import ReportModal from "@/lib/components/modal/document-modal";
 import Sidebar from "@/lib/components/Sidebar";
@@ -13,14 +13,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       bg={"#fafafa"}
       h={"100vh"}
       w={"100vw"}
-      justifyContent="center"
-      alignItems="center"
+      // justifyContent="center"
+      // alignItems="center"
+      overflowY={"auto"}
+      overflowX={"hidden"}
     >
       <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
       <main
         style={{
           transition: "margin-left 0.3s ease-in-out",
-          marginLeft: isExpanded ? "200px" : "60px",
+          // marginLeft: isExpanded ? "200px" : "60px",
           width: "100%",
           height: "100%",
         }}

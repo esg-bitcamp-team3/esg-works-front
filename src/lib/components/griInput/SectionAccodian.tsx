@@ -27,7 +27,7 @@ const SectionAccordian = ({ section, year, search }: Props) => {
     try {
       setSectionLoading(true);
       const data = await getSearchSectionId(section);
-      setSections(data);
+      setSections(data || []);
     } catch (error) {
       console.error("section fetch error", error);
     } finally {
