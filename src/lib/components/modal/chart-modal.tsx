@@ -54,6 +54,7 @@ export default function ChartModal() {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null
   );
+  const [allCategories, setAllCategories] = useState<CategoryDetail[]>([]);
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
   >([]);
@@ -136,6 +137,24 @@ export default function ChartModal() {
     fetchSections();
   }, []);
 
+  // 최초 렌더링 시 전체 카테고리 가져오기Add commentMore actions
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      const all = await getCategories();
+      setAllCategories(all);
+    };
+    fetchAllCategories();
+  }, []);
+
+  // 섹션 목록 가져오기
+  useEffect(() => {
+    const fetchSections = async () => {
+      const secs = await getSections();
+      setSections(secs);
+    };
+    fetchSections();
+  }, []);
+
   // Fetch categories when selectedSectionId changes
   useEffect(() => {
     if (!selectedSectionId) return;
@@ -172,6 +191,11 @@ export default function ChartModal() {
         setDataLoading(false);
       });
   };
+
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  // 표시할 카테고리 배열 분기Add commentMore actions
+  const displayedCategories = !selectedSectionId ? allCategories : categories;
 
   useEffect(() => {
     if (selected.length > 0) {
@@ -237,7 +261,7 @@ export default function ChartModal() {
                     alignItems={{ base: "stretch", md: "center" }}
                     justifyContent="flex-start"
                     width="100%"
-                    gap={3}
+                    gap={6}
                   >
                     {/* GRI Standards Select ============================================== */}
                     <Select.Root
@@ -253,6 +277,7 @@ export default function ChartModal() {
                             paddingLeft="2"
                             paddingRight="2"
                             placeholder="GRI Standards"
+                            fontSize={{ base: "sm", md: "md", lg: "md" }}
                           />
                         </Select.Trigger>
                         <Select.IndicatorGroup paddingRight="2">
@@ -271,7 +296,7 @@ export default function ChartModal() {
                                   "📌 선택된 섹션 ID:",
                                   gristandard.value
                                 );
-                                setSelectedSectionId(gristandard.value);
+                                setSelectedSectionId(gristandard.value || null);
                               }}
                               paddingLeft="2"
                               paddingRight="2"
@@ -288,9 +313,10 @@ export default function ChartModal() {
                       </Select.Positioner>
                     </Select.Root>
 
+                    {/* 검색 */}
                     <InputGroup
                       startElement={
-                        <Box pl="3" display="flex" alignItems="center">
+                        <Box paddingLeft="3" display="flex" alignItems="center">
                           <FaSearch />
                         </Box>
                       }
@@ -298,7 +324,13 @@ export default function ChartModal() {
                       width={{ base: "100%", md: "60%" }}
                       flex={{ base: "1", md: "2", lg: "3" }}
                     >
-                      <Input placeholder="검색" />
+                      <Input
+                        placeholder="검색"
+                        fontSize="md"
+                        w="100%"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
                     </InputGroup>
                   </Flex>
 
@@ -311,13 +343,20 @@ export default function ChartModal() {
                     borderRadius="md"
                     borderWidth="1px"
                     width="100%"
-                    minHeight={{ base: "45vh", md: "35vh", lg: "40vh" }}
+                    minHeight={{ base: "45vh", md: "35vh", lg: "45vh" }}
                     maxHeight={{ base: "50vh", md: "40vh", lg: "45vh" }}
                     padding="4"
                     overflowY="auto"
                   >
-                    {categories
+                    {displayedCategories
                       .filter((category) => category.categoryName !== "비고")
+                      .filter(
+                        (category) =>
+                          !!category.categoryName &&
+                          category.categoryName
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase())
+                      )
                       .map((category) => (
                         <Box key={category.categoryId}>
                           <Checkbox.Root
@@ -352,13 +391,16 @@ export default function ChartModal() {
                         </Box>
                       ))}
                   </Box>
+
                   {/* 태그 영역 */}
                   <Flex
+                    direction="row"
                     width="full"
-                    minHeight={{ base: "50px", md: "25px", lg: "100px" }}
-                    maxHeight={{ base: "55px", md: "50px", lg: "100px" }}
-                    gapX="2"
-                    paddingX="2"
+                    padding="2"
+                    gapY="2"
+                    minHeight={{ base: "50px", md: "25px", lg: "70px" }}
+                    maxHeight={{ base: "55px", md: "50px", lg: "70px" }}
+                    justifyContent="start"
                     wrap="wrap"
                     overflowY="auto"
                     borderWidth="1px"
@@ -366,7 +408,11 @@ export default function ChartModal() {
                   >
                     {selected &&
                       selected.map((item, index) => (
-                        <Flex key={index} alignItems="center">
+                        <Flex
+                          key={index}
+                          alignItems="center"
+                          height="fit-content"
+                        >
                           <Text fontSize="sm" minWidth="fit-content">
                             {item}
                           </Text>
