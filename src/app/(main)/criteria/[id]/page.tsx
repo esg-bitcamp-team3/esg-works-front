@@ -2,7 +2,8 @@
 
 import { getCriteria } from "@/lib/api/get";
 import GriPage from "@/lib/components/griInput/GriPage";
-import SectionForm from "@/lib/components/griInput/inputForm/SectionForm";
+import SectionForm from "@/lib/components/griInput/SectionForm";
+
 import { Criterion } from "@/lib/interface";
 import { Flex, Text, VStack } from "@chakra-ui/react";
 import { useParams } from "next/navigation";
@@ -53,10 +54,7 @@ const Page = () => {
         <Text fontSize="2xl" fontWeight="bold" mb={4}>
           {criteria?.criterionName} 데이터 입력
         </Text>
-        <SectionForm
-          criterionId={criterionId}
-          criterionName={criteria?.criterionName || ""}
-        />
+        <SectionForm criterionId={criterionId} />
       </VStack>
     </Flex>
   );

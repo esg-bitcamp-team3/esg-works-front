@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import TextEditor from "@/lib/editor/TextEditor";
 import { DndProvider } from "react-dnd";
@@ -9,7 +8,7 @@ const Page = () => {
   return (
     <div>
       <DndProvider backend={HTML5Backend}>
-        <TextEditor id="" />
+        <TextEditor />
         <Subbar />
       </DndProvider>
     </div>
