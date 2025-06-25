@@ -89,6 +89,7 @@ export const getCategories = async (sectionId?: string) => {
     return [];
   }
 };
+
 export const getCriterion = async (criterionId?: string) => {
   try {
     if (criterionId) {
