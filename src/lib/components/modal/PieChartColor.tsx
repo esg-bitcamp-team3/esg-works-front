@@ -85,6 +85,8 @@ interface ChartSettingsDrawerProps {
   setChartData: (data: ChartData<"pie" | "doughnut">) => void;
   options: ChartOptions<"pie" | "doughnut">;
   setOptions: (chartOptions: ChartOptions<"pie" | "doughnut">) => void;
+  formatOptions: Record<string, Object>;
+  setFormatOptions: (options: Record<string, Object>) => void;
 }
 
 const PieChartColor = ({
@@ -92,6 +94,8 @@ const PieChartColor = ({
   setChartData,
   options,
   setOptions,
+  formatOptions,
+  setFormatOptions,
 }: ChartSettingsDrawerProps) => {
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
   const [cutout, setCutout] = useState<number>(0);
@@ -493,16 +497,22 @@ const PieChartColor = ({
       let formattedValue: string | number = value;
 
       // 현재 상태와 업데이트를 합쳐서 사용
-      const format =
-        updates.format !== undefined ? updates.format : dataLabelFormat;
-      const prefix =
-        updates.prefix !== undefined ? updates.prefix : dataLabelPrefix;
-      const postfix =
-        updates.postfix !== undefined ? updates.postfix : dataLabelPostfix;
-      const decimals =
-        updates.decimals !== undefined ? updates.decimals : dataLabelDecimals;
-      const digits =
-        updates.digits !== undefined ? updates.digits : dataLabelDigits;
+      const format = updates.format ?? dataLabelFormat;
+      const prefix = updates.prefix ?? dataLabelPrefix;
+      const postfix = updates.postfix ?? dataLabelPostfix;
+      const decimals = updates.decimals ?? dataLabelDecimals;
+      const digits = updates.digits ?? dataLabelDigits;
+
+      const newFormatOptions: Record<string, string | number | FormatType> = {
+        format,
+        prefix,
+        postfix,
+        decimals,
+        digits,
+      };
+
+      // Update the format options state
+      setFormatOptions({ ...formatOptions, ...newFormatOptions });
 
       // 숫자 단위 적용
       let divider = 1;

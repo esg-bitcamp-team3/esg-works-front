@@ -121,6 +121,7 @@ const Subbar = () => {
     setLoading(true);
     try {
       const response = await getChart();
+      console.log("Chart data:", response);
       setChartList(response || []);
       const interestResponse = await getInterestChart();
       setInterestChartList(interestResponse || []);
@@ -448,7 +449,7 @@ const Subbar = () => {
                                 marginBottom={5}
                               >
                                 <DraggableChartIcon
-                                  chartType={"line"} // 동적으로 타입 전달
+                                  chartType={data.type} // 동적으로 타입 전달
                                   data={data}
                                 >
                                   <SingleChart chartData={data || []} />
@@ -529,6 +530,7 @@ const Subbar = () => {
                                 flexDirection="row"
                                 gap={5}
                                 minH={200}
+                                width={"100%"}
                                 marginBottom={5}
                               >
                                 <DraggableChartIcon
