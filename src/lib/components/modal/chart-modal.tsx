@@ -17,7 +17,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 import { getSectionsByCriterion } from "@/lib/api/get";
@@ -239,33 +239,19 @@ export default function ChartModal() {
       return;
     }
 
-    const fetchSections = async () => {
-      setSectionLoading(true);
-      try {
-        const response = await getSectionsByCriterion(selectedCriterionId);
-        setSections(response);
-        setSelectedSectionId(null);
-      } catch (error) {
-        console.error("섹션 불러오기 실패:", error);
-        setSections([]);
-      } finally {
-        setSectionLoading(false);
-      }
-    };
-    fetchSections();
-
     const fetchAllCategoriesInCriterion = async () => {
       // criterion에 속한 모든 section id를 불러와서, 각 섹션의 카테고리 fetch 후 합침
       setCategoryLoading(true);
       try {
-        const secs = await getSectionsByCriterion(selectedCriterionId);
-        if (!secs || secs.length === 0) {
+        const response = await getSectionsByCriterion(selectedCriterionId);
+        setSections(response);
+        if (!response || response.length === 0) {
           setCategories([]);
           return;
         }
         // 모든 section의 카테고리 fetch
         const all = await Promise.all(
-          secs.map((sec) => getCategories(sec.sectionId))
+          response.map((sec) => getCategories(sec.sectionId))
         );
         // 2차원 배열을 1차원으로 평탄화
         const flat = all.flat();
@@ -320,14 +306,21 @@ export default function ChartModal() {
     } else {
       // 검색어가 있을 때 필터링된 카테고리만 표시
       setFilteredCategories(
-        categories.filter((category) =>
-          category.categoryName
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+        categories.filter(
+          (category) =>
+            category.categoryName &&
+            category.categoryName
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
         )
       );
     }
   };
+
+  useEffect(() => {
+    // 초기화 시 모든 카테고리 표시
+    setFilteredCategories(categories);
+  }, [categories]);
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">

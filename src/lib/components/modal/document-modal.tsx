@@ -16,9 +16,8 @@ import { FaPen } from "react-icons/fa6";
 import { useState } from "react";
 
 const templates = [
-  // { key: "blank", label: "빈 보고서", image: " " },
-  { key: "list", label: "리스트 형식", image: "/list.png" },
-  { key: "chart", label: "차트 형식", image: "/chart.png" },
+  { key: "blank", label: "빈 보고서" },
+  { key: "report", label: "지속 가능 경영 보고서" },
 ];
 
 export default function ReportModal() {
@@ -73,7 +72,7 @@ export default function ReportModal() {
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content padding={6} gap="6" minWidth='35vw'  minHeight='55vh'>
+          <Dialog.Content padding={6} gap="6" minWidth="35vw" minHeight="55vh">
             {/* 제목 ============================== */}
             <Dialog.Header>
               <Dialog.Title fontSize="2xl" fontWeight="bold" color="#2F6EEA">
@@ -109,7 +108,7 @@ export default function ReportModal() {
                   />
                 </Flex>
                 {/* 템플릿 선택 ========================================== */}
-                <SimpleGrid columns={4} gap={4}>
+                <SimpleGrid columns={3} gap={4}>
                   {templates.map((template) => (
                     <Box
                       key={template.key}
@@ -124,15 +123,6 @@ export default function ReportModal() {
                       onClick={() => setSelected(template.key)}
                       _hover={{ borderColor: "blue.300" }}
                     >
-                      <Image
-                        src={template.image}
-                        alt={template.label}
-                        w={"100%"}
-                        //   boxSize="100px"
-                        mx="auto"
-                        mb={2}
-                        objectFit="contain"
-                      />
                       <Text fontSize="sm">{template.label}</Text>
                     </Box>
                   ))}

@@ -36,7 +36,11 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { label: "홈", icon: FaHouse, path: "/home" },
   { label: "데이터 입력", icon: FaPen, path: "/criteria" },
-  { label: "보고서 작성", icon: FaFile, path: "/report" },
+  {
+    label: "보고서 작성",
+    icon: FaFile,
+    path: "/report/create?title=제목 없음",
+  },
 ];
 
 interface SidebarProps {

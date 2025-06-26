@@ -88,7 +88,9 @@ const TableContent = ({
             </Button>
           </Flex>
         </Table.Cell>
-        <Table.Cell textAlign={"center"}>{unitName}</Table.Cell>
+        <Table.Cell textAlign={"center"} color="gray.500" fontSize="xs">
+          {unitName}
+        </Table.Cell>
         {years.map((year) => {
           const yearIndex = item.esgNumberDTOList.findIndex(
             (e) => e.year === year
@@ -129,7 +131,7 @@ const TableContent = ({
           </Button>
         </Flex>
         {/* 테이블 넓이 계산해서 보장 */}
-        <Table.Root size="md" variant="outline" showColumnBorder>
+        <Table.Root size="sm" variant="outline" showColumnBorder mt={4}>
           <Table.Header>
             <Table.Row>
               {/* <Table.ColumnHeader w="6">
@@ -158,7 +160,9 @@ const TableContent = ({
                   </Checkbox.Root>
                 </Table.ColumnHeader> */}
               <Table.ColumnHeader>지표</Table.ColumnHeader>
-              <Table.ColumnHeader w={51}>단위</Table.ColumnHeader>
+              <Table.ColumnHeader w={51} textAlign={"center"}>
+                단위
+              </Table.ColumnHeader>
               {years.map((year) => (
                 <Table.ColumnHeader key={year} textAlign="end">
                   <Box
