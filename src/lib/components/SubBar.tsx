@@ -69,7 +69,7 @@ import SubTableContent from "./section/SubTableContent";
 import TableModal from "@/lib/components/modal/table-modal";
 import Selector from "./gri/Selector";
 
-function normalizeChartData(data) {
+function normalizeChartData(data: ChartDetail) {
   // type 파싱
   let type = "bar";
   if (data.options) {
@@ -236,7 +236,6 @@ const Subbar = () => {
   useEffect(() => {
     fetchSection(category);
   }, []);
-
   return (
     <DndProvider backend={HTML5Backend}>
       <>
@@ -579,12 +578,14 @@ const Subbar = () => {
                                   minH={200}
                                   marginBottom={5}
                                 >
-                                  <DraggableChartIcon
-                                    chartType={JSON.parse(data.options).type}
-                                    data={normalizeChartData(data)}
-                                  >
-                                    <SingleChart chartData={data || []} />
-                                  </DraggableChartIcon>
+                                  <Box flex="1" minWidth="0">
+                                    <DraggableChartIcon
+                                      chartType={JSON.parse(data.options).type}
+                                      data={data}
+                                    >
+                                      <SingleChart chartData={data || []} />
+                                    </DraggableChartIcon>
+                                  </Box>
                                   <StarToggleIcon
                                     filled={isFilled}
                                     onToggle={async (filled) => {
@@ -663,20 +664,16 @@ const Subbar = () => {
                                   minH={200}
                                   marginBottom={5}
                                 >
-                                  {/* <DraggableChartIcon
-                                    chartType={JSON.parse(data.options).type}
-                                    data={normalizeChartData(data)}
-                                  >
-                                    <SingleChart chartData={data || []} />
-                                  </DraggableChartIcon> */}
-                                  <DraggableChartIcon
-                                    chartType={"line"} // 동적으로 타입 전달
-                                    data={data.chartDetail}
-                                  >
-                                    <SingleChart
-                                      chartData={data.chartDetail || []}
-                                    />
-                                  </DraggableChartIcon>
+                                  <Box flex="1" minWidth="0">
+                                    <DraggableChartIcon
+                                      chartType={"line"} // 동적으로 타입 전달
+                                      data={data.chartDetail}
+                                    >
+                                      <SingleChart
+                                        chartData={data.chartDetail || []}
+                                      />
+                                    </DraggableChartIcon>
+                                  </Box>
                                   <StarToggleIcon
                                     filled={isFilled}
                                     onToggle={async (filled) => {
@@ -770,12 +767,16 @@ const Subbar = () => {
                                     minH={200}
                                     marginBottom={5}
                                   >
-                                    <DraggableChartIcon
-                                      chartType={JSON.parse(data.options).type}
-                                      data={normalizeChartData(data)}
-                                    >
-                                      <SingleChart chartData={data || []} />
-                                    </DraggableChartIcon>
+                                    <Box flex="1" minWidth="0">
+                                      <DraggableChartIcon
+                                        chartType={
+                                          JSON.parse(data.options).type
+                                        }
+                                        data={normalizeChartData(data)}
+                                      >
+                                        <SingleChart chartData={data || []} />
+                                      </DraggableChartIcon>
+                                    </Box>
                                     <StarToggleIcon
                                       filled={isFilled}
                                       onToggle={async (filled) => {
@@ -854,14 +855,16 @@ const Subbar = () => {
                                   minH={200}
                                   marginBottom={5}
                                 >
-                                  <DraggableChartIcon
-                                    chartType={"line"} // 동적으로 타입 전달
-                                    data={data.chartDetail}
-                                  >
-                                    <SingleChart
-                                      chartData={data.chartDetail || []}
-                                    />
-                                  </DraggableChartIcon>
+                                  <Box flex="1" minWidth="0">
+                                    <DraggableChartIcon
+                                      chartType={"line"} // 동적으로 타입 전달
+                                      data={data.chartDetail}
+                                    >
+                                      <SingleChart
+                                        chartData={data.chartDetail || []}
+                                      />
+                                    </DraggableChartIcon>
+                                  </Box>
                                   <StarToggleIcon
                                     filled={isFilled}
                                     onToggle={async (filled) => {

@@ -80,6 +80,7 @@ export interface IChart {
 }
 
 export interface ChartDetail {
+  chartType: any;
   chartId: string;
   corporationId: string;
   chartName: string;
