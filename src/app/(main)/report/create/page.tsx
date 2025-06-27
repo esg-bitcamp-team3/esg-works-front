@@ -15,11 +15,13 @@ const Page = ({ params }: Props) => {
   const searchParams = useSearchParams();
 
   const title = searchParams.get("title");
+  const template = searchParams.get("template");
+
   return (
     <div>
       <DndProvider backend={HTML5Backend}>
         <Subbar />
-        <TextEditor title={title || ""} />
+        <TextEditor title={title || ""} template={template || "blank"} />
       </DndProvider>
     </div>
   );

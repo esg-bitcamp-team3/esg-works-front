@@ -35,6 +35,7 @@ import {
   Report,
   ReportDetail,
   SortProp,
+  Template,
 } from "./interfaces/report";
 
 import { SectionCategoryESGData } from "./interfaces/gri";
@@ -408,11 +409,12 @@ export const getCriterionById = async (criterionId: string) => {
   }
 };
 
-export const getTemplete = async () => {
+export const getTemplate = async () => {
   try {
-    const res = await apiClient.get<string>("/reports/txt");
+    const res = await apiClient.get<Template>("/reports/template");
     return res.data;
   } catch (error) {
+    console.log("템플릿 가져오기 실패:", error);
     console.error("templete실패");
   }
 };

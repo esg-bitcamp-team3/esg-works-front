@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { FaPen } from "react-icons/fa6";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const templates = [
   { key: "blank", label: "빈 보고서" },
@@ -24,12 +25,14 @@ export default function ReportModal() {
   //   const { isOpen, onOpen, onClose } = useDisclosure();
   const [title, setTitle] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
-
-  //   const handleCreate = () => {
-  //     console.log("제목:", title);
-  //     console.log("선택된 템플릿:", selected);
-  //     onClose();
-  //   };
+  const router = useRouter();
+  const handleAddReport = (title: string, template: string) => {
+    if (title.trim()) {
+      router.push(
+        `/report/create?title=${encodeURIComponent(title)}&template=${template}`
+      );
+    }
+  };
 
   return (
     <Dialog.Root placement="center" motionPreset="scale">
@@ -137,12 +140,7 @@ export default function ReportModal() {
                   variant="solid"
                   width="80px"
                   onClick={() => {
-                    // title이 비어있지 않은 경우에만 이동
-                    if (title.trim()) {
-                      window.location.href = `/report/create?title=${encodeURIComponent(
-                        title
-                      )}`;
-                    }
+                    handleAddReport(title, selected || "blank");
                   }}
                   _hover={{ bg: "#1D4FA3" }}
                 >
