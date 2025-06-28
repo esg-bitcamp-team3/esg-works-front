@@ -1,7 +1,7 @@
 import { ESGData } from "./esgData";
 
 export interface ChartType {
-  type: "bar" | "line" | "pie" | "doughnut" | "mixed" | "table";
+  type: "bar" | "line" | "pie" | "doughnut" | "mixed";
   label: string;
   icons: React.ComponentType<any>;
 }
@@ -84,6 +84,7 @@ export interface IChart {
 }
 
 export interface ChartDetail {
+  chartType: any;
   chartId: string;
   type: string;
   corporationId: string;

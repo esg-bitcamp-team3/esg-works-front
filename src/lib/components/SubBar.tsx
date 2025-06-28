@@ -146,7 +146,6 @@ const Subbar = () => {
   useEffect(() => {
     fetchSection(category);
   }, []);
-
   return (
     <>
       {/* Sidebar Toggle */}

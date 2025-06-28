@@ -13,10 +13,18 @@ const Page = ({ params }: Props) => {
   const { id } = use(params);
   return (
     <div>
+<<<<<<< HEAD
       <DndProvider backend={HTML5Backend}>
         {id && <TextEditor />}
         <Subbar />
       </DndProvider>
+=======
+      {/* 서브바에 DndProvider 직접 걸어줄 예정 */}
+      {/* <DndProvider backend={HTML5Backend}> */}
+      {id && <TextEditor id={id} />}
+      <Subbar />
+      {/* </DndProvider> */}
+>>>>>>> 6a30be6a4403270d2140c839f10ad0877162b4e8
     </div>
   );
 };
