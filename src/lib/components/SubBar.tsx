@@ -37,8 +37,9 @@ import { IoSearch } from "react-icons/io5";
 import { FaSearch } from "react-icons/fa";
 import { Section } from "../interface";
 import DataTab from "./section/DataTab";
-import TableModal from "@/lib/components/modal/table-modal";
 import ChartModal from "./modal/chart-modal";
+import TableAddModal from "./modal/TableAddModal";
+import { CustomEditor } from "../editor/custom-types";
 
 const items = [
   {
@@ -59,7 +60,7 @@ const items = [
 ];
 
 const DEFAULT_SIDEBAR_WIDTH = 550;
-const Subbar = () => {
+const Subbar = ({ editor }: { editor: CustomEditor }) => {
   const [activeIndex, setActiveIndex] = useState<number | 0>(0);
   const [selectedTab, setSelectedTab] = useState<"all" | "star">("all");
   const [sidebarWidth, setSidebarWidth] = useState(550); // 👈 수정: 사이드바 너비 상태 추가
@@ -337,7 +338,7 @@ const Subbar = () => {
                   </Box>
                   <Box position={"right"}>
                     {activeIndex === 1 && <ChartModal />}
-                    {activeIndex === 2 && <TableModal />}
+                    {activeIndex === 2 && <TableAddModal editor={editor} />}
                   </Box>
                 </HStack>
               )}

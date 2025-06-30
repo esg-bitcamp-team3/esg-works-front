@@ -41,7 +41,6 @@ interface Props {
 
 type ChartTypeUnion = "bar" | "line" | "pie" | "doughnut" | "mixed";
 
-<<<<<<< HEAD
 export default function SingleChart({ chartData }: Props) {
   const [data, setData] = useState<ChartData>();
   const [chartType, setChartType] = useState<ChartTypeUnion>();
@@ -129,15 +128,6 @@ export default function SingleChart({ chartData }: Props) {
       },
     },
   };
-=======
-  // 2. 테이블이면 TableChart 렌더 & 나머지는 기존대로
-  if (chartType === "table") {
-    return <TableChart chartData={chartData} />;
-  }
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const chartInstance = useRef<Chart<keyof ChartTypeRegistry> | null>(null);
-  // const chartInstance = useRef<Chart | null>(null);
->>>>>>> 6a30be6a4403270d2140c839f10ad0877162b4e8
 
   useEffect(() => {
     setChartType(chartData.type as ChartTypeUnion);

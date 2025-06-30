@@ -68,10 +68,7 @@ export interface DataSet {
   type: string;
   label: string;
   esgDataList: ESGData[];
-  backgroundColor: string;
-  borderColor: string;
-  borderWidth: string;
-  fill: string;
+  chartProperties: Record<string, any>;
 }
 
 export interface DataSetMap {
@@ -89,7 +86,7 @@ export interface ChartDetail {
   type: string;
   corporationId: string;
   chartName: string;
-  dataSets: DataSetMap[];
+  dataSets: DataSet[];
   options: string;
   formatOptions: string; // JSON string (formatter 함수들과 관련 옵션들)
   labels: string[];

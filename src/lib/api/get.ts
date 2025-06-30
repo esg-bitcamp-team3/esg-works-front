@@ -264,6 +264,16 @@ export const getReports = async (sortProp: SortProp) => {
   }
 };
 
+export const getReportById = async (id: string) => {
+  try {
+    const res = await apiClient.get<ReportDetail>(`/reports/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("리포트 가져오기 실패");
+    return null;
+  }
+};
+
 export const getFavoriteReports = async (sortProp: SortProp) => {
   try {
     const res = await apiClient.get<ReportDetail[]>("/reports/interest", {

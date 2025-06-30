@@ -425,8 +425,8 @@ const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
                   trigger={
                     <MenuItem
                       icon={<LuTable2 />}
-                      label="표"
-                      value="insert_table"
+                      label="기본 표"
+                      value="insert_basic_table"
                       shortcut="Ctrl+T"
                       onClick={() => {}}
                       closeOnSelect={false}

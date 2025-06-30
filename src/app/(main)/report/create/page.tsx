@@ -4,7 +4,7 @@ import Subbar from "@/lib/components/SubBar";
 
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import TextEditor from "@/lib/editor/CreateNewReport";
+import TextEditor from "@/lib/editor/example";
 import { useSearchParams } from "next/navigation";
 
 interface Props {
@@ -20,8 +20,10 @@ const Page = ({ params }: Props) => {
   return (
     <div>
       <DndProvider backend={HTML5Backend}>
-        <Subbar />
-        <TextEditor title={title || ""} template={template || "blank"} />
+        <TextEditor
+          documentTitle={title || ""}
+          template={template || "blank"}
+        />
       </DndProvider>
     </div>
   );

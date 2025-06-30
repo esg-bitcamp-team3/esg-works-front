@@ -436,11 +436,7 @@ const ChartContent = ({
             >
               <Chart
                 key={refreshKey} // Use refreshKey to force re-render
-                type={
-                  selectedChartType === "mixed" || selectedChartType === "table"
-                    ? "bar"
-                    : selectedChartType
-                }
+                type={selectedChartType === "mixed" ? "bar" : selectedChartType}
                 data={chartData}
                 options={options}
               />
