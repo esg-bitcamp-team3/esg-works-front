@@ -54,6 +54,7 @@ import {
   ChartData,
   ChartOptions,
   registerables,
+  ChartType,
 } from "chart.js";
 import { useDrop } from "react-dnd";
 import {
@@ -385,6 +386,21 @@ const RichTextExample = ({
       };
       console.log("Inserting chart block:", chartBlock);
       Transforms.insertNodes(editor, chartBlock);
+
+      // Add a paragraph after the chart
+      const paragraph: ParagraphElement = {
+        type: "paragraph",
+        children: [{ text: "" }],
+      };
+
+      // Insert the paragraph node after the chart block
+      Transforms.insertNodes(editor, paragraph);
+
+      // Move selection to the new paragraph
+      const point = Editor.after(editor, Editor.end(editor, []));
+      if (point) {
+        Transforms.select(editor, point);
+      }
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -1422,6 +1438,71 @@ export const insertChart = (editor: CustomEditor) => {
   Transforms.select(editor, point);
 };
 
+export const insertChartFromData = (
+  editor: CustomEditor,
+  chartType: "bar" | "line" | "pie" | "doughnut" | "mixed",
+  options: ChartOptions,
+  chartData: ChartData
+) => {
+  try {
+    // Create a safe deep copy of the chart data
+    // This avoids reference issues when Chart.js tries to manipulate the data
+    // Using a manual deep copy approach for better browser compatibility
+    const safeChartData = {
+      labels: Array.isArray(chartData.labels) ? [...chartData.labels] : [],
+      datasets: Array.isArray(chartData.datasets)
+        ? chartData.datasets.map((dataset) => ({
+            ...dataset,
+            data: Array.isArray(dataset.data) ? [...dataset.data] : [],
+          }))
+        : [],
+    };
+
+    // Deep copy options
+    const safeOptions = options ? JSON.parse(JSON.stringify(options)) : {};
+
+    // 차트 요소 생성
+    const chartElement: ChartElement = {
+      type: "chart",
+      chartType,
+      data: safeChartData as ChartData,
+      options: safeOptions,
+      width: 500, // 기본 너비
+      height: 300, // 기본 높이
+      children: [{ text: "" }], // 필수 자식 속성
+    };
+
+    // 차트 블록 래퍼 생성
+    const chartBlock: ChartBlockElement = {
+      type: "chart-block",
+      layout: "full", // 기본 레이아웃
+      children: [chartElement],
+    };
+
+    console.log("차트 블록 삽입:", chartBlock);
+
+    // 현재 선택 위치에 차트 블록 삽입
+    Transforms.insertNodes(editor, chartBlock);
+
+    // Add a paragraph after the chart
+    const paragraph: ParagraphElement = {
+      type: "paragraph",
+      children: [{ text: "" }],
+    };
+
+    // Insert the paragraph node after the chart block
+    Transforms.insertNodes(editor, paragraph);
+
+    // Move selection to the new paragraph
+    const point = Editor.after(editor, Editor.end(editor, []));
+    if (point) {
+      Transforms.select(editor, point);
+    }
+  } catch (error) {
+    console.error("Error inserting chart:", error);
+  }
+};
+
 ChartJS.register(...registerables);
 
 export const insertTableFromData = (
@@ -1817,39 +1898,63 @@ const Chart = ({
 
   // Add cleanup for Chart.js instances
   React.useEffect(() => {
-    if (canvasRef.current) {
-      // Destroy previous instance if it exists
-      if (chartInstanceRef.current) {
-        try {
-          chartInstanceRef.current.destroy();
-        } catch (e) {
-          console.warn("Error destroying chart:", e);
-        }
-        chartInstanceRef.current = null;
-      }
+    let chartInstance: ChartJS | null = null;
 
-      // Create new chart instance
+    if (canvasRef.current) {
+      // Get the canvas context
       const ctx = canvasRef.current.getContext("2d");
+
       if (ctx) {
-        chartInstanceRef.current = new ChartJS(ctx, {
-          type: chartType,
-          data: safeChartData,
-          options: chartOptions,
-        });
+        // Destroy previous instance if it exists
+        if (chartInstanceRef.current) {
+          try {
+            chartInstanceRef.current.destroy();
+          } catch (e) {
+            console.warn("Error destroying chart:", e);
+          }
+          chartInstanceRef.current = null;
+        }
+
+        // Create new chart instance with a try-catch block
+        try {
+          chartInstance = new ChartJS(ctx, {
+            type: chartType,
+            data: safeChartData,
+            options: chartOptions,
+          });
+
+          // Store the reference
+          chartInstanceRef.current = chartInstance;
+        } catch (e) {
+          console.error("Error creating chart:", e);
+        }
       }
     }
 
+    // Return cleanup function
     return () => {
-      if (chartInstanceRef.current) {
+      // Clean up the chart on unmount
+      if (chartInstance) {
+        try {
+          chartInstance.destroy();
+        } catch (e) {
+          console.warn("Error destroying chart during cleanup:", e);
+        }
+      }
+
+      if (
+        chartInstanceRef.current &&
+        chartInstanceRef.current !== chartInstance
+      ) {
         try {
           chartInstanceRef.current.destroy();
         } catch (e) {
-          console.warn("Error destroying chart during cleanup:", e);
+          console.warn("Error destroying chart ref during cleanup:", e);
         }
         chartInstanceRef.current = null;
       }
     };
-  }, [safeChartData, chartType, chartOptions]);
+  }, [safeChartData, chartType, chartOptions, canvasRef.current]);
 
   const onMouseDown = (e: globalThis.MouseEvent) => {
     e.preventDefault();
@@ -1936,16 +2041,7 @@ const Chart = ({
         }}
       >
         <div style={{ width: "100%", height: "100%", padding: "8px" }}>
-          <ChartJSComponent
-            type={chartType}
-            data={safeChartData}
-            options={chartOptions}
-            ref={(chartInstance) => {
-              if (chartInstance) {
-                chartInstanceRef.current = chartInstance;
-              }
-            }}
-          />
+          <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
         </div>
 
         {selected && (

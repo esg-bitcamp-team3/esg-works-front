@@ -332,7 +332,21 @@ const Subbar = ({
                     </Box>
                   </Box>
                   <Box position={"right"}>
-                    {activeIndex === 1 && <ChartModal />}
+                    {activeIndex === 1 && (
+                      <ChartModal
+                        trigger={
+                          <Button
+                            size="2xs"
+                            p="1"
+                            borderRadius="full"
+                            bg="#2F6EEA"
+                            color="white"
+                          >
+                            차트 추가
+                          </Button>
+                        }
+                      />
+                    )}
                   </Box>
                 </HStack>
               </>

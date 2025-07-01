@@ -17,7 +17,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
-import { use, useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
 import { getSectionsByCriterion } from "@/lib/api/get";
@@ -45,6 +45,8 @@ import { postChart, postDataSet } from "@/lib/api/post";
 import { RiResetLeftFill } from "react-icons/ri";
 import { Criterion } from "@/lib/interface";
 import { set } from "lodash";
+import { CustomEditor } from "@/lib/editor/custom-types";
+import { insertChartFromData } from "@/lib/editor/example";
 
 const chartType: ChartType[] = [
   { type: "bar", label: "막대 차트", icons: FaChartPie },
@@ -54,7 +56,17 @@ const chartType: ChartType[] = [
   { type: "mixed", label: "믹스 차트", icons: FaTable },
 ];
 
-export default function ChartModal() {
+interface ChartModalProps {
+  mode?: "insert" | "create";
+  editor?: CustomEditor;
+  trigger: React.ReactNode;
+}
+
+export default function ChartModal({
+  mode = "create",
+  editor,
+  trigger,
+}: ChartModalProps) {
   const [selectedCategoryList, setSelectedCategoryList] = useState<
     CategoryDetail[]
   >([]);
@@ -90,6 +102,7 @@ export default function ChartModal() {
   const [filteredCategories, setFilteredCategories] = useState<
     CategoryDetail[]
   >([]);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const createChartWithDataSets = async (
     options: ChartOptions,
@@ -324,10 +337,8 @@ export default function ChartModal() {
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
-      <Dialog.Trigger asChild>
-        <Button size="2xs" p="1" borderRadius="full" bg="#2F6EEA" color="white">
-          <FaPlus size="sm" />
-        </Button>
+      <Dialog.Trigger asChild width="100%">
+        {trigger}
       </Dialog.Trigger>
 
       {/* 모달창 =================================================== */}
@@ -732,21 +743,38 @@ export default function ChartModal() {
                   onClick={() => {
                     if (step === 1) setStep(2);
                     else {
-                      createChartWithDataSets(
-                        options,
-                        chartData,
-                        categorizedEsgDataList
-                      );
+                      if (mode === "insert" && editor) {
+                        // If mixed chart type is selected, default to bar for insertion
+                        const chartTypeToInsert =
+                          selectedChartType === "mixed"
+                            ? "bar"
+                            : selectedChartType;
+
+                        insertChartFromData(
+                          editor,
+                          chartTypeToInsert,
+                          options,
+                          chartData
+                        );
+                        closeButtonRef.current?.click();
+                      } else {
+                        createChartWithDataSets(
+                          options,
+                          chartData,
+                          categorizedEsgDataList
+                        );
+                        closeButtonRef.current?.click();
+                      }
                     }
                   }}
                   _hover={{ bg: "#1D4FA3" }}
                 >
-                  {step === 1 ? "다음" : "생성"}
+                  {step === 1 ? "다음" : mode === "insert" ? "삽입" : "생성"}
                 </Button>
               </Flex>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" color="gray.500" />
+              <CloseButton ref={closeButtonRef} size="sm" color="gray.500" />
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>

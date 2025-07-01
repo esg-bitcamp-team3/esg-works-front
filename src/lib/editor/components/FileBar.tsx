@@ -40,6 +40,7 @@ import {
 import { CustomEditor } from "../custom-types";
 import {
   insertChart,
+  insertChartFromData,
   insertImage,
   insertLink,
   insertTable,
@@ -51,6 +52,7 @@ import UrlDialog from "./UrlDialog";
 import { exportToPdf } from "./exportToPdf";
 import { toaster } from "@/components/ui/toaster";
 import TableModal from "@/lib/components/modal/TableAddModal";
+import ChartModal from "@/lib/components/modal/chart-modal";
 
 const MenuButton = ({ label }: { label: string }) => (
   <Button
@@ -370,9 +372,7 @@ const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
       });
     }
   };
-  const handleChartInsert = () => {
-    insertChart(editor);
-  };
+
   return (
     <>
       <UrlDialog
@@ -446,14 +446,20 @@ const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
                     />
                   }
                 />
-                <MenuItem
-                  icon={<LuChartColumnBig />}
-                  label="차트"
-                  value="insert_chart"
-                  shortcut="Ctrl+G"
-                  onClick={handleChartInsert}
+                <ChartModal
+                  editor={editor}
+                  mode="insert"
+                  trigger={
+                    <MenuItem
+                      icon={<LuChartColumnBig />}
+                      label="차트"
+                      value="insert_chart"
+                      shortcut="Ctrl+G"
+                      onClick={() => {}}
+                      closeOnSelect={false}
+                    />
+                  }
                 />
-
                 <MenuItem
                   icon={<LuLink2 />}
                   label="링크"
