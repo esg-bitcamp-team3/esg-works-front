@@ -16,6 +16,7 @@ import {
   Tabs,
   Icon,
   Spinner,
+  Menu,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
@@ -36,6 +37,8 @@ import { CustomEditor } from "@/lib/editor/custom-types";
 import { insertTableFromData } from "@/lib/editor/example";
 import { RiResetLeftFill } from "react-icons/ri";
 import { Criterion } from "@/lib/interface";
+import { LuTable2 } from "react-icons/lu";
+import { set } from "lodash";
 
 const chartType: ChartType[] = [
   { type: "bar", label: "막대 차트", icons: FaChartPie },
@@ -45,7 +48,13 @@ const chartType: ChartType[] = [
   { type: "mixed", label: "믹스 차트", icons: FaTable },
 ];
 
-export default function TableModal({ editor }: { editor: CustomEditor }) {
+export default function TableModal({
+  editor,
+  trigger,
+}: {
+  editor: CustomEditor;
+  trigger: React.ReactNode;
+}) {
   const [selectedCategoryList, setSelectedCategoryList] = useState<
     CategoryDetail[]
   >([]);
@@ -74,6 +83,7 @@ export default function TableModal({ editor }: { editor: CustomEditor }) {
   const [filteredCategories, setFilteredCategories] = useState<
     CategoryDetail[]
   >([]);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCriterion = async () => {
@@ -211,21 +221,14 @@ export default function TableModal({ editor }: { editor: CustomEditor }) {
   }, [categories]);
 
   return (
-    <Dialog.Root placement="center" motionPreset="scale" size="lg">
-      <Dialog.Trigger asChild>
-        <Button
-          size="2xs"
-          p="1"
-          borderRadius="full"
-          bg="#2F6EEA"
-          color="white"
-          // position="fixed"
-          // top="4"
-          // right="4"
-        >
-          <FaPlus size="sm" />
-        </Button>
-      </Dialog.Trigger>
+    <Dialog.Root
+      placement="center"
+      motionPreset="scale"
+      size="lg"
+      open={isOpen}
+      onOpenChange={(e) => setIsOpen(e.open)}
+    >
+      <Dialog.Trigger w={"100%"}>{trigger}</Dialog.Trigger>
       {/* 모달창 =================================================== */}
       <Portal>
         <Dialog.Backdrop />
@@ -248,7 +251,7 @@ export default function TableModal({ editor }: { editor: CustomEditor }) {
                 fontWeight="bold"
                 color="#2F6EEA"
               >
-                새 차트 생성
+                테이블 삽입
               </Dialog.Title>
             </Dialog.Header>
 

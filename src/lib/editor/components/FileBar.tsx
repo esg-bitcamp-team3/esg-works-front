@@ -50,6 +50,7 @@ import TableSizeSelector from "./TableSizeSelector";
 import UrlDialog from "./UrlDialog";
 import { exportToPdf } from "./exportToPdf";
 import { toaster } from "@/components/ui/toaster";
+import TableModal from "@/lib/components/modal/TableAddModal";
 
 const MenuButton = ({ label }: { label: string }) => (
   <Button
@@ -428,6 +429,18 @@ const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
                       label="기본 표"
                       value="insert_basic_table"
                       shortcut="Ctrl+T"
+                      onClick={() => {}}
+                      closeOnSelect={false}
+                    />
+                  }
+                />
+                <TableModal
+                  editor={editor}
+                  trigger={
+                    <MenuItem
+                      icon={<LuTable2 />}
+                      label="표"
+                      value="insert_table"
                       onClick={() => {}}
                       closeOnSelect={false}
                     />

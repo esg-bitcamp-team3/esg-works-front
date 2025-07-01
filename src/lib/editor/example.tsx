@@ -397,6 +397,7 @@ const RichTextExample = ({
   // 페이지 관련 상태 추가
   const [pageHeights, setPageHeights] = useState<number[]>([]);
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // A4 페이지 크기 (mm 단위)
   const A4_WIDTH_MM = 210;
@@ -451,295 +452,290 @@ const RichTextExample = ({
 
   return (
     <>
-      <Subbar editor={editor} />
-      <Slate
-        key={value ? "template" : "initial"}
+      <Subbar
         editor={editor}
-        initialValue={value || initialValue}
-        onChange={(newValue) => {
-          setValue(newValue);
+        isExpanded={isExpanded}
+        setIsExpanded={setIsExpanded}
+      />
+      <div
+        style={{
+          transition: "all 0.3s ease-in-out",
+          marginRight: isExpanded ? "550px" : "60px",
+          width: "calc(100% - " + (isExpanded ? "550px" : "60px") + ")",
+          height: "100%",
         }}
       >
-        <VStack justifyContent="center" w="100vw" h="100vh" mt={12}>
-          <VStack
-            w="100vw"
-            h="auto"
-            position="sticky"
-            top={0}
-            zIndex={150}
-            justifyContent={"center"}
-            alignItems={"center"}
-          >
-            <Box w="80%" justifyContent={"center"} alignItems={"center"}>
-              <HStack justifyContent="start" alignItems="center" w="100%">
-                {isLoading ? (
-                  <Skeleton height="48px" width="sm">
-                    <EditableTitle title={title} onChange={setTitle} />
-                  </Skeleton>
-                ) : (
-                  <EditableTitle title={title} onChange={setTitle} />
-                )}
-                {/* <Icon
-                style={{
-                  cursor: "pointer",
-                  marginLeft: "8px",
-                  fontSize: "32px",
-                  color: "#718096", // gray.400 equivalent
-                }}
-                onClick={() => {
-                  // Toggle favorite status
-                  // You can implement this functionality later
-                  console.log("Toggle favorite for document:", documentId);
-                }}
-              >
-                star_outline
-              </Icon> */}
-                {/* <Button backgroundColor={"transparent"} onClick={clickInterest}>
-                {check ? (
-                  <PiStarFill color="#FFB22C" />
-                ) : (
-                  <PiStar color="gray" />
-                )}
-              </Button> */}
-              </HStack>
-
-              <FileBar
-                id={""}
-                title={title}
-                content={value || initialValue}
-                editor={editor}
-              />
-            </Box>
-            <Box
-              px={10}
-              py={2}
-              w={"82%"}
-              boxShadow={"md"}
-              bg="gray.50"
-              borderRadius="full"
-              justifyContent="center"
+        <Slate
+          key={value ? "template" : "initial"}
+          editor={editor}
+          initialValue={value || initialValue}
+          onChange={(newValue) => {
+            setValue(newValue);
+          }}
+        >
+          <VStack justifyContent="center" w="100%" h="100vh">
+            <VStack
+              w="100%"
+              h="auto"
+              position="sticky"
+              top={4}
+              zIndex={150}
+              justifyContent={"center"}
               alignItems={"center"}
-              m={2}
             >
-              <Toolbar>
-                <MarkButton format="bold" icon="format_bold" />
-                <MarkButton format="italic" icon="format_italic" />
-                <MarkButton format="underline" icon="format_underlined" />
-                <MarkButton format="code" icon="code" />
-                <BlockButton format="heading-one" icon="looks_one" />
-                <BlockButton format="heading-two" icon="looks_two" />
-                <BlockButton format="block-quote" icon="format_quote" />
-                <BlockButton
-                  format="numbered-list"
-                  icon="format_list_numbered"
+              <Box w="80%" justifyContent={"center"} alignItems={"center"}>
+                <HStack justifyContent="start" alignItems="center" w="100%">
+                  {isLoading ? (
+                    <Skeleton height="48px" width="sm">
+                      <EditableTitle title={title} onChange={setTitle} />
+                    </Skeleton>
+                  ) : (
+                    <EditableTitle title={title} onChange={setTitle} />
+                  )}
+                </HStack>
+
+                <FileBar
+                  id={""}
+                  title={title}
+                  content={value || initialValue}
+                  editor={editor}
                 />
-                <BlockButton
-                  format="bulleted-list"
-                  icon="format_list_bulleted"
-                />
-                <BlockButton format="left" icon="format_align_left" />
-                <BlockButton format="center" icon="format_align_center" />
-                <BlockButton format="right" icon="format_align_right" />
-                <BlockButton format="justify" icon="format_align_justify" />
-                <ChartLayoutButton layout="full" icon="crop_7_5" />
-                <ChartLayoutButton layout="right" icon="vertical_split" />
-                <ChartLayoutButton
-                  layout="left"
-                  icon="vertical_split"
-                  flipped={true}
-                />
-                <ChartLayoutButton layout="center" icon="view_week" />
-              </Toolbar>
-            </Box>
-          </VStack>
-          <Box
-            boxShadow={"md"}
-            borderWidth="1px"
-            borderColor="gray.300"
-            borderStyle="solid"
-            bg="white"
-            height="100%"
-            width="80%"
-            overflow="auto"
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-          >
+              </Box>
+              <Box
+                px={10}
+                py={2}
+                w={"82%"}
+                boxShadow={"md"}
+                bg="gray.50"
+                borderRadius="full"
+                justifyContent="center"
+                alignItems={"center"}
+                m={2}
+              >
+                <Toolbar>
+                  <MarkButton format="bold" icon="format_bold" />
+                  <MarkButton format="italic" icon="format_italic" />
+                  <MarkButton format="underline" icon="format_underlined" />
+                  <MarkButton format="code" icon="code" />
+                  <BlockButton format="heading-one" icon="looks_one" />
+                  <BlockButton format="heading-two" icon="looks_two" />
+                  <BlockButton format="block-quote" icon="format_quote" />
+                  <BlockButton
+                    format="numbered-list"
+                    icon="format_list_numbered"
+                  />
+                  <BlockButton
+                    format="bulleted-list"
+                    icon="format_list_bulleted"
+                  />
+                  <BlockButton format="left" icon="format_align_left" />
+                  <BlockButton format="center" icon="format_align_center" />
+                  <BlockButton format="right" icon="format_align_right" />
+                  <BlockButton format="justify" icon="format_align_justify" />
+                  <ChartLayoutButton layout="full" icon="crop_7_5" />
+                  <ChartLayoutButton layout="right" icon="vertical_split" />
+                  <ChartLayoutButton
+                    layout="left"
+                    icon="vertical_split"
+                    flipped={true}
+                  />
+                  <ChartLayoutButton layout="center" icon="view_week" />
+                </Toolbar>
+              </Box>
+            </VStack>
             <Box
-              ref={drop}
-              justifyContent="center"
-              width="auto"
+              boxShadow={"md"}
+              borderWidth="1px"
+              borderColor="gray.300"
+              borderStyle="solid"
+              bg="white"
               height="100%"
-              direction="column"
-              bg="#fafafa"
-              p={12}
+              width="80%"
+              overflow="auto"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              mt={4}
             >
               <Box
-                ref={editorContainerRef}
-                p={4}
-                flex="1"
-                bg="white"
-                minH="100%"
-                width={`${A4_WIDTH_PX}px`}
-                border={"1px solid #ddd"}
-                style={{
-                  background: isOver ? "#E3F2FD" : "white",
-                  position: "relative",
-                }}
+                ref={drop}
+                justifyContent="center"
+                width="auto"
+                height="100%"
+                direction="column"
+                bg="#fafafa"
+                p={12}
               >
-                {isLoading ? (
-                  <EditorLoadingState />
-                ) : (
-                  <Editable
-                    renderElement={renderElement}
-                    renderLeaf={renderLeaf}
-                    placeholder="Enter some rich text…"
-                    spellCheck
-                    autoFocus
-                    style={{
-                      width: "100%",
-                      maxWidth: "100%",
-                      minHeight: `${A4_HEIGHT_PX}px`,
-                      // 페이지 규격에 맞는 여백 설정
-                      padding: "25px",
-                    }}
-                    onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
-                      for (const hotkey in HOTKEYS) {
-                        if (isKeyHotkey(hotkey, event)) {
-                          event.preventDefault();
-                          const mark = HOTKEYS[hotkey];
-                          toggleMark(editor, mark);
+                <Box
+                  ref={editorContainerRef}
+                  p={4}
+                  flex="1"
+                  bg="white"
+                  minH="100%"
+                  width={`${A4_WIDTH_PX}px`}
+                  border={"1px solid #ddd"}
+                  style={{
+                    background: isOver ? "#E3F2FD" : "white",
+                    position: "relative",
+                  }}
+                >
+                  {isLoading ? (
+                    <EditorLoadingState />
+                  ) : (
+                    <Editable
+                      renderElement={renderElement}
+                      renderLeaf={renderLeaf}
+                      placeholder="내용을 입력하세요..."
+                      spellCheck
+                      autoFocus
+                      style={{
+                        width: "100%",
+                        maxWidth: "100%",
+                        minHeight: `${A4_HEIGHT_PX}px`,
+                        // 페이지 규격에 맞는 여백 설정
+                        padding: "25px",
+                      }}
+                      onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+                        for (const hotkey in HOTKEYS) {
+                          if (isKeyHotkey(hotkey, event)) {
+                            event.preventDefault();
+                            const mark = HOTKEYS[hotkey];
+                            toggleMark(editor, mark);
+                          }
                         }
-                      }
 
-                      if (event.key === "Enter" && !event.shiftKey) {
-                        const { selection } = editor;
-                        if (selection) {
-                          const [node] = Editor.node(
-                            editor,
-                            selection.focus.path
-                          );
-                          const [parent] = Editor.parent(
-                            editor,
-                            selection.focus.path
-                          );
-                          const [grandParent, grandParentPath] = Editor.above(
-                            editor,
-                            {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                          const { selection } = editor;
+                          if (selection) {
+                            const [node] = Editor.node(
+                              editor,
+                              selection.focus.path
+                            );
+                            const [parent] = Editor.parent(
+                              editor,
+                              selection.focus.path
+                            );
+                            const [grandParent, grandParentPath] = Editor.above(
+                              editor,
+                              {
+                                at: selection.focus.path,
+                                match: (n) =>
+                                  SlateElement.isElement(n) &&
+                                  n.type === "chart-block",
+                              }
+                            ) || [null, null];
+
+                            // Check if we're in a paragraph inside a chart-block
+                            if (
+                              grandParent &&
+                              grandParent.type === "chart-block"
+                            ) {
+                              if (
+                                SlateElement.isElement(node) &&
+                                node.type === "chart"
+                              ) {
+                                event.preventDefault();
+
+                                // Find the chart-block parent
+                                const [chartBlock, chartBlockPath] =
+                                  Editor.above(editor, {
+                                    at: selection.focus.path,
+                                    match: (n) =>
+                                      SlateElement.isElement(n) &&
+                                      n.type === "chart-block",
+                                  }) || [null, null];
+
+                                if (chartBlock && chartBlockPath) {
+                                  // Insert a new paragraph after the chart-block
+                                  const path = [
+                                    ...chartBlockPath.slice(0, -1),
+                                    chartBlockPath[chartBlockPath.length - 1] +
+                                      1,
+                                  ];
+
+                                  // Create a new paragraph element
+                                  const paragraph: ParagraphElement = {
+                                    type: "paragraph",
+                                    children: [{ text: "" }],
+                                  };
+
+                                  // Insert the new paragraph after the chart-block
+                                  Transforms.insertNodes(editor, paragraph, {
+                                    at: path,
+                                  });
+
+                                  // Move the selection to the new paragraph
+                                  Transforms.select(
+                                    editor,
+                                    Editor.start(editor, path)
+                                  );
+                                }
+
+                                return;
+                              } else {
+                                event.preventDefault();
+
+                                // Insert a new paragraph after the chart-block
+                                const path = [
+                                  ...grandParentPath.slice(0, -1),
+                                  grandParentPath[grandParentPath.length - 1] +
+                                    1,
+                                ];
+                                Transforms.insertNodes(
+                                  editor,
+                                  {
+                                    type: "paragraph",
+                                    children: [{ text: "" }],
+                                  },
+                                  { at: path }
+                                );
+                                // Move selection to the new paragraph
+                                Transforms.select(editor, path);
+                                return;
+                              }
+                            }
+                          }
+                        } else if (event.key === "Enter" && event.shiftKey) {
+                          const { selection } = editor;
+                          if (selection) {
+                            const [node] = Editor.node(
+                              editor,
+                              selection.focus.path
+                            );
+                            const [parent] = Editor.parent(
+                              editor,
+                              selection.focus.path
+                            );
+                            const [grandParent] = Editor.above(editor, {
                               at: selection.focus.path,
                               match: (n) =>
                                 SlateElement.isElement(n) &&
                                 n.type === "chart-block",
-                            }
-                          ) || [null, null];
+                            }) || [null, null];
 
-                          // Check if we're in a paragraph inside a chart-block
-                          if (
-                            grandParent &&
-                            grandParent.type === "chart-block"
-                          ) {
+                            // Check if we're in a paragraph inside a chart-block
                             if (
-                              SlateElement.isElement(node) &&
-                              node.type === "chart"
+                              SlateElement.isElement(parent) &&
+                              parent.type !== "chart" &&
+                              grandParent
                             ) {
                               event.preventDefault();
-
-                              // Find the chart-block parent
-                              const [chartBlock, chartBlockPath] = Editor.above(
-                                editor,
-                                {
-                                  at: selection.focus.path,
-                                  match: (n) =>
-                                    SlateElement.isElement(n) &&
-                                    n.type === "chart-block",
-                                }
-                              ) || [null, null];
-
-                              if (chartBlock && chartBlockPath) {
-                                // Insert a new paragraph after the chart-block
-                                const path = [
-                                  ...chartBlockPath.slice(0, -1),
-                                  chartBlockPath[chartBlockPath.length - 1] + 1,
-                                ];
-
-                                // Create a new paragraph element
-                                const paragraph: ParagraphElement = {
-                                  type: "paragraph",
-                                  children: [{ text: "" }],
-                                };
-
-                                // Insert the new paragraph after the chart-block
-                                Transforms.insertNodes(editor, paragraph, {
-                                  at: path,
-                                });
-
-                                // Move the selection to the new paragraph
-                                Transforms.select(
-                                  editor,
-                                  Editor.start(editor, path)
-                                );
-                              }
-
-                              return;
-                            } else {
-                              event.preventDefault();
-
-                              // Insert a new paragraph after the chart-block
-                              const path = [
-                                ...grandParentPath.slice(0, -1),
-                                grandParentPath[grandParentPath.length - 1] + 1,
-                              ];
-                              Transforms.insertNodes(
-                                editor,
-                                { type: "paragraph", children: [{ text: "" }] },
-                                { at: path }
-                              );
-                              // Move selection to the new paragraph
-                              Transforms.select(editor, path);
+                              // Insert a newline character within the text
+                              Editor.insertText(editor, "\n");
                               return;
                             }
                           }
                         }
-                      } else if (event.key === "Enter" && event.shiftKey) {
-                        const { selection } = editor;
-                        if (selection) {
-                          const [node] = Editor.node(
-                            editor,
-                            selection.focus.path
-                          );
-                          const [parent] = Editor.parent(
-                            editor,
-                            selection.focus.path
-                          );
-                          const [grandParent] = Editor.above(editor, {
-                            at: selection.focus.path,
-                            match: (n) =>
-                              SlateElement.isElement(n) &&
-                              n.type === "chart-block",
-                          }) || [null, null];
-
-                          // Check if we're in a paragraph inside a chart-block
-                          if (
-                            SlateElement.isElement(parent) &&
-                            parent.type !== "chart" &&
-                            grandParent
-                          ) {
-                            event.preventDefault();
-                            // Insert a newline character within the text
-                            Editor.insertText(editor, "\n");
-                            return;
-                          }
-                        }
-                      }
-                    }}
-                  />
-                )}
+                      }}
+                    />
+                  )}
+                </Box>
               </Box>
             </Box>
-          </Box>
-        </VStack>
-      </Slate>
+          </VStack>
+        </Slate>
+      </div>
     </>
   );
 };

@@ -99,7 +99,8 @@ const GRICategoryList = ({ sectionId, year, query }: CategoryListProps) => {
                           </Text>
                           <Clipboard.Root
                             value={
-                              `${item.esgData?.value || ""}` +
+                              `${item.categoryName} ` +
+                              `${item.esgData?.value || ""} ` +
                               `${item.unit.unitName}`
                             }
                           >

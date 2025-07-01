@@ -16,6 +16,8 @@ import { Section } from "@/lib/interface";
 import CategoryList from "./CategoryList";
 import GRICategoryList from "./GRICategoryList";
 import { searchGRIData } from "@/lib/api/get";
+import TableModal from "../modal/TableAddModal";
+import { CustomEditor } from "@/lib/editor/custom-types";
 
 const DataTab = () => {
   const [criterion, setCriterion] = useState<string>("cri-01");

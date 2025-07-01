@@ -325,16 +325,7 @@ export default function ChartModal() {
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
       <Dialog.Trigger asChild>
-        <Button
-          size="2xs"
-          p="1"
-          borderRadius="full"
-          bg="#2F6EEA"
-          color="white"
-          // position="fixed"
-          // top="4"
-          // right="4"
-        >
+        <Button size="2xs" p="1" borderRadius="full" bg="#2F6EEA" color="white">
           <FaPlus size="sm" />
         </Button>
       </Dialog.Trigger>
