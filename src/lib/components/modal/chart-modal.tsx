@@ -60,12 +60,14 @@ interface ChartModalProps {
   mode?: "insert" | "create";
   editor?: CustomEditor;
   trigger: React.ReactNode;
+  onCreate?: () => void;
 }
 
 export default function ChartModal({
   mode = "create",
   editor,
   trigger,
+  onCreate,
 }: ChartModalProps) {
   const [selectedCategoryList, setSelectedCategoryList] = useState<
     CategoryDetail[]
@@ -337,7 +339,7 @@ export default function ChartModal({
 
   return (
     <Dialog.Root placement="center" motionPreset="scale" size="lg">
-      <Dialog.Trigger asChild width="100%">
+      <Dialog.Trigger width="100%" asChild>
         {trigger}
       </Dialog.Trigger>
 
@@ -758,12 +760,21 @@ export default function ChartModal({
                         );
                         closeButtonRef.current?.click();
                       } else {
-                        createChartWithDataSets(
-                          options,
-                          chartData,
-                          categorizedEsgDataList
-                        );
-                        closeButtonRef.current?.click();
+                        // Use async/await to ensure onCreate is called after chart creation
+                        (async () => {
+                          try {
+                            await createChartWithDataSets(
+                              options,
+                              chartData,
+                              categorizedEsgDataList
+                            );
+                            closeButtonRef.current?.click();
+                            // Call onCreate callback only after chart is successfully created
+                            if (onCreate) onCreate();
+                          } catch (error) {
+                            console.error("Failed to create chart:", error);
+                          }
+                        })();
                       }
                     }
                   }}

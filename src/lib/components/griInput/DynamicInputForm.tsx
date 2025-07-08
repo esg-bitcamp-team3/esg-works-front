@@ -103,7 +103,7 @@ export const DynamicInputForm = ({ category, onValueChange }: Props) => {
       ) : inputType === "string" ? (
         <HStack justifyContent={"end"} padding={2} w={"40%"}>
           <Textarea
-            placeholder={category.unit.unitName}
+            placeholder={category.description || "내용을 입력하세요."}
             borderRadius="md"
             borderWidth={1}
             borderColor="gray.300"

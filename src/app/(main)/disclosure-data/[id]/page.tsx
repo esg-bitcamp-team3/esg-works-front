@@ -5,7 +5,7 @@ import GriPage from "@/lib/components/griInput/GriPage";
 import SectionForm from "@/lib/components/griInput/SectionForm";
 
 import { Criterion } from "@/lib/interface";
-import { Flex, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -24,38 +24,34 @@ const Page = () => {
 
   if (criterionId === "cri-01") {
     return (
-      <Flex
-        padding={4}
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <VStack gap={6} top={24} position={"fixed"}>
-          <Text fontSize="2xl" fontWeight="bold" mb={4}>
-            {criteria?.criterionName} 데이터 입력
-          </Text>
+      <Flex direction="column" align="center" justify="center">
+        <Box
+          width="70vw"
+          minHeight="65vh"
+          maxHeight="65vh"
+          top={24}
+          position={"fixed"}
+        >
           <GriPage
             criterionId={criterionId}
             criterionName={criteria?.criterionName || ""}
           />
-        </VStack>
+        </Box>
       </Flex>
     );
   }
 
   return (
-    <Flex
-      padding={4}
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-    >
-      <VStack gap={6} top={24} position={"fixed"}>
-        <Text fontSize="2xl" fontWeight="bold" mb={4}>
-          {criteria?.criterionName} 데이터 입력
-        </Text>
+    <Flex direction="column" align="center" justify="center">
+      <Box
+        width="70vw"
+        minHeight="65vh"
+        maxHeight="65vh"
+        top={24}
+        position={"fixed"}
+      >
         <SectionForm criterionId={criterionId} />
-      </VStack>
+      </Box>
     </Flex>
   );
 };

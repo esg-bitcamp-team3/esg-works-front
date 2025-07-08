@@ -138,11 +138,15 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
           <Breadcrumb.Root size="md">
             <Breadcrumb.List>
               <Breadcrumb.Item>
-                <Breadcrumb.Link href="/criteria">평가 기준</Breadcrumb.Link>
+                <Breadcrumb.Link href="/disclosure-data">
+                  공시 기준
+                </Breadcrumb.Link>
               </Breadcrumb.Item>
               <Breadcrumb.Separator />
               <Breadcrumb.Item>
-                <Breadcrumb.Link href={`/criteria/${criterion?.criterionId}`}>
+                <Breadcrumb.Link
+                  href={`/disclosure-data/${criterion?.criterionId}`}
+                >
                   {criterion?.criterionName}
                 </Breadcrumb.Link>
               </Breadcrumb.Item>

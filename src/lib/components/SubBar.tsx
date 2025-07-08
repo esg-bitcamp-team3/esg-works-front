@@ -342,9 +342,12 @@ const Subbar = ({
                             bg="#2F6EEA"
                             color="white"
                           >
-                            차트 추가
+                            <FaPlus size="12px" />
                           </Button>
                         }
+                        onCreate={() => {
+                          fetchChart();
+                        }}
                       />
                     )}
                   </Box>

@@ -315,6 +315,16 @@ export const getMyCriteria = async () => {
     return null;
   }
 };
+
+export const getDisclosureCriteria = async () => {
+  try {
+    const res = await apiClient.get<Criterion[]>(`/criteria/disclosure`);
+    return res.data;
+  } catch (error) {
+    console.error("섹션 기준 가져오기 실패:", error);
+    return null;
+  }
+};
 export const getCriteria = async (criterionId: string) => {
   try {
     const res = await apiClient.get<Criterion>(`/criteria/${criterionId}`);
