@@ -383,7 +383,11 @@ const ChartContent = ({
             </Button>
           ))}
         </Stack>
-        <Button onClick={() => setChartAreaOpen((prev) => !prev)} bg="#2F6EEA">
+        <Button
+          onClick={() => setChartAreaOpen((prev) => !prev)}
+          bg="#2F6EEA"
+          size="sm"
+        >
           수정
         </Button>
       </Stack>
@@ -432,11 +436,7 @@ const ChartContent = ({
             >
               <Chart
                 key={refreshKey} // Use refreshKey to force re-render
-                type={
-                  selectedChartType === "mixed" || selectedChartType === "table"
-                    ? "bar"
-                    : selectedChartType
-                }
+                type={selectedChartType === "mixed" ? "bar" : selectedChartType}
                 data={chartData}
                 options={options}
               />

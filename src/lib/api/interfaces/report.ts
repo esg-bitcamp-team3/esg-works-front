@@ -38,3 +38,9 @@ export interface InterestReport {
   userId: string;
   checkTime: string;
 }
+
+export interface Template {
+  templateId: string;
+  title: string;
+  content: string;
+}

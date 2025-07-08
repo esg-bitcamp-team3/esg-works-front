@@ -242,7 +242,7 @@ export default function SingleChart({ chartData }: Props) {
   }, [chartData]);
 
   return (
-    <Box height="200px" width="100%">
+    <Box width="400px" height={"250px"}>
       {data && chartType && (
         <Chart
           type={chartType === "mixed" ? "bar" : chartType}

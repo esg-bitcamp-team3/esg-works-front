@@ -182,11 +182,11 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
           <Breadcrumb.Root size="md">
             <Breadcrumb.List>
               <Breadcrumb.Item>
-                <Breadcrumb.Link href="/criteria">평가 기준</Breadcrumb.Link>
+                <Breadcrumb.Link href="/indicators">지표 목록</Breadcrumb.Link>
               </Breadcrumb.Item>
               <Breadcrumb.Separator />
               <Breadcrumb.Item>
-                <Breadcrumb.Link href={`/criteria/${criterion?.criterionId}`}>
+                <Breadcrumb.Link href={`/indicators/${criterion?.criterionId}`}>
                   {criterion?.criterionName}
                 </Breadcrumb.Link>
               </Breadcrumb.Item>
@@ -213,7 +213,7 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
         <HStack>
           <Icon as={LuClipboardPen} fontSize="xl" color="blue.500" />
           <Text fontSize="xl" fontWeight="600" color="blue.500">
-            데이터 입력
+            {criterion?.criterionName} 데이터 입력
           </Text>
           <Badge
             colorScheme="blue"

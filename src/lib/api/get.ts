@@ -35,6 +35,7 @@ import {
   Report,
   ReportDetail,
   SortProp,
+  Template,
 } from "./interfaces/report";
 
 import { SectionCategoryESGData } from "./interfaces/gri";
@@ -263,6 +264,16 @@ export const getReports = async (sortProp: SortProp) => {
   }
 };
 
+export const getReportById = async (id: string) => {
+  try {
+    const res = await apiClient.get<ReportDetail>(`/reports/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("리포트 가져오기 실패");
+    return null;
+  }
+};
+
 export const getFavoriteReports = async (sortProp: SortProp) => {
   try {
     const res = await apiClient.get<ReportDetail[]>("/reports/interest", {
@@ -298,6 +309,16 @@ export const getInterestReport = async (id: string) => {
 export const getMyCriteria = async () => {
   try {
     const res = await apiClient.get<Criterion[]>(`/criteria/my`);
+    return res.data;
+  } catch (error) {
+    console.error("섹션 기준 가져오기 실패:", error);
+    return null;
+  }
+};
+
+export const getDisclosureCriteria = async () => {
+  try {
+    const res = await apiClient.get<Criterion[]>(`/criteria/disclosure`);
     return res.data;
   } catch (error) {
     console.error("섹션 기준 가져오기 실패:", error);
@@ -408,11 +429,12 @@ export const getCriterionById = async (criterionId: string) => {
   }
 };
 
-export const getTemplete = async () => {
+export const getTemplate = async () => {
   try {
-    const res = await apiClient.get<string>("/reports/txt");
+    const res = await apiClient.get<Template>("/reports/template");
     return res.data;
   } catch (error) {
+    console.log("템플릿 가져오기 실패:", error);
     console.error("templete실패");
   }
 };

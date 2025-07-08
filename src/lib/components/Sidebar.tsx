@@ -13,14 +13,22 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import {
+  FaChartLine,
   FaCircleUser,
+  FaClipboardList,
+  FaDatabase,
   FaFeatherPointed,
   FaFile,
   FaFileCirclePlus,
+  FaFilePen,
   FaGear,
   FaHouse,
+  FaLayerGroup,
+  FaListUl,
   FaPen,
   FaRightFromBracket,
+  FaSliders,
+  FaTableList,
   FaUser,
 } from "react-icons/fa6";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,8 +43,17 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { label: "홈", icon: FaHouse, path: "/home" },
-  { label: "데이터 입력", icon: FaPen, path: "/criteria" },
-  { label: "보고서 작성", icon: FaFile, path: "/report" },
+  {
+    label: "공시 데이터 관리",
+    icon: FaDatabase,
+    path: "/disclosure-data",
+  },
+  { label: "지표 관리", icon: FaGear, path: "/indicators" },
+  {
+    label: "보고서 작성",
+    icon: FaFilePen,
+    path: "/report/create?title=제목 없음",
+  },
 ];
 
 interface SidebarProps {

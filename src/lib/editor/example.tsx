@@ -54,6 +54,7 @@ import {
   ChartData,
   ChartOptions,
   registerables,
+  ChartType,
 } from "chart.js";
 import { useDrop } from "react-dnd";
 import {
@@ -75,10 +76,13 @@ import { LuStar } from "react-icons/lu";
 import isUrl from "is-url";
 import { data } from "react-router-dom";
 import { ESGData } from "../api/interfaces/esgData";
-import { getInterestReport } from "../api/get";
+import { getInterestReport, getTemplate } from "../api/get";
 import { PiStar, PiStarFill } from "react-icons/pi";
 import { deleteInterestReports } from "../api/delete";
 import { postInterestReports } from "../api/post";
+import { toaster } from "@/components/ui/toaster";
+import Subbar from "../components/SubBar";
+import { CategorizedESGDataList } from "../api/interfaces/categorizedEsgDataList";
 
 export interface Report {
   id: string;
@@ -129,27 +133,14 @@ const isKeyHotkey = (hotkey: string, event: KeyboardEvent): boolean => {
   return modifiersPressed && keyPressed;
 };
 
-const RichTextExample = ({ documentId }: { documentId: string }) => {
+const RichTextExample = ({
+  documentTitle,
+  template,
+}: {
+  documentTitle?: string;
+  template?: string;
+}) => {
   const [check, setCheck] = useState<boolean>(false);
-
-  const checkInterest = useCallback(async () => {
-    const data = await getInterestReport(documentId);
-    setCheck(Boolean(data));
-  }, [documentId]);
-
-  const clickInterest = useCallback(async () => {
-    if (check) {
-      await deleteInterestReports(documentId);
-      setCheck(false);
-    } else {
-      await postInterestReports(documentId);
-      setCheck(true);
-    }
-  }, [check, documentId]);
-
-  useEffect(() => {
-    checkInterest();
-  }, [checkInterest]);
 
   const renderElement = useCallback(
     (props: RenderElementProps) => <Element {...props} />,
@@ -395,6 +386,21 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
       };
       console.log("Inserting chart block:", chartBlock);
       Transforms.insertNodes(editor, chartBlock);
+
+      // Add a paragraph after the chart
+      const paragraph: ParagraphElement = {
+        type: "paragraph",
+        children: [{ text: "" }],
+      };
+
+      // Insert the paragraph node after the chart block
+      Transforms.insertNodes(editor, paragraph);
+
+      // Move selection to the new paragraph
+      const point = Editor.after(editor, Editor.end(editor, []));
+      if (point) {
+        Transforms.select(editor, point);
+      }
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -403,10 +409,11 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
   }));
   const [title, setTitle] = useState<string>("제목 없는 문서");
   const [value, setValue] = useState<Descendant[]>();
-  const [isLoading, setIsLoading] = useState(documentId ? true : false);
+  const [isLoading, setIsLoading] = useState(template ? true : false);
   // 페이지 관련 상태 추가
   const [pageHeights, setPageHeights] = useState<number[]>([]);
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // A4 페이지 크기 (mm 단위)
   const A4_WIDTH_MM = 210;
@@ -416,295 +423,216 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
   const A4_WIDTH_PX = A4_WIDTH_MM * MM_TO_PX;
   const A4_HEIGHT_PX = A4_HEIGHT_MM * MM_TO_PX;
 
-  // 페이지 높이 계산 함수
-  const calculatePageBreaks = useCallback(() => {
-    if (!editorContainerRef.current) return;
-
-    const container = editorContainerRef.current;
-    const containerHeight = container.scrollHeight;
-    const pageCount = Math.ceil(containerHeight / A4_HEIGHT_PX);
-
-    const heights = [];
-    for (let i = 0; i < pageCount; i++) {
-      heights.push(A4_HEIGHT_PX);
-    }
-
-    setPageHeights(heights);
-  }, [A4_HEIGHT_PX]);
-
-  // 편집기 내용이 변경될 때마다 페이지 계산
-  useEffect(() => {
-    if (value && !isLoading) {
-      // 내용이 변경되면 약간의 지연 후 페이지 계산 (렌더링 완료 후)
-      const timer = setTimeout(() => {
-        calculatePageBreaks();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [value, isLoading, calculatePageBreaks]);
-
-  // 창 크기가 변경될 때 페이지 계산
-  useEffect(() => {
-    window.addEventListener("resize", calculatePageBreaks);
-    return () => window.removeEventListener("resize", calculatePageBreaks);
-  }, [calculatePageBreaks]);
-
   // 문서 ID가 있으면 문서 불러오기
   useEffect(() => {
-    if (documentId) {
-      loadDocument(documentId);
+    if (template !== "blank") {
+      loadDocument();
+    } else {
+      setValue([
+        {
+          type: "paragraph",
+          children: [{ text: "" }],
+        },
+      ]);
+      setTitle(documentTitle || "제목 없는 문서");
+      setIsLoading(false);
     }
-  }, [documentId]);
+  }, [template]);
 
   const deserializeContent = (serialized: string): Descendant[] => {
     try {
       return JSON.parse(serialized);
     } catch (error) {
       console.error("Failed to parse editor content:", error);
-      return initialValue; // 기본값으로 대체`
+      return initialValue; // 기본값으로 대체
     }
   };
 
-  const loadDocument = async (id: string) => {
+  const loadDocument = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient.get<Report>(`/reports/${id}`);
-      const data = response.data;
-      console.log("Loaded document data:", data);
-      // 편집기 내용 설정
-      setValue(deserializeContent(data.content));
-      setTitle(data.title || "제목 없는 문서");
+      const response = await getTemplate();
+      console.log("Loaded document response:", response);
+      setValue(deserializeContent(response?.content || "'"));
+      setTitle(documentTitle || response?.title || "제목 없는 문서");
     } catch (error) {
       console.error("Error loading document:", error);
-      alert("문서를 불러오는데 실패했습니다.");
+      toaster.error({
+        title: "문서 불러오기 실패",
+      });
       setValue(initialValue); // 오류 시 기본값으로 설정
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!value) {
-    return null;
-  }
-
   return (
-    <Slate
-      editor={editor}
-      initialValue={value}
-      onChange={(newValue) => {
-        setValue(newValue);
-      }}
-    >
-      <VStack justifyContent="center" w="100vw" h="100vh" mt={12}>
-        <VStack
-          w="100vw"
-          h="auto"
-          position="sticky"
-          top={0}
-          zIndex={150}
-          justifyContent={"center"}
-          alignItems={"center"}
+    <>
+      <Subbar
+        editor={editor}
+        isExpanded={isExpanded}
+        setIsExpanded={setIsExpanded}
+      />
+      <div
+        style={{
+          transition: "all 0.3s ease-in-out",
+          marginRight: isExpanded ? "550px" : "60px",
+          width: "calc(100% - " + (isExpanded ? "550px" : "60px") + ")",
+          height: "100%",
+        }}
+      >
+        <Slate
+          key={value ? "template" : "initial"}
+          editor={editor}
+          initialValue={value || initialValue}
+          onChange={(newValue) => {
+            setValue(newValue);
+          }}
         >
-          <Box w="80%" justifyContent={"center"} alignItems={"center"}>
-            <HStack justifyContent="start" alignItems="center" w="100%">
-              {isLoading ? (
-                <Skeleton height="48px" width="sm">
-                  <EditableTitle title={title} onChange={setTitle} />
-                </Skeleton>
-              ) : (
-                <EditableTitle title={title} onChange={setTitle} />
-              )}
-              {/* <Icon
-                style={{
-                  cursor: "pointer",
-                  marginLeft: "8px",
-                  fontSize: "32px",
-                  color: "#718096", // gray.400 equivalent
-                }}
-                onClick={() => {
-                  // Toggle favorite status
-                  // You can implement this functionality later
-                  console.log("Toggle favorite for document:", documentId);
-                }}
-              >
-                star_outline
-              </Icon> */}
-              <Button backgroundColor={"transparent"} onClick={clickInterest}>
-                {check ? (
-                  <PiStarFill color="#FFB22C" />
-                ) : (
-                  <PiStar color="gray" />
-                )}
-              </Button>
-            </HStack>
-
-            <FileBar
-              id={documentId}
-              title={title}
-              content={value}
-              editor={editor}
-            />
-          </Box>
-          <Box
-            px={10}
-            py={2}
-            w={"82%"}
-            boxShadow={"md"}
-            bg="gray.50"
-            borderRadius="full"
-            justifyContent="center"
-            alignItems={"center"}
-            m={2}
-          >
-            <Toolbar>
-              <MarkButton format="bold" icon="format_bold" />
-              <MarkButton format="italic" icon="format_italic" />
-              <MarkButton format="underline" icon="format_underlined" />
-              <MarkButton format="code" icon="code" />
-              <BlockButton format="heading-one" icon="looks_one" />
-              <BlockButton format="heading-two" icon="looks_two" />
-              <BlockButton format="block-quote" icon="format_quote" />
-              <BlockButton format="numbered-list" icon="format_list_numbered" />
-              <BlockButton format="bulleted-list" icon="format_list_bulleted" />
-              <BlockButton format="left" icon="format_align_left" />
-              <BlockButton format="center" icon="format_align_center" />
-              <BlockButton format="right" icon="format_align_right" />
-              <BlockButton format="justify" icon="format_align_justify" />
-              <ChartLayoutButton layout="full" icon="crop_7_5" />
-              <ChartLayoutButton layout="right" icon="vertical_split" />
-              <ChartLayoutButton
-                layout="left"
-                icon="vertical_split"
-                flipped={true}
-              />
-              <ChartLayoutButton layout="center" icon="view_week" />
-            </Toolbar>
-          </Box>
-        </VStack>
-        <Box
-          boxShadow={"md"}
-          borderWidth="1px"
-          borderColor="gray.300"
-          borderStyle="solid"
-          bg="white"
-          height="100%"
-          width="80%"
-          overflow="auto"
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Box
-            ref={drop}
-            justifyContent="center"
-            width="auto"
-            height="100%"
-            direction="column"
-            bg="#fafafa"
-            p={12}
-          >
-            <Box
-              ref={editorContainerRef}
-              p={4}
-              flex="1"
-              bg="white"
-              minH="100%"
-              width={`${A4_WIDTH_PX}px`}
-              border={"1px solid #ddd"}
-              style={{
-                background: isOver ? "#E3F2FD" : "white",
-                position: "relative",
-              }}
+          <VStack justifyContent="center" w="100%" h="100vh">
+            <VStack
+              w="100%"
+              h="auto"
+              position="sticky"
+              top={4}
+              zIndex={150}
+              justifyContent={"center"}
+              alignItems={"center"}
             >
-              {/* 페이지 구분선 렌더링 */}
-              {/* {pageHeights.map((height, index) =>
-                index > 0 ? (
-                  <Box
-                    key={`page-break-${index}`}
-                    position="absolute"
-                    left={0}
-                    top={`${index * A4_HEIGHT_PX}px`}
-                    width="100%"
-                    height="20px"
-                    zIndex={5}
-                    style={{
-                      borderTop: "1px dashed #aaa",
-                      marginTop: "-10px",
-                      pointerEvents: "none",
-                      background:
-                        "linear-gradient(180deg, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0) 100%)",
-                    }}
-                  >
-                    <Text
-                      position="absolute"
-                      right="10px"
-                      top="3px"
-                      fontSize="xs"
-                      color="gray.500"
-                    >
-                      Page {index + 1}
-                    </Text>
-                  </Box>
-                ) : null
-              )} */}
+              <Box w="80%" justifyContent={"center"} alignItems={"center"}>
+                <HStack justifyContent="start" alignItems="center" w="100%">
+                  {isLoading ? (
+                    <Skeleton height="48px" width="sm">
+                      <EditableTitle title={title} onChange={setTitle} />
+                    </Skeleton>
+                  ) : (
+                    <EditableTitle title={title} onChange={setTitle} />
+                  )}
+                </HStack>
 
-              {isLoading ? (
-                <EditorLoadingState />
-              ) : (
-                <Editable
-                  renderElement={renderElement}
-                  renderLeaf={renderLeaf}
-                  placeholder="Enter some rich text…"
-                  spellCheck
-                  autoFocus
+                <FileBar
+                  id={""}
+                  title={title}
+                  content={value || initialValue}
+                  editor={editor}
+                />
+              </Box>
+              <Box
+                px={10}
+                py={2}
+                w={"82%"}
+                boxShadow={"md"}
+                bg="gray.50"
+                borderRadius="full"
+                justifyContent="center"
+                alignItems={"center"}
+                m={2}
+              >
+                <Toolbar>
+                  <MarkButton format="bold" icon="format_bold" />
+                  <MarkButton format="italic" icon="format_italic" />
+                  <MarkButton format="underline" icon="format_underlined" />
+                  <MarkButton format="code" icon="code" />
+                  <BlockButton format="heading-one" icon="looks_one" />
+                  <BlockButton format="heading-two" icon="looks_two" />
+                  <BlockButton format="block-quote" icon="format_quote" />
+                  <BlockButton
+                    format="numbered-list"
+                    icon="format_list_numbered"
+                  />
+                  <BlockButton
+                    format="bulleted-list"
+                    icon="format_list_bulleted"
+                  />
+                  <BlockButton format="left" icon="format_align_left" />
+                  <BlockButton format="center" icon="format_align_center" />
+                  <BlockButton format="right" icon="format_align_right" />
+                  <BlockButton format="justify" icon="format_align_justify" />
+                  <ChartLayoutButton layout="full" icon="crop_7_5" />
+                  <ChartLayoutButton layout="right" icon="vertical_split" />
+                  <ChartLayoutButton
+                    layout="left"
+                    icon="vertical_split"
+                    flipped={true}
+                  />
+                  <ChartLayoutButton layout="center" icon="view_week" />
+                </Toolbar>
+              </Box>
+            </VStack>
+            <Box
+              boxShadow={"md"}
+              borderWidth="1px"
+              borderColor="gray.300"
+              borderStyle="solid"
+              bg="white"
+              height="100%"
+              width="80%"
+              overflow="auto"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              mt={4}
+            >
+              <Box
+                ref={drop}
+                justifyContent="center"
+                width="auto"
+                height="100%"
+                direction="column"
+                bg="#fafafa"
+                p={12}
+              >
+                <Box
+                  ref={editorContainerRef}
+                  p={4}
+                  flex="1"
+                  bg="white"
+                  minH="100%"
+                  width={`${A4_WIDTH_PX}px`}
+                  border={"1px solid #ddd"}
                   style={{
-                    width: "100%",
-                    maxWidth: "100%",
-                    minHeight: `${A4_HEIGHT_PX}px`,
-                    // 페이지 규격에 맞는 여백 설정
-                    padding: "25px",
+                    background: isOver ? "#E3F2FD" : "white",
+                    position: "relative",
                   }}
-                  onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
-                    for (const hotkey in HOTKEYS) {
-                      if (isKeyHotkey(hotkey, event)) {
-                        event.preventDefault();
-                        const mark = HOTKEYS[hotkey];
-                        toggleMark(editor, mark);
-                      }
-                    }
-
-                    if (event.key === "Enter" && !event.shiftKey) {
-                      const { selection } = editor;
-                      if (selection) {
-                        const [node] = Editor.node(
-                          editor,
-                          selection.focus.path
-                        );
-                        const [parent] = Editor.parent(
-                          editor,
-                          selection.focus.path
-                        );
-                        const [grandParent, grandParentPath] = Editor.above(
-                          editor,
-                          {
-                            at: selection.focus.path,
-                            match: (n) =>
-                              SlateElement.isElement(n) &&
-                              n.type === "chart-block",
-                          }
-                        ) || [null, null];
-
-                        // Check if we're in a paragraph inside a chart-block
-                        if (grandParent && grandParent.type === "chart-block") {
-                          if (
-                            SlateElement.isElement(node) &&
-                            node.type === "chart"
-                          ) {
+                >
+                  {isLoading ? (
+                    <EditorLoadingState />
+                  ) : (
+                    <Editable
+                      renderElement={renderElement}
+                      renderLeaf={renderLeaf}
+                      placeholder="내용을 입력하세요..."
+                      spellCheck
+                      autoFocus
+                      style={{
+                        width: "100%",
+                        maxWidth: "100%",
+                        minHeight: `${A4_HEIGHT_PX}px`,
+                        // 페이지 규격에 맞는 여백 설정
+                        padding: "25px",
+                      }}
+                      onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+                        for (const hotkey in HOTKEYS) {
+                          if (isKeyHotkey(hotkey, event)) {
                             event.preventDefault();
+                            const mark = HOTKEYS[hotkey];
+                            toggleMark(editor, mark);
+                          }
+                        }
 
-                            // Find the chart-block parent
-                            const [chartBlock, chartBlockPath] = Editor.above(
+                        if (event.key === "Enter" && !event.shiftKey) {
+                          const { selection } = editor;
+                          if (selection) {
+                            const [node] = Editor.node(
+                              editor,
+                              selection.focus.path
+                            );
+                            const [parent] = Editor.parent(
+                              editor,
+                              selection.focus.path
+                            );
+                            const [grandParent, grandParentPath] = Editor.above(
                               editor,
                               {
                                 at: selection.focus.path,
@@ -714,90 +642,117 @@ const RichTextExample = ({ documentId }: { documentId: string }) => {
                               }
                             ) || [null, null];
 
-                            if (chartBlock && chartBlockPath) {
-                              // Insert a new paragraph after the chart-block
-                              const path = [
-                                ...chartBlockPath.slice(0, -1),
-                                chartBlockPath[chartBlockPath.length - 1] + 1,
-                              ];
+                            // Check if we're in a paragraph inside a chart-block
+                            if (
+                              grandParent &&
+                              grandParent.type === "chart-block"
+                            ) {
+                              if (
+                                SlateElement.isElement(node) &&
+                                node.type === "chart"
+                              ) {
+                                event.preventDefault();
 
-                              // Create a new paragraph element
-                              const paragraph: ParagraphElement = {
-                                type: "paragraph",
-                                children: [{ text: "" }],
-                              };
+                                // Find the chart-block parent
+                                const [chartBlock, chartBlockPath] =
+                                  Editor.above(editor, {
+                                    at: selection.focus.path,
+                                    match: (n) =>
+                                      SlateElement.isElement(n) &&
+                                      n.type === "chart-block",
+                                  }) || [null, null];
 
-                              // Insert the new paragraph after the chart-block
-                              Transforms.insertNodes(editor, paragraph, {
-                                at: path,
-                              });
+                                if (chartBlock && chartBlockPath) {
+                                  // Insert a new paragraph after the chart-block
+                                  const path = [
+                                    ...chartBlockPath.slice(0, -1),
+                                    chartBlockPath[chartBlockPath.length - 1] +
+                                      1,
+                                  ];
 
-                              // Move the selection to the new paragraph
-                              Transforms.select(
-                                editor,
-                                Editor.start(editor, path)
-                              );
+                                  // Create a new paragraph element
+                                  const paragraph: ParagraphElement = {
+                                    type: "paragraph",
+                                    children: [{ text: "" }],
+                                  };
+
+                                  // Insert the new paragraph after the chart-block
+                                  Transforms.insertNodes(editor, paragraph, {
+                                    at: path,
+                                  });
+
+                                  // Move the selection to the new paragraph
+                                  Transforms.select(
+                                    editor,
+                                    Editor.start(editor, path)
+                                  );
+                                }
+
+                                return;
+                              } else {
+                                event.preventDefault();
+
+                                // Insert a new paragraph after the chart-block
+                                const path = [
+                                  ...grandParentPath.slice(0, -1),
+                                  grandParentPath[grandParentPath.length - 1] +
+                                    1,
+                                ];
+                                Transforms.insertNodes(
+                                  editor,
+                                  {
+                                    type: "paragraph",
+                                    children: [{ text: "" }],
+                                  },
+                                  { at: path }
+                                );
+                                // Move selection to the new paragraph
+                                Transforms.select(editor, path);
+                                return;
+                              }
                             }
-
-                            return;
-                          } else {
-                            event.preventDefault();
-
-                            // Insert a new paragraph after the chart-block
-                            const path = [
-                              ...grandParentPath.slice(0, -1),
-                              grandParentPath[grandParentPath.length - 1] + 1,
-                            ];
-                            Transforms.insertNodes(
+                          }
+                        } else if (event.key === "Enter" && event.shiftKey) {
+                          const { selection } = editor;
+                          if (selection) {
+                            const [node] = Editor.node(
                               editor,
-                              { type: "paragraph", children: [{ text: "" }] },
-                              { at: path }
+                              selection.focus.path
                             );
-                            // Move selection to the new paragraph
-                            Transforms.select(editor, path);
-                            return;
+                            const [parent] = Editor.parent(
+                              editor,
+                              selection.focus.path
+                            );
+                            const [grandParent] = Editor.above(editor, {
+                              at: selection.focus.path,
+                              match: (n) =>
+                                SlateElement.isElement(n) &&
+                                n.type === "chart-block",
+                            }) || [null, null];
+
+                            // Check if we're in a paragraph inside a chart-block
+                            if (
+                              SlateElement.isElement(parent) &&
+                              parent.type !== "chart" &&
+                              grandParent
+                            ) {
+                              event.preventDefault();
+                              // Insert a newline character within the text
+                              Editor.insertText(editor, "\n");
+                              return;
+                            }
                           }
                         }
-                      }
-                    } else if (event.key === "Enter" && event.shiftKey) {
-                      const { selection } = editor;
-                      if (selection) {
-                        const [node] = Editor.node(
-                          editor,
-                          selection.focus.path
-                        );
-                        const [parent] = Editor.parent(
-                          editor,
-                          selection.focus.path
-                        );
-                        const [grandParent] = Editor.above(editor, {
-                          at: selection.focus.path,
-                          match: (n) =>
-                            SlateElement.isElement(n) &&
-                            n.type === "chart-block",
-                        }) || [null, null];
-
-                        // Check if we're in a paragraph inside a chart-block
-                        if (
-                          SlateElement.isElement(parent) &&
-                          parent.type !== "chart" &&
-                          grandParent
-                        ) {
-                          event.preventDefault();
-                          // Insert a newline character within the text
-                          Editor.insertText(editor, "\n");
-                          return;
-                        }
-                      }
-                    }
-                  }}
-                />
-              )}
+                      }}
+                    />
+                  )}
+                </Box>
+              </Box>
             </Box>
-          </Box>
-        </Box>
-      </VStack>
-    </Slate>
+          </VStack>
+        </Slate>
+      </div>
+    </>
   );
 };
 
@@ -1345,7 +1300,9 @@ const InsertImageButton = () => {
         event.preventDefault();
         const url = window.prompt("Enter the URL of the image:");
         if (url && !isImageUrl(url)) {
-          alert("URL is not an image");
+          toaster.error({
+            title: "이미지 URL이 유효하지 않습니다.",
+          });
           return;
         }
         url && insertImage(editor, url);
@@ -1481,7 +1438,200 @@ export const insertChart = (editor: CustomEditor) => {
   Transforms.select(editor, point);
 };
 
+export const insertChartFromData = (
+  editor: CustomEditor,
+  chartType: "bar" | "line" | "pie" | "doughnut" | "mixed",
+  options: ChartOptions,
+  chartData: ChartData
+) => {
+  try {
+    // Create a safe deep copy of the chart data
+    // This avoids reference issues when Chart.js tries to manipulate the data
+    // Using a manual deep copy approach for better browser compatibility
+    const safeChartData = {
+      labels: Array.isArray(chartData.labels) ? [...chartData.labels] : [],
+      datasets: Array.isArray(chartData.datasets)
+        ? chartData.datasets.map((dataset) => ({
+            ...dataset,
+            data: Array.isArray(dataset.data) ? [...dataset.data] : [],
+          }))
+        : [],
+    };
+
+    // Deep copy options
+    const safeOptions = options ? JSON.parse(JSON.stringify(options)) : {};
+
+    // 차트 요소 생성
+    const chartElement: ChartElement = {
+      type: "chart",
+      chartType,
+      data: safeChartData as ChartData,
+      options: safeOptions,
+      width: 500, // 기본 너비
+      height: 300, // 기본 높이
+      children: [{ text: "" }], // 필수 자식 속성
+    };
+
+    // 차트 블록 래퍼 생성
+    const chartBlock: ChartBlockElement = {
+      type: "chart-block",
+      layout: "full", // 기본 레이아웃
+      children: [chartElement],
+    };
+
+    console.log("차트 블록 삽입:", chartBlock);
+
+    // 현재 선택 위치에 차트 블록 삽입
+    Transforms.insertNodes(editor, chartBlock);
+
+    // Add a paragraph after the chart
+    const paragraph: ParagraphElement = {
+      type: "paragraph",
+      children: [{ text: "" }],
+    };
+
+    // Insert the paragraph node after the chart block
+    Transforms.insertNodes(editor, paragraph);
+
+    // Move selection to the new paragraph
+    const point = Editor.after(editor, Editor.end(editor, []));
+    if (point) {
+      Transforms.select(editor, point);
+    }
+  } catch (error) {
+    console.error("Error inserting chart:", error);
+  }
+};
+
 ChartJS.register(...registerables);
+
+export const insertTableFromData = (
+  editor: CustomEditor,
+  data: CategorizedESGDataList[]
+) => {
+  if (!data || data.length === 0) return;
+
+  // 모든 연도 수집 및 정렬
+  const allYears = new Set<string>();
+  data.forEach((category) => {
+    category.esgNumberDTOList.forEach((esgNumber) => {
+      allYears.add(esgNumber.year);
+    });
+  });
+  const sortedYears = Array.from(allYears).sort();
+
+  const tableRows = [];
+
+  // Create header row (Category | Year1 | Year2 | ...)
+  const headerCells = [
+    {
+      type: "table-cell",
+      children: [{ text: "", bold: true }],
+    },
+    ...sortedYears.map((year) => ({
+      type: "table-cell",
+      children: [{ text: year, bold: true }],
+    })),
+  ];
+
+  tableRows.push({
+    type: "table-row",
+    children: headerCells,
+  });
+
+  // Create data rows for each category
+  data.forEach((category) => {
+    const categoryName = category.categoryDetailDTO.categoryName || "";
+
+    // Create a map of year -> value for this category
+    const yearValueMap = new Map<string, number>();
+    category.esgNumberDTOList.forEach((esgNumber) => {
+      yearValueMap.set(esgNumber.year, esgNumber.value);
+    });
+
+    // Create row cells: category name + values for each year
+    const rowCells = [
+      {
+        type: "table-cell",
+        children: [{ text: categoryName }],
+      },
+      ...sortedYears.map((year) => {
+        const value = yearValueMap.get(year);
+        const displayValue = value !== undefined ? value.toString() : "-";
+        // Add comma after every 3 cells (except for the last cell)
+        const withComma =
+          value !== undefined
+            ? parseFloat(value.toString()).toLocaleString("en-US")
+            : "-";
+        return {
+          type: "table-cell",
+          children: [{ text: withComma }],
+        };
+      }),
+    ];
+
+    tableRows.push({
+      type: "table-row",
+      children: rowCells,
+    });
+  });
+
+  // Insert the table
+  const table: TableElement = {
+    type: "table",
+    children: tableRows,
+  };
+
+  Transforms.insertNodes(editor, table);
+
+  // Move selection to a point after the table
+  const point = Editor.after(editor, Editor.end(editor, []));
+
+  // Only if we have a valid point, insert paragraphs after the table
+  if (point) {
+    // Insert a new paragraph after the table, not inside it
+    Transforms.insertNodes(
+      editor,
+      { type: "paragraph", children: [{ text: "" }] },
+      { at: point }
+    );
+
+    // Get the position after the first paragraph
+    const nextPoint = Editor.after(editor, point);
+
+    // Insert a second paragraph with sample text
+    if (nextPoint) {
+      const secondParagraph: ParagraphElement = {
+        type: "paragraph",
+        children: [{ text: "" }],
+      };
+
+      Transforms.insertNodes(editor, secondParagraph, { at: nextPoint });
+
+      // Get position after the second paragraph
+      const thirdPoint = Editor.after(editor, nextPoint);
+
+      // Insert a third paragraph for spacing
+      if (thirdPoint) {
+        const thirdParagraph: ParagraphElement = {
+          type: "paragraph",
+          children: [{ text: "" }],
+        };
+
+        Transforms.insertNodes(editor, thirdParagraph, { at: thirdPoint });
+
+        // Move selection to the beginning of the third paragraph for easier editing
+        Transforms.select(editor, thirdPoint);
+      } else {
+        // Fallback if thirdPoint is null
+        Transforms.select(editor, nextPoint);
+      }
+    } else {
+      // Fallback if nextPoint is null
+      Transforms.select(editor, point);
+    }
+  }
+};
 
 export const insertTable = (editor: CustomEditor, rows = 3, cols = 3) => {
   const tableRows = [];
@@ -1530,7 +1680,7 @@ export const insertTable = (editor: CustomEditor, rows = 3, cols = 3) => {
   // Move selection to a point after the table
   const point = Editor.after(editor, Editor.end(editor, []));
 
-  // Only if we have a valid point, insert paragraph after the table
+  // Only if we have a valid point, insert paragraphs after the table
   if (point) {
     // Insert a new paragraph after the table, not inside it
     Transforms.insertNodes(
@@ -1539,8 +1689,40 @@ export const insertTable = (editor: CustomEditor, rows = 3, cols = 3) => {
       { at: point }
     );
 
-    // Move selection to the new paragraph
-    Transforms.select(editor, point);
+    // Get the position after the first paragraph
+    const nextPoint = Editor.after(editor, point);
+
+    // Insert a second paragraph with sample text
+    if (nextPoint) {
+      const secondParagraph: ParagraphElement = {
+        type: "paragraph",
+        children: [{ text: "" }],
+      };
+
+      Transforms.insertNodes(editor, secondParagraph, { at: nextPoint });
+
+      // Get position after the second paragraph
+      const thirdPoint = Editor.after(editor, nextPoint);
+
+      // Insert a third paragraph for spacing
+      if (thirdPoint) {
+        const thirdParagraph: ParagraphElement = {
+          type: "paragraph",
+          children: [{ text: "" }],
+        };
+
+        Transforms.insertNodes(editor, thirdParagraph, { at: thirdPoint });
+
+        // Move selection to the beginning of the third paragraph for easier editing
+        Transforms.select(editor, thirdPoint);
+      } else {
+        // Fallback if thirdPoint is null
+        Transforms.select(editor, nextPoint);
+      }
+    } else {
+      // Fallback if nextPoint is null
+      Transforms.select(editor, point);
+    }
   }
 };
 
@@ -1619,6 +1801,17 @@ const Chart = ({
 
   // Create options with formatter
   const chartOptions = React.useMemo(() => {
+    if (!options) {
+      return {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          datalabels: {
+            display: false, // 기본적으로 데이터 레이블 표시 안 함
+          },
+        },
+      };
+    }
     const baseOptions = {
       ...options,
       maintainAspectRatio: false,
@@ -1705,39 +1898,63 @@ const Chart = ({
 
   // Add cleanup for Chart.js instances
   React.useEffect(() => {
-    if (canvasRef.current) {
-      // Destroy previous instance if it exists
-      if (chartInstanceRef.current) {
-        try {
-          chartInstanceRef.current.destroy();
-        } catch (e) {
-          console.warn("Error destroying chart:", e);
-        }
-        chartInstanceRef.current = null;
-      }
+    let chartInstance: ChartJS | null = null;
 
-      // Create new chart instance
+    if (canvasRef.current) {
+      // Get the canvas context
       const ctx = canvasRef.current.getContext("2d");
+
       if (ctx) {
-        chartInstanceRef.current = new ChartJS(ctx, {
-          type: chartType,
-          data: safeChartData,
-          options: chartOptions,
-        });
+        // Destroy previous instance if it exists
+        if (chartInstanceRef.current) {
+          try {
+            chartInstanceRef.current.destroy();
+          } catch (e) {
+            console.warn("Error destroying chart:", e);
+          }
+          chartInstanceRef.current = null;
+        }
+
+        // Create new chart instance with a try-catch block
+        try {
+          chartInstance = new ChartJS(ctx, {
+            type: chartType,
+            data: safeChartData,
+            options: chartOptions,
+          });
+
+          // Store the reference
+          chartInstanceRef.current = chartInstance;
+        } catch (e) {
+          console.error("Error creating chart:", e);
+        }
       }
     }
 
+    // Return cleanup function
     return () => {
-      if (chartInstanceRef.current) {
+      // Clean up the chart on unmount
+      if (chartInstance) {
+        try {
+          chartInstance.destroy();
+        } catch (e) {
+          console.warn("Error destroying chart during cleanup:", e);
+        }
+      }
+
+      if (
+        chartInstanceRef.current &&
+        chartInstanceRef.current !== chartInstance
+      ) {
         try {
           chartInstanceRef.current.destroy();
         } catch (e) {
-          console.warn("Error destroying chart during cleanup:", e);
+          console.warn("Error destroying chart ref during cleanup:", e);
         }
         chartInstanceRef.current = null;
       }
     };
-  }, [safeChartData, chartType, chartOptions]);
+  }, [safeChartData, chartType, chartOptions, canvasRef.current]);
 
   const onMouseDown = (e: globalThis.MouseEvent) => {
     e.preventDefault();
@@ -1824,16 +2041,7 @@ const Chart = ({
         }}
       >
         <div style={{ width: "100%", height: "100%", padding: "8px" }}>
-          <ChartJSComponent
-            type={chartType}
-            data={safeChartData}
-            options={chartOptions}
-            ref={(chartInstance) => {
-              if (chartInstance) {
-                chartInstanceRef.current = chartInstance;
-              }
-            }}
-          />
+          <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
         </div>
 
         {selected && (

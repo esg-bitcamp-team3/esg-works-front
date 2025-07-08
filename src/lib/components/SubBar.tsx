@@ -12,10 +12,10 @@ import {
   Dialog,
   Text,
   Table,
+  VStack,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
-import { Resizable } from "re-resizable";
 import DraggableChartIcon from "./DraggableChartIcon";
 import { getChart, getInterestChart, getSearchSectionId } from "../api/get";
 import { ChartDetail, InteresrtChartDetail } from "../api/interfaces/chart";
@@ -36,40 +36,44 @@ import { IoSearch } from "react-icons/io5";
 import { FaSearch } from "react-icons/fa";
 import { Section } from "../interface";
 import DataTab from "./section/DataTab";
-import TableModal from "@/lib/components/modal/table-modal";
 import ChartModal from "./modal/chart-modal";
+import TableAddModal from "./modal/TableAddModal";
+import { CustomEditor } from "../editor/custom-types";
+import TableModal from "./modal/TableAddModal";
 
 const items = [
   {
     icon: <IoSearch />,
     titleIcon: <IoSearch size={30} color="#2F6EEA" />,
-    title: "데이터불러오기",
+    title: "데이터 불러오기",
   },
   {
     icon: <LuChartNoAxesCombined />,
     titleIcon: <LuChartNoAxesCombined size={30} color="#2F6EEA" />,
-    title: "전체파일",
-  },
-  {
-    icon: <PiGridNine />,
-    titleIcon: <PiGridNine size={30} color="#2F6EEA" />,
-    title: "테이블",
+    title: "차트 불러오기",
   },
 ];
 
 const DEFAULT_SIDEBAR_WIDTH = 550;
-const Subbar = () => {
-  const [activeIndex, setActiveIndex] = useState<number | 0>(0);
+const Subbar = ({
+  editor,
+  isExpanded,
+  setIsExpanded,
+}: {
+  editor: CustomEditor;
+  isExpanded: boolean;
+  setIsExpanded: (isExpanded: boolean) => void;
+}) => {
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   const [selectedTab, setSelectedTab] = useState<"all" | "star">("all");
-  const [sidebarWidth, setSidebarWidth] = useState(550); // 👈 수정: 사이드바 너비 상태 추가
-  const [chartList, setChartList] = useState<ChartDetail[] | null>([]);
+  const [chartList, setChartList] = useState<ChartDetail[]>([]);
   const [interestChartList, setInterestChartList] = useState<
-    InteresrtChartDetail[] | null
+    InteresrtChartDetail[]
   >([]);
   const [isOpen, setIsOpen] = useState(false);
 
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [sectionList, setSectionList] = useState<Section[]>([]);
   const [category, setCategory] = useState<string>("");
   const [searchKeyword, setSearchKeyword] = useState<string>("");
@@ -79,7 +83,6 @@ const Subbar = () => {
     setLoading(true);
     try {
       const response = await getChart();
-      console.log("Chart data:", response);
       setChartList(response || []);
       const interestResponse = await getInterestChart();
       setInterestChartList(interestResponse || []);
@@ -99,29 +102,29 @@ const Subbar = () => {
     }
   };
 
-  const refreshChart = async () => {
-    await fetchChart();
-  };
+  const handleStarClick = async (chartId: string) => {
+    const isFilled = interestChartList?.some(
+      (item) => item.chartId === chartId
+    );
 
-  const handleAdd = async (chartId: string) => {
     try {
-      await postInterestChart(chartId);
-      const updatedInterest = await getInterestChart(); // 전체 관심 차트만 새로 불러오기
-      setInterestChartList(updatedInterest || []);
-      await refreshChart(); // 기존 로직
-    } catch (e) {
-      console.error("❌ 관심 차트 등록 중 오류:", e);
-    }
-  };
+      if (isFilled) {
+        // 즐겨찾기 해제
+        await deleteInterestChart(chartId);
 
-  const handleDelete = async (chartId: string) => {
-    try {
-      await deleteInterestChart(chartId);
-      const updatedInterest = await getInterestChart(); // 전체 관심 차트만 새로 불러오기
-      setInterestChartList(updatedInterest || []);
-      await refreshChart(); // 기존 로직
+        // 상태 업데이트 - 즐겨찾기 목록에서 제거
+        setInterestChartList((prev) =>
+          prev.filter((item) => item.chartId !== chartId)
+        );
+      } else {
+        // 즐겨찾기 추가
+        await postInterestChart(chartId);
+
+        fetchChart();
+      }
     } catch (e) {
-      console.error("❌ 관심 차트 삭제 중 오류:", e);
+      console.error("⚠️ 관심 차트 상태 변경 중 오류:", e);
+      fetchChart();
     }
   };
 
@@ -136,24 +139,15 @@ const Subbar = () => {
       .includes(searchKeyword.toLowerCase())
   );
 
-  useEffect(() => {
-    setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
-  }, [activeIndex]);
-
   // 컴포넌트 마운트 시 무조건 실행
   useEffect(() => {
     fetchSection();
     fetchChart();
   }, []);
 
-  // activeIndex가 바뀔 때 실행
-  useEffect(() => {
-    fetchChart();
-  }, [activeIndex]);
-
   useEffect(() => {
     fetchSection(category);
-  }, []);
+  }, [category]);
 
   return (
     <>
@@ -186,7 +180,7 @@ const Subbar = () => {
               onClick={() => {
                 setActiveIndex(idx);
                 setIsOpen(true);
-                setSidebarWidth(sidebarWidth);
+                setIsExpanded(true);
               }}
             >
               {item.icon}
@@ -195,102 +189,98 @@ const Subbar = () => {
         </Box>
 
         {isOpen !== false && (
-          <Resizable
-            // minWidth={DEFAULT_SIDEBAR_WIDTH}
-            maxWidth={900}
-            enable={{ left: true }}
-            onResize={(e, dir, ref) => {
-              setSidebarWidth(ref.offsetWidth);
-            }}
+          <Box
+            height="100vh"
+            width={`${DEFAULT_SIDEBAR_WIDTH}px`}
+            padding="5"
+            display="flex"
+            flexDirection="column"
+            overflowY={"auto"}
             style={{
               zIndex: 1000,
               backgroundColor: "white",
             }}
           >
-            <Box
-              height="100vh"
-              width={"100%"}
-              padding="5"
-              display="flex"
-              flexDirection="column"
-              overflowY={"auto"}
-            >
-              <HStack mb={4} justifyContent="space-between">
-                <HStack>
-                  <Box
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    gap={2}
-                  >
-                    {items[activeIndex].titleIcon}
-                    <Text
-                      mb={0}
-                      fontSize="md"
-                      fontWeight="bold"
-                      color="#2F6EEA"
-                      position="relative"
-                      style={{ verticalAlign: "bottom" }}
-                    >
-                      {items[activeIndex].title}
-                    </Text>
-                  </Box>
-                </HStack>
-                <CloseButton
-                  onClick={() => {
-                    setIsOpen(false);
-                    setSidebarWidth(DEFAULT_SIDEBAR_WIDTH); // 👈 유지보수성 굿
-                  }}
-                />
-              </HStack>
-
-              {/* 기준 검색 */}
-              <Box>
-                <InputGroup
-                  startElement={
-                    <Box display="flex">
-                      <FaSearch color="#2F6EEA" />
-                    </Box>
-                  }
-                  alignItems="start"
-                  w="100%"
+            <HStack mb={4} justifyContent="space-between">
+              <HStack>
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  gap={2}
                 >
-                  <Input
-                    flex={1}
-                    bg={"white"}
-                    borderWidth="1px" // 테두리 두께를 1px로 설정
-                    value={searchKeyword}
-                    onChange={(e) => setSearchKeyword(e.target.value)}
-                  />
-                </InputGroup>
-              </Box>
+                  {items[activeIndex].titleIcon}
+                  <Text
+                    mb={0}
+                    fontSize="md"
+                    fontWeight="bold"
+                    color="#2F6EEA"
+                    position="relative"
+                    style={{ verticalAlign: "bottom" }}
+                  >
+                    {items[activeIndex].title}
+                  </Text>
+                </Box>
+              </HStack>
+              <CloseButton
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsExpanded(false);
+                }}
+              />
+            </HStack>
 
-              {/* 전체 버튼 */}
-              {activeIndex !== 0 && (
-                <HStack w="100%" justifyContent={"space-between"} mt={4}>
+            {/* 전체 버튼 */}
+            {activeIndex !== 0 && (
+              <>
+                {/* 기준 검색 */}
+                <Box>
+                  <InputGroup
+                    startElement={
+                      <Box display="flex">
+                        <FaSearch color="#2F6EEA" />
+                      </Box>
+                    }
+                    alignItems="start"
+                    w="100%"
+                  >
+                    <Input
+                      flex={1}
+                      bg={"white"}
+                      borderWidth="1px" // 테두리 두께를 1px로 설정
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                    />
+                  </InputGroup>
+                </Box>
+                <HStack
+                  w="100%"
+                  justifyContent={"space-between"}
+                  mt={4}
+                  gap={4}
+                >
                   <Box w={"100%"}>
                     <HStack
-                      w="110%"
+                      w="100%"
                       justifyContent="space-around"
-                      // alignItems="center"
+                      alignItems="center"
                     >
                       <Button
                         bg="white"
                         onClick={() => setSelectedTab("all")}
                         display="flex"
-                        gap="3"
-                        alignItems="center"
-                        justifyContent="center"
+                        gap="2"
                       >
                         {selectedTab === "all" ? (
-                          <PiSquaresFourBold color="#2F6EEA" size="12px" />
+                          <PiSquaresFour color="#2F6EEA" size="12px" />
                         ) : (
                           <PiSquaresFour color="gray" size="12px" />
                         )}
                         <Text
-                          fontSize={{ base: "xs", md: "sm", lg: "md" }}
+                          fontSize={{ base: "xs", md: "sm", lg: "sm" }}
                           color={selectedTab === "all" ? "#2F6EEA" : "gray"}
                           fontWeight={selectedTab === "all" ? "bold" : "normal"}
+                          alignItems="center"
                         >
                           전체
                         </Text>
@@ -299,12 +289,11 @@ const Subbar = () => {
                       {/* 즐겨찾기 버튼 */}
                       <Button
                         bg="white"
-                        gap="3"
+                        gap="2"
                         onClick={() => setSelectedTab("star")}
                         display="flex"
                         alignItems="center"
                         justifyContent="center"
-                        paddingRight={12}
                       >
                         {selectedTab === "star" ? (
                           <PiStarBold color="#2F6EEA" size="12px" />
@@ -312,7 +301,7 @@ const Subbar = () => {
                           <PiStar color="gray" size="12px" />
                         )}
                         <Text
-                          fontSize={{ base: "xs", md: "sm", lg: "md" }}
+                          fontSize={{ base: "xs", md: "sm", lg: "sm" }}
                           color={selectedTab === "star" ? "#2F6EEA" : "gray"}
                           fontWeight={
                             selectedTab === "star" ? "bold" : "normal"
@@ -324,12 +313,11 @@ const Subbar = () => {
                     </HStack>
 
                     <Box
-                      width="110%"
-                      height="4px"
+                      width="100%"
+                      height="3px"
                       display="flex"
                       borderRadius="md"
                       overflow="auto"
-                      paddingRight="12"
                     >
                       <Box
                         flex="1"
@@ -344,380 +332,154 @@ const Subbar = () => {
                     </Box>
                   </Box>
                   <Box position={"right"}>
-                    {activeIndex === 1 && <ChartModal />}
-                    {activeIndex === 2 && <TableModal />}
+                    {activeIndex === 1 && (
+                      <ChartModal
+                        trigger={
+                          <Button
+                            size="2xs"
+                            p="1"
+                            borderRadius="full"
+                            bg="#2F6EEA"
+                            color="white"
+                          >
+                            <FaPlus size="12px" />
+                          </Button>
+                        }
+                        onCreate={() => {
+                          fetchChart();
+                        }}
+                      />
+                    )}
                   </Box>
                 </HStack>
-              )}
+              </>
+            )}
 
-              {activeIndex === 0 && <DataTab />}
+            {activeIndex === 0 && <DataTab />}
 
-              {/* 차트 목록 */}
-              {activeIndex === 1 && (
-                <>
-                  {selectedTab === "all" && (
-                    <Box mt={6} flex="1" overflowY="scroll">
-                      <Flex
-                        flexDirection="column"
-                        gap={5}
-                        alignContent={"center"}
-                      >
-                        <Box py={4}>
-                          {loading ? (
-                            Array(5)
-                              .fill(0)
-                              .map((_, index) => (
-                                <Skeleton
-                                  key={index}
-                                  height="150px"
-                                  mb={4}
-                                  borderRadius="md"
-                                />
-                              ))
-                          ) : filteredChartList &&
-                            filteredChartList.length === 0 ? (
-                            <Text
-                              textAlign="center"
-                              mt={10}
-                              color="gray.500"
-                              fontSize="lg"
-                            >
-                              차트가 없습니다.
-                            </Text>
-                          ) : (
-                            filteredChartList &&
-                            filteredChartList.map((data, index) => {
-                              const isFilled =
-                                interestChartList?.some(
-                                  (item) => item.chartId === data.chartId
-                                ) ?? false;
-                              return (
-                                <Flex
-                                  key={index}
-                                  flexDirection="row"
-                                  gap={5}
-                                  minH={200}
-                                  marginBottom={5}
+            {/* 차트 목록 */}
+            {activeIndex === 1 && (
+              <>
+                {selectedTab === "all" && (
+                  <Box mt={6} flex="1" overflowY="scroll">
+                    <Flex flexDirection="column" gap={5}>
+                      <Box py={4}>
+                        {loading ? (
+                          Array(5)
+                            .fill(0)
+                            .map((_, index) => (
+                              <Skeleton
+                                key={index}
+                                height="150px"
+                                mb={4}
+                                borderRadius="md"
+                              />
+                            ))
+                        ) : filteredChartList.length === 0 ? (
+                          <Text
+                            textAlign="center"
+                            mt={10}
+                            color="gray.500"
+                            fontSize="lg"
+                          >
+                            차트가 없습니다.
+                          </Text>
+                        ) : (
+                          filteredChartList.map((data, index) => {
+                            const isFilled =
+                              interestChartList?.some(
+                                (item) => item.chartId === data.chartId
+                              ) ?? false;
+                            return (
+                              <HStack
+                                width={"100%"}
+                                key={index}
+                                gap={5}
+                                alignItems="center"
+                                justifyContent="center"
+                                alignContent={"center"}
+                              >
+                                <DraggableChartIcon
+                                  chartType={data.type} // 동적으로 타입 전달
+                                  data={data}
                                 >
-                                  <HStack>
-                                    <DraggableChartIcon
-                                      chartType={data.type} // 동적으로 타입 전달
-                                      data={data}
-                                    >
-                                      <SingleChart chartData={data || []} />
-                                    </DraggableChartIcon>
-                                    <StarToggleIcon
-                                      filled={isFilled}
-                                      onToggle={async (filled) => {
-                                        if (filled) {
-                                          try {
-                                            await handleAdd(data.chartId);
-                                            console.log(
-                                              `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                              "⭐ 관심 차트로 등록되었습니다."
-                                            );
-                                          } catch (e) {
-                                            console.error(
-                                              "❌ 관심 차트 등록 실패:",
-                                              e
-                                            );
-                                          }
-                                        } else {
-                                          try {
-                                            await handleDelete(data.chartId);
-                                            console.log("💔 관심 차트 해제됨");
-                                          } catch (e) {
-                                            console.error(
-                                              "❌ 관심 차트 해제 실패:",
-                                              e
-                                            );
-                                          }
-                                        }
-                                      }}
-                                    />
-                                  </HStack>
-                                </Flex>
-                              );
-                            })
-                          )}
-                        </Box>
-                      </Flex>
-                    </Box>
-                  )}
-
-                  {selectedTab === "star" && (
-                    <Box mt={6} flex="1" overflowY="scroll">
-                      <Flex flexDirection="column" gap={5}>
-                        <Box py={4}>
-                          {loading ? (
-                            Array(5)
-                              .fill(0)
-                              .map((_, index) => (
-                                <Skeleton
-                                  key={index}
-                                  height="150px"
-                                  mb={4}
-                                  borderRadius="md"
+                                  <SingleChart chartData={data || []} />
+                                </DraggableChartIcon>
+                                <StarToggleIcon
+                                  filled={isFilled}
+                                  onToggle={() => handleStarClick(data.chartId)}
                                 />
-                              ))
-                          ) : filteredInterestChartList &&
-                            filteredInterestChartList.length === 0 ? (
-                            <Text
-                              textAlign="center"
-                              mt={10}
-                              color="gray.500"
-                              fontSize="lg"
-                            >
-                              차트가 없습니다.
-                            </Text>
-                          ) : (
-                            filteredInterestChartList &&
-                            filteredInterestChartList.map((data, index) => {
-                              const isFilled =
-                                interestChartList?.some(
-                                  (item) => item.chartId === data.chartId
-                                ) ?? false;
-                              return (
-                                <Flex
-                                  key={index}
-                                  flexDirection="row"
-                                  gap={5}
-                                  minH={200}
-                                  marginBottom={5}
+                              </HStack>
+                            );
+                          })
+                        )}
+                      </Box>
+                    </Flex>
+                  </Box>
+                )}
+
+                {selectedTab === "star" && (
+                  <Box mt={6} flex="1" overflowY="scroll">
+                    <Flex flexDirection="column" gap={5}>
+                      <Box py={4}>
+                        {loading ? (
+                          Array(5)
+                            .fill(0)
+                            .map((_, index) => (
+                              <Skeleton
+                                key={index}
+                                height="150px"
+                                mb={4}
+                                borderRadius="md"
+                              />
+                            ))
+                        ) : filteredInterestChartList.length === 0 ? (
+                          <Text
+                            textAlign="center"
+                            mt={10}
+                            color="gray.500"
+                            fontSize="lg"
+                          >
+                            차트가 없습니다.
+                          </Text>
+                        ) : (
+                          filteredInterestChartList.map((data, index) => {
+                            const isFilled =
+                              interestChartList?.some(
+                                (item) => item.chartId === data.chartId
+                              ) ?? false;
+                            return (
+                              <HStack
+                                width={"100%"}
+                                key={index}
+                                gap={5}
+                                alignItems="center"
+                                justifyContent="center"
+                                alignContent={"center"}
+                              >
+                                <DraggableChartIcon
+                                  chartType={"line"} // 동적으로 타입 전달
+                                  data={data.chartDetail}
                                 >
-                                  <DraggableChartIcon
-                                    chartType={"line"} // 동적으로 타입 전달
-                                    data={data.chartDetail}
-                                  >
-                                    <SingleChart
-                                      chartData={data.chartDetail || []}
-                                    />
-                                  </DraggableChartIcon>
-                                  <StarToggleIcon
-                                    filled={isFilled}
-                                    onToggle={async (filled) => {
-                                      if (filled) {
-                                        try {
-                                          await handleAdd(data.chartId);
-                                          console.log(
-                                            `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                            "⭐ 관심 차트로 등록되었습니다."
-                                          );
-                                        } catch (e) {
-                                          console.error(
-                                            "❌ 관심 차트 등록 실패:",
-                                            e
-                                          );
-                                        }
-                                      } else {
-                                        try {
-                                          await handleDelete(data.chartId);
-                                          console.log("💔 관심 차트 해제됨");
-                                        } catch (e) {
-                                          console.error(
-                                            "❌ 관심 차트 해제 실패:",
-                                            e
-                                          );
-                                        }
-                                      }
-                                    }}
+                                  <SingleChart
+                                    chartData={data.chartDetail || []}
                                   />
-                                </Flex>
-                              );
-                            })
-                          )}
-                        </Box>
-                      </Flex>
-                    </Box>
-                  )}
-                </>
-              )}
-              {/* 테이블 목록 */}
-              {activeIndex === 2 && (
-                <>
-                  {selectedTab === "all" && (
-                    <Box mt={6} flex="1" overflowY="auto">
-                      <Flex flexDirection="column" gap={5}>
-                        <Box py={4}>
-                          {loading ? (
-                            Array(2)
-                              .fill(0)
-                              .map((_, index) => (
-                                <Skeleton
-                                  key={index}
-                                  height="150px"
-                                  mb={4}
-                                  borderRadius="md"
+                                </DraggableChartIcon>
+                                <StarToggleIcon
+                                  filled={isFilled}
+                                  onToggle={() => handleStarClick(data.chartId)}
                                 />
-                              ))
-                          ) : chartList &&
-                            chartList.filter(
-                              (chart) =>
-                                chart.options &&
-                                JSON.parse(chart.options).type === "table"
-                            ).length === 0 ? (
-                            <Text
-                              textAlign="center"
-                              mt={10}
-                              color="gray.500"
-                              fontSize="lg"
-                            >
-                              테이블이 없습니다.
-                            </Text>
-                          ) : (
-                            chartList &&
-                            chartList
-                              .filter(
-                                (chart) =>
-                                  chart.options &&
-                                  JSON.parse(chart.options).type === "table"
-                              )
-                              .map((data, index) => {
-                                const isFilled =
-                                  interestChartList?.some(
-                                    (item) => item.chartId === data.chartId
-                                  ) ?? false;
-                                return (
-                                  <Flex
-                                    key={index}
-                                    flexDirection="row"
-                                    gap={5}
-                                    minH={200}
-                                    marginBottom={5}
-                                  >
-                                    <DraggableChartIcon
-                                      chartType={"table"} // 동적으로 타입 전달
-                                      data={data}
-                                    >
-                                      <SingleChart chartData={data || []} />
-                                    </DraggableChartIcon>
-                                    <StarToggleIcon
-                                      filled={isFilled}
-                                      onToggle={async (filled) => {
-                                        if (filled) {
-                                          try {
-                                            await handleAdd(data.chartId);
-                                            console.log(
-                                              `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                              "⭐ 관심 차트로 등록되었습니다."
-                                            );
-                                          } catch (e) {
-                                            console.error(
-                                              "❌ 관심 차트 등록 실패:",
-                                              e
-                                            );
-                                          }
-                                        } else {
-                                          try {
-                                            await handleDelete(data.chartId);
-                                            console.log("💔 관심 차트 해제됨");
-                                          } catch (e) {
-                                            console.error(
-                                              "❌ 관심 차트 해제 실패:",
-                                              e
-                                            );
-                                          }
-                                        }
-                                      }}
-                                    />
-                                  </Flex>
-                                );
-                              })
-                          )}
-                        </Box>
-                      </Flex>
-                    </Box>
-                  )}
-
-                  {selectedTab === "star" && (
-                    <Box mt={6} flex="1" overflowY="auto">
-                      <Flex flexDirection="column" gap={5}>
-                        <Box py={4}>
-                          {loading ? (
-                            Array(5)
-                              .fill(0)
-                              .map((_, index) => (
-                                <Skeleton
-                                  key={index}
-                                  height="150px"
-                                  mb={4}
-                                  borderRadius="md"
-                                />
-                              ))
-                          ) : interestChartList &&
-                            interestChartList.length === 0 ? (
-                            <Text
-                              textAlign="center"
-                              mt={10}
-                              color="gray.500"
-                              fontSize="lg"
-                            >
-                              테이블이 없습니다.
-                            </Text>
-                          ) : (
-                            interestChartList &&
-                            interestChartList.map((data, index) => {
-                              const isFilled =
-                                interestChartList?.some(
-                                  (item) => item.chartId === data.chartId
-                                ) ?? false;
-                              return (
-                                <Flex
-                                  key={index}
-                                  flexDirection="row"
-                                  gap={5}
-                                  minH={200}
-                                  marginBottom={5}
-                                >
-                                  <DraggableChartIcon
-                                    chartType={"line"} // 동적으로 타입 전달
-                                    data={data.chartDetail}
-                                  >
-                                    <SingleChart
-                                      chartData={data.chartDetail || []}
-                                    />
-                                  </DraggableChartIcon>
-                                  <StarToggleIcon
-                                    filled={isFilled}
-                                    onToggle={async (filled) => {
-                                      if (filled) {
-                                        try {
-                                          await handleAdd(data.chartId);
-                                          console.log(
-                                            `${data.chartId} 차트가 관심 차트로 등록되었습니다.`,
-                                            "⭐ 관심 차트로 등록되었습니다."
-                                          );
-                                        } catch (e) {
-                                          console.error(
-                                            "❌ 관심 차트 등록 실패:",
-                                            e
-                                          );
-                                        }
-                                      } else {
-                                        try {
-                                          await handleDelete(data.chartId);
-                                          console.log("💔 관심 차트 해제됨");
-                                        } catch (e) {
-                                          console.error(
-                                            "❌ 관심 차트 해제 실패:",
-                                            e
-                                          );
-                                        }
-                                      }
-                                    }}
-                                  />
-                                </Flex>
-                              );
-                            })
-                          )}
-                        </Box>
-                      </Flex>
-                    </Box>
-                  )}
-                </>
-              )}
-            </Box>
-          </Resizable>
+                              </HStack>
+                            );
+                          })
+                        )}
+                      </Box>
+                    </Flex>
+                  </Box>
+                )}
+              </>
+            )}
+          </Box>
         )}
       </Box>
     </>

@@ -47,7 +47,7 @@ import {
   ParagraphElement,
   RenderElementPropsFor,
   TableElement,
-} from "./custom-types";
+} from "./custom-types.d";
 import { Chart as ChartJSComponent } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -73,6 +73,13 @@ import FileBar from "./components/FileBar";
 import { ChartDetail } from "../api/interfaces/chart";
 import { LuStar } from "react-icons/lu";
 import isUrl from "is-url";
+import { data } from "react-router-dom";
+import { ESGData } from "../api/interfaces/esgData";
+import { getInterestReport, getTemplate } from "../api/get";
+import { PiStar, PiStarFill } from "react-icons/pi";
+import { deleteInterestReports } from "../api/delete";
+import { postInterestReports } from "../api/post";
+import { toaster } from "@/components/ui/toaster";
 
 export interface Report {
   id: string;
@@ -124,12 +131,14 @@ const isKeyHotkey = (hotkey: string, event: KeyboardEvent): boolean => {
 };
 
 const RichTextExample = ({
-  documentId,
   documentTitle,
+  template,
 }: {
-  documentId?: string;
   documentTitle?: string;
+  template?: string;
 }) => {
+  const [check, setCheck] = useState<boolean>(false);
+
   const renderElement = useCallback(
     (props: RenderElementProps) => <Element {...props} />,
     []
@@ -151,37 +160,220 @@ const RichTextExample = ({
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CHART_ICON",
     drop: (item: { chartType: string; data: ChartDetail }) => {
-      let chartData;
-      if (item.chartType === "pie" || item.chartType === "doughnut") {
-        // For pie or doughnut charts, use dataset labels as chart labels
-        // and pick the first value from each dataset
-        chartData = {
-          labels: item.data.dataSets.map((dataset) => dataset.label),
-          datasets: item.data.dataSets.map((dataset) => ({
-            label: dataset.label,
-            data: dataset.esgDataList.map((item) => parseFloat(item.value)),
-          })),
-        };
+      // Get proper chart type from properties
+      const chartType = item.data.dataSets[0]?.chartProperties?.type || "bar";
+
+      // For pie/doughnut charts, use category IDs as labels
+      const isPieOrDoughnut = chartType === "pie" || chartType === "doughnut";
+
+      let labels = [];
+      if (isPieOrDoughnut) {
+        // For pie/doughnut, use category IDs as labels
+        labels = item.data.labels;
       } else {
-        // For other chart types, flatten years as labels and map all values
-        chartData = {
-          labels: item.data.dataSets
-            .map((data) => data.esgDataList.map((item) => item.year))
-            .flat(),
-          datasets: item.data.dataSets.map((dataset) => ({
-            label: dataset.label,
-            data: dataset.esgDataList.map((item) => parseFloat(item.value)),
-            backgroundColor: dataset.backgroundColor,
-            borderColor: dataset.borderColor,
-            borderWidth: parseFloat(dataset.borderWidth),
-            fill: dataset.fill === "true",
-          })),
-        };
+        // For other chart types, use years as labels
+        const allYears = item.data.dataSets.flatMap((dataset) =>
+          dataset.esgDataList.map((item: ESGData) => item.year)
+        );
+        labels = [...new Set(allYears)].sort();
       }
+
+      const chartData = {
+        labels: labels,
+        datasets: item.data.dataSets.map((dataset) => {
+          // Get properties from chartProperties object if it exists
+          const properties = dataset.chartProperties || {};
+
+          // Create base dataset with required properties
+          const chartDataset: any = {
+            label: properties.label || dataset.label,
+            data: dataset.esgDataList.map((item: ESGData) =>
+              parseFloat(item.value)
+            ),
+          };
+
+          // Only add backgroundColor if it exists
+          if (properties.backgroundColor) {
+            chartDataset.backgroundColor = Array.isArray(
+              properties.backgroundColor
+            )
+              ? properties.backgroundColor
+              : [properties.backgroundColor];
+          }
+
+          // Only add borderColor if it exists
+          if (properties.borderColor) {
+            chartDataset.borderColor = Array.isArray(properties.borderColor)
+              ? properties.borderColor
+              : [properties.borderColor];
+          }
+
+          // Add other properties only if they exist and have values
+          if (properties.borderWidth) {
+            chartDataset.borderWidth = parseFloat(properties.borderWidth);
+          }
+
+          if (properties.fill === "true") {
+            chartDataset.fill = true;
+          } else if (properties.fill === "false") {
+            chartDataset.fill = false;
+          }
+
+          // Add line chart specific properties only if they exist
+          if (properties.tension) {
+            chartDataset.tension = parseFloat(properties.tension);
+          }
+
+          if (properties.pointBackgroundColor) {
+            chartDataset.pointBackgroundColor = properties.pointBackgroundColor;
+          }
+
+          if (properties.pointBorderColor) {
+            chartDataset.pointBorderColor = properties.pointBorderColor;
+          }
+
+          if (properties.pointHoverBackgroundColor) {
+            chartDataset.pointHoverBackgroundColor =
+              properties.pointHoverBackgroundColor;
+          }
+
+          if (properties.pointHoverBorderColor) {
+            chartDataset.pointHoverBorderColor =
+              properties.pointHoverBorderColor;
+          }
+
+          if (properties.pointRadius) {
+            chartDataset.pointRadius = parseFloat(properties.pointRadius);
+          }
+
+          if (properties.pointHoverRadius) {
+            chartDataset.pointHoverRadius = parseFloat(
+              properties.pointHoverRadius
+            );
+          }
+
+          if (properties.pointStyle) {
+            chartDataset.pointStyle = properties.pointStyle;
+          }
+
+          // Pie/Doughnut specific fields
+          if (properties.hoverOffset) {
+            chartDataset.hoverOffset = parseFloat(properties.hoverOffset);
+          }
+
+          if (properties.offset) {
+            chartDataset.offset = parseFloat(properties.offset);
+          }
+
+          if (properties.circumference) {
+            chartDataset.circumference = parseFloat(properties.circumference);
+          }
+
+          if (properties.rotation) {
+            chartDataset.rotation = parseFloat(properties.rotation);
+          }
+
+          if (properties.cutout) {
+            chartDataset.cutout = properties.cutout;
+          }
+
+          if (properties.weight) {
+            chartDataset.weight = parseFloat(properties.weight);
+          }
+
+          return chartDataset;
+        }),
+      };
+
+      // Parse options and add formatter
+      const parsedOptions = item.data.options
+        ? JSON.parse(item.data.options)
+        : {};
+      const chartOptions = {
+        ...parsedOptions,
+        plugins: {
+          ...parsedOptions.plugins,
+          datalabels: {
+            ...parsedOptions.plugins?.datalabels,
+            formatter: (value: number, context: any) => {
+              const datalabelsOptions = parsedOptions.plugins?.datalabels || {};
+
+              // Extract format options from the parsed options
+              const format = datalabelsOptions.format || "number";
+              const prefix = datalabelsOptions.prefix || "";
+              const postfix = datalabelsOptions.postfix || "";
+              const decimals = datalabelsOptions.decimals || 2;
+              const digits = datalabelsOptions.digits || 0;
+
+              let formattedValue: string | number = value;
+
+              // 숫자 단위 적용
+              let divider = 1;
+              let unitSuffix = "";
+
+              switch (digits) {
+                case 1: // 천 단위
+                  divider = 1000;
+                  unitSuffix = "K";
+                  break;
+                case 2: // 백만 단위
+                  divider = 1000000;
+                  unitSuffix = "M";
+                  break;
+                case 3: // 십억 단위
+                  divider = 1000000000;
+                  unitSuffix = "B";
+                  break;
+              }
+
+              // 단위 변환 적용
+              if (divider > 1) {
+                formattedValue = value / divider;
+              }
+
+              // 포맷 적용
+              switch (format) {
+                case "percent":
+                  const total = context.dataset.data.reduce(
+                    (sum: number, val: number) => sum + val,
+                    0
+                  );
+                  formattedValue = ((value / total) * 100).toFixed(decimals);
+                  if (!postfix && unitSuffix === "") {
+                    unitSuffix = "%";
+                  }
+                  break;
+                case "currency":
+                  formattedValue = new Intl.NumberFormat("ko-KR", {
+                    style: "currency",
+                    currency: "KRW",
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals,
+                  }).format(formattedValue as number);
+                  // 이미 통화 형식에 포함된 경우 단위 접미사는 추가하지 않음
+                  unitSuffix = "";
+                  break;
+                case "number":
+                  formattedValue = new Intl.NumberFormat("ko-KR", {
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals,
+                  }).format(formattedValue as number);
+                  break;
+                default:
+                  formattedValue = (formattedValue as number).toFixed(decimals);
+              }
+
+              return `${prefix}${formattedValue}${unitSuffix}${postfix}`;
+            },
+          },
+        },
+      };
+
       const chartElement: ChartElement = {
         type: "chart",
-        chartType: item.chartType,
+        chartType: chartType,
         data: chartData,
+        options: chartOptions,
         children: [{ text: "" }],
       };
       const chartBlock: ChartBlockElement = {
@@ -189,19 +381,17 @@ const RichTextExample = ({
         layout: "full", // Default to full layout
         children: [chartElement],
       };
+      console.log("Inserting chart block:", chartBlock);
       Transforms.insertNodes(editor, chartBlock);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
     }),
   }));
-  const [title, setTitle] = useState<string>(
-    documentTitle ? documentTitle : "제목 없는 문서"
-  );
-  const [value, setValue] = useState<Descendant[]>(
-    documentId ? [] : initialValue
-  );
-  const [isLoading, setIsLoading] = useState(documentId ? true : false);
+  const [title, setTitle] = useState<string>("제목 없는 문서");
+  const [value, setValue] = useState<Descendant[]>();
+  const [isLoading, setIsLoading] = useState(template ? true : false);
   // 페이지 관련 상태 추가
   const [pageHeights, setPageHeights] = useState<number[]>([]);
   const editorContainerRef = useRef<HTMLDivElement>(null);
@@ -214,81 +404,45 @@ const RichTextExample = ({
   const A4_WIDTH_PX = A4_WIDTH_MM * MM_TO_PX;
   const A4_HEIGHT_PX = A4_HEIGHT_MM * MM_TO_PX;
 
-  // 페이지 높이 계산 함수
-  const calculatePageBreaks = useCallback(() => {
-    if (!editorContainerRef.current) return;
-
-    const container = editorContainerRef.current;
-    const containerHeight = container.scrollHeight;
-    const pageCount = Math.ceil(containerHeight / A4_HEIGHT_PX);
-
-    const heights = [];
-    for (let i = 0; i < pageCount; i++) {
-      heights.push(A4_HEIGHT_PX);
-    }
-
-    setPageHeights(heights);
-  }, [A4_HEIGHT_PX]);
-
-  // 편집기 내용이 변경될 때마다 페이지 계산
-  useEffect(() => {
-    if (value && !isLoading) {
-      // 내용이 변경되면 약간의 지연 후 페이지 계산 (렌더링 완료 후)
-      const timer = setTimeout(() => {
-        calculatePageBreaks();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [value, isLoading, calculatePageBreaks]);
-
-  // 창 크기가 변경될 때 페이지 계산
-  useEffect(() => {
-    window.addEventListener("resize", calculatePageBreaks);
-    return () => window.removeEventListener("resize", calculatePageBreaks);
-  }, [calculatePageBreaks]);
-
   // 문서 ID가 있으면 문서 불러오기
   useEffect(() => {
-    if (documentId) {
-      loadDocument(documentId);
+    if (template !== "blank") {
+      loadDocument();
     }
-  }, [documentId]);
+  }, [template]);
 
   const deserializeContent = (serialized: string): Descendant[] => {
     try {
       return JSON.parse(serialized);
     } catch (error) {
       console.error("Failed to parse editor content:", error);
-      return initialValue; // 기본값으로 대체`
+      return initialValue; // 기본값으로 대체
     }
   };
 
-  const loadDocument = async (id: string) => {
+  const loadDocument = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient.get<Report>(`/reports/${id}`);
-      const data = response.data;
-      console.log("Loaded document data:", data);
-      // 편집기 내용 설정
-      setValue(deserializeContent(data.content));
-      setTitle(data.title || "제목 없는 문서");
+      const response = await getTemplate();
+      console.log("Loaded document response:", response);
+      setValue(deserializeContent(response?.content || "'"));
+      setTitle(documentTitle || response?.title || "제목 없는 문서");
     } catch (error) {
       console.error("Error loading document:", error);
-      alert("문서를 불러오는데 실패했습니다.");
+      toaster.error({
+        title: "문서 불러오기 실패",
+      });
       setValue(initialValue); // 오류 시 기본값으로 설정
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!value) {
-    return null;
-  }
-
   return (
     <Slate
+      key={value ? "template" : "initial"}
       editor={editor}
-      initialValue={value}
+      initialValue={value || initialValue}
       onChange={(newValue) => {
         setValue(newValue);
       }}
@@ -312,7 +466,7 @@ const RichTextExample = ({
               ) : (
                 <EditableTitle title={title} onChange={setTitle} />
               )}
-              <Icon
+              {/* <Icon
                 style={{
                   cursor: "pointer",
                   marginLeft: "8px",
@@ -326,13 +480,20 @@ const RichTextExample = ({
                 }}
               >
                 star_outline
-              </Icon>
+              </Icon> */}
+              {/* <Button backgroundColor={"transparent"} onClick={clickInterest}>
+                {check ? (
+                  <PiStarFill color="#FFB22C" />
+                ) : (
+                  <PiStar color="gray" />
+                )}
+              </Button> */}
             </HStack>
 
             <FileBar
-              id={documentId}
+              id={""}
               title={title}
-              content={value}
+              content={value || initialValue}
               editor={editor}
             />
           </Box>
@@ -1136,7 +1297,9 @@ const InsertImageButton = () => {
         event.preventDefault();
         const url = window.prompt("Enter the URL of the image:");
         if (url && !isImageUrl(url)) {
-          alert("URL is not an image");
+          toaster.error({
+            title: "이미지 URL이 유효하지 않습니다.",
+          });
           return;
         }
         url && insertImage(editor, url);
@@ -1408,6 +1571,103 @@ const Chart = ({
     };
   }, [data]);
 
+  // Create options with formatter
+  const chartOptions = React.useMemo(() => {
+    if (!options) {
+      return {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          datalabels: {
+            display: false, // 기본적으로 데이터 레이블 표시 안 함
+          },
+        },
+      };
+    }
+    const baseOptions = {
+      ...options,
+      maintainAspectRatio: false,
+      responsive: true,
+      plugins: {
+        ...options.plugins,
+        datalabels: {
+          ...options.plugins?.datalabels,
+          formatter: (value: number, context: any) => {
+            const datalabelsOptions = options.plugins?.datalabels || {};
+
+            // Extract format options from the options
+            const format = datalabelsOptions.format || "number";
+            const prefix = datalabelsOptions.prefix || "";
+            const postfix = datalabelsOptions.postfix || "";
+            const decimals = datalabelsOptions.decimals || 2;
+            const digits = datalabelsOptions.digits || 0;
+
+            let formattedValue: string | number = value;
+
+            // 숫자 단위 적용
+            let divider = 1;
+            let unitSuffix = "";
+
+            switch (digits) {
+              case 1: // 천 단위
+                divider = 1000;
+                unitSuffix = "K";
+                break;
+              case 2: // 백만 단위
+                divider = 1000000;
+                unitSuffix = "M";
+                break;
+              case 3: // 십억 단위
+                divider = 1000000000;
+                unitSuffix = "B";
+                break;
+            }
+
+            // 단위 변환 적용
+            if (divider > 1) {
+              formattedValue = value / divider;
+            }
+
+            // 포맷 적용
+            switch (format) {
+              case "percent":
+                const total = context.dataset.data.reduce(
+                  (sum: number, val: number) => sum + val,
+                  0
+                );
+                formattedValue = ((value / total) * 100).toFixed(decimals);
+                if (!postfix && unitSuffix === "") {
+                  unitSuffix = "%";
+                }
+                break;
+              case "currency":
+                formattedValue = new Intl.NumberFormat("ko-KR", {
+                  style: "currency",
+                  currency: "KRW",
+                  minimumFractionDigits: decimals,
+                  maximumFractionDigits: decimals,
+                }).format(formattedValue as number);
+                // 이미 통화 형식에 포함된 경우 단위 접미사는 추가하지 않음
+                unitSuffix = "";
+                break;
+              case "number":
+                formattedValue = new Intl.NumberFormat("ko-KR", {
+                  minimumFractionDigits: decimals,
+                  maximumFractionDigits: decimals,
+                }).format(formattedValue as number);
+                break;
+              default:
+                formattedValue = (formattedValue as number).toFixed(decimals);
+            }
+
+            return `${prefix}${formattedValue}${unitSuffix}${postfix}`;
+          },
+        },
+      },
+    };
+    return baseOptions;
+  }, [options]);
+
   // Add cleanup for Chart.js instances
   React.useEffect(() => {
     if (canvasRef.current) {
@@ -1427,7 +1687,7 @@ const Chart = ({
         chartInstanceRef.current = new ChartJS(ctx, {
           type: chartType,
           data: safeChartData,
-          options: { ...options, maintainAspectRatio: false, responsive: true },
+          options: chartOptions,
         });
       }
     }
@@ -1442,7 +1702,7 @@ const Chart = ({
         chartInstanceRef.current = null;
       }
     };
-  }, [safeChartData, chartType, options]);
+  }, [safeChartData, chartType, chartOptions]);
 
   const onMouseDown = (e: globalThis.MouseEvent) => {
     e.preventDefault();
@@ -1532,11 +1792,7 @@ const Chart = ({
           <ChartJSComponent
             type={chartType}
             data={safeChartData}
-            options={{
-              ...options,
-              maintainAspectRatio: false,
-              responsive: true,
-            }}
+            options={chartOptions}
             ref={(chartInstance) => {
               if (chartInstance) {
                 chartInstanceRef.current = chartInstance;

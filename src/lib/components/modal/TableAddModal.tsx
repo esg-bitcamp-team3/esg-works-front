@@ -14,39 +14,31 @@ import {
   InputGroup,
   Checkbox,
   Tabs,
+  Icon,
   Spinner,
+  Menu,
 } from "@chakra-ui/react";
 import { FaPen, FaSearch, FaChartPie, FaTable, FaPlus } from "react-icons/fa";
-import React, { use, useEffect, useRef, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import TableContent from "./TableContent";
 import { CategoryDetail, Section } from "@/lib/api/interfaces/categoryDetail";
-import { getSectionsByCriterion } from "@/lib/api/get";
 
-import {
-  ChartType,
-  DataSet,
-  InputChart,
-  InputDataSet,
-} from "@/lib/api/interfaces/chart";
+import { ChartType } from "@/lib/api/interfaces/chart";
 import {
   getSections,
   getCategories,
   getEsgData,
   getCriterion,
+  getSectionsByCriterion,
 } from "@/lib/api/get";
 import { CategorizedESGDataList } from "@/lib/api/interfaces/categorizedEsgDataList";
-import ChartContent from "./ChartContent";
-import MoveToTableButton from "./MoveToTableButton";
-import TabContent from "./TabContent";
-import MoveToChartButton from "./MoveToChartButton";
 import ContentBox from "./ContentBox";
-import { CategoryScale, ChartData, ChartOptions } from "chart.js";
-import { postChart, postDataSet } from "@/lib/api/post";
+import { CustomEditor } from "@/lib/editor/custom-types";
+import { insertTableFromData } from "@/lib/editor/example";
 import { RiResetLeftFill } from "react-icons/ri";
 import { Criterion } from "@/lib/interface";
+import { LuTable2 } from "react-icons/lu";
 import { set } from "lodash";
-import { CustomEditor } from "@/lib/editor/custom-types";
-import { insertChartFromData } from "@/lib/editor/example";
 
 const chartType: ChartType[] = [
   { type: "bar", label: "막대 차트", icons: FaChartPie },
@@ -56,19 +48,13 @@ const chartType: ChartType[] = [
   { type: "mixed", label: "믹스 차트", icons: FaTable },
 ];
 
-interface ChartModalProps {
-  mode?: "insert" | "create";
-  editor?: CustomEditor;
-  trigger: React.ReactNode;
-  onCreate?: () => void;
-}
-
-export default function ChartModal({
-  mode = "create",
+export default function TableModal({
   editor,
   trigger,
-  onCreate,
-}: ChartModalProps) {
+}: {
+  editor: CustomEditor;
+  trigger: React.ReactNode;
+}) {
   const [selectedCategoryList, setSelectedCategoryList] = useState<
     CategoryDetail[]
   >([]);
@@ -86,17 +72,10 @@ export default function ChartModal({
   const [categorizedEsgDataList, setCategorizedEsgDataList] = useState<
     CategorizedESGDataList[]
   >([]);
+
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   const [dataLoading, setDataLoading] = useState<boolean>(false);
-  const [chartData, setChartData] = useState<ChartData>({
-    labels: [],
-    datasets: [],
-  });
-  const [options, setOptions] = useState<ChartOptions>({});
-  const [formatOptions, setFormatOptions] = useState<Record<string, Object>>(
-    {}
-  );
-  const [selectedChartType, setSelectedChartType] =
-    useState<ChartType["type"]>("bar");
   const [criterionLoading, setCriterionLoading] = useState<boolean>(false);
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
@@ -104,103 +83,7 @@ export default function ChartModal({
   const [filteredCategories, setFilteredCategories] = useState<
     CategoryDetail[]
   >([]);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  const createChartWithDataSets = async (
-    options: ChartOptions,
-    chartData: ChartData,
-    categorizedEsgDataList: CategorizedESGDataList[]
-  ) => {
-    try {
-      // 1. 차트 생성
-      const chartName = String(options.plugins?.title?.text ?? "제목 없음");
-
-      const newChart: InputChart = {
-        type: selectedChartType,
-        chartName,
-        options: JSON.stringify(options),
-        formatOptions: JSON.stringify(formatOptions),
-        labels:
-          chartData.labels?.map((label) =>
-            label !== null && label !== undefined ? label.toString() : ""
-          ) || [],
-      };
-
-      const result = await postChart(newChart);
-      const chartId = result?.chartId;
-
-      if (!chartId) {
-        console.error("chartId를 받지 못했습니다.", result);
-        return;
-      }
-
-      if (categorizedEsgDataList.length === 1) {
-        const category = categorizedEsgDataList[0];
-        const sortedEsgDataList = [...category.esgNumberDTOList].sort(
-          (a, b) => {
-            // 연도 기준 오름차순 정렬 (year이 string이라면 숫자로 변환 후 비교)
-            return Number(a.year) - Number(b.year);
-          }
-        );
-
-        for (const item of chartData.datasets) {
-          const newDataSet: Record<string, any> = {
-            ...item,
-            chartId,
-            esgDataIdList: sortedEsgDataList.map((esg) => esg.esgDataId),
-          };
-
-          await postDataSet(newDataSet);
-        }
-      } else if (categorizedEsgDataList.length > 1) {
-        const years = categorizedEsgDataList.flatMap((category) =>
-          category.esgNumberDTOList.map((data) => data.year)
-        );
-        const mostRecentYear = Math.max(
-          ...years.map((year) => Number(year))
-        ).toString();
-        // Handle multiple categories - useful for pie/doughnut charts that compare categories
-
-        // For pie/doughnut charts with multiple categories, create a dataset where each slice represents a category
-        if (selectedChartType === "pie" || selectedChartType === "doughnut") {
-          // Create one dataset with multiple categories as data points
-          const newDataSet: Record<string, any> = {
-            ...chartData.datasets[0],
-            chartId,
-            // Get the latest year's data from each category
-            esgDataIdList: categorizedEsgDataList.map((category) => {
-              const yearData = category.esgNumberDTOList.find(
-                (data) => data.year === mostRecentYear
-              );
-              return yearData ? yearData.esgDataId : 0;
-            }),
-          };
-
-          await postDataSet(newDataSet);
-        } else {
-          const sortedEsgDataList = [
-            ...categorizedEsgDataList[0].esgNumberDTOList,
-          ].sort((a, b) => {
-            // 연도 기준 오름차순 정렬 (year이 string이라면 숫자로 변환 후 비교)
-            return Number(a.year) - Number(b.year);
-          });
-          for (const item of chartData.datasets) {
-            const newDataSet: Record<string, any> = {
-              chartId,
-              ...item,
-              esgDataIdList: sortedEsgDataList.map((esg) => esg.esgDataId),
-            };
-
-            await postDataSet(newDataSet);
-          }
-        }
-      }
-
-      console.log("Chart와 모든 DataSet 생성 완료");
-    } catch (error) {
-      console.error("Chart 또는 DataSet 생성 실패:", error);
-    }
-  };
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCriterion = async () => {
@@ -338,11 +221,14 @@ export default function ChartModal({
   }, [categories]);
 
   return (
-    <Dialog.Root placement="center" motionPreset="scale" size="lg">
-      <Dialog.Trigger width="100%" asChild>
-        {trigger}
-      </Dialog.Trigger>
-
+    <Dialog.Root
+      placement="center"
+      motionPreset="scale"
+      size="lg"
+      open={isOpen}
+      onOpenChange={(e) => setIsOpen(e.open)}
+    >
+      <Dialog.Trigger w={"100%"}>{trigger}</Dialog.Trigger>
       {/* 모달창 =================================================== */}
       <Portal>
         <Dialog.Backdrop />
@@ -365,7 +251,7 @@ export default function ChartModal({
                 fontWeight="bold"
                 color="#2F6EEA"
               >
-                새 차트 생성
+                테이블 삽입
               </Dialog.Title>
             </Dialog.Header>
 
@@ -556,14 +442,14 @@ export default function ChartModal({
                       overflowY="auto"
                     >
                       {/* {displayedCategories
-                      .filter((category) => category.categoryName !== "비고")
-                      .filter(
-                        (category) =>
-                          !!category.categoryName &&
-                          category.categoryName
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase())
-                      ) */}
+                              .filter((category) => category.categoryName !== "비고")
+                              .filter(
+                                (category) =>
+                                  !!category.categoryName &&
+                                  category.categoryName
+                                    .toLowerCase()
+                                    .includes(searchTerm.toLowerCase())
+                              ) */}
                       {filteredCategories
                         .filter((category) => category.categoryName !== "비고")
                         .map((category) => (
@@ -659,48 +545,11 @@ export default function ChartModal({
               {/* 다음 페이지 (차트 & 테이블) ======================================================================================= */}
               {step === 2 && (
                 <Flex direction="column" height="100%" width="100%">
-                  <Tabs.Root value={selectedTab}>
-                    <TabContent value="chart">
-                      <ContentBox
-                        loading={dataLoading}
-                        button={
-                          <MoveToTableButton
-                            selectedTab={selectedTab}
-                            setSelectedTab={setSelectedTab}
-                          />
-                        }
-                      >
-                        <ChartContent
-                          selectedChartType={selectedChartType}
-                          setSelectedChartType={setSelectedChartType}
-                          categorizedEsgDataList={categorizedEsgDataList}
-                          chartData={chartData}
-                          setChartData={setChartData}
-                          options={options}
-                          setOptions={setOptions}
-                          formatOptions={formatOptions}
-                          setFormatOptions={setFormatOptions}
-                        />
-                      </ContentBox>
-                    </TabContent>
-                    <TabContent value="table">
-                      <ContentBox
-                        loading={dataLoading}
-                        button={
-                          <MoveToChartButton
-                            selectedTab={selectedTab}
-                            setSelectedTab={setSelectedTab}
-                          />
-                        }
-                      >
-                        <TableContent
-                          categorizedEsgDataList={categorizedEsgDataList}
-                          setCategorizedEsgDataList={setCategorizedEsgDataList}
-                          resetData={getData}
-                        />
-                      </ContentBox>
-                    </TabContent>
-                  </Tabs.Root>
+                  <TableContent
+                    categorizedEsgDataList={categorizedEsgDataList}
+                    setCategorizedEsgDataList={setCategorizedEsgDataList}
+                    resetData={getData}
+                  />
                 </Flex>
               )}
             </Dialog.Body>
@@ -745,42 +594,13 @@ export default function ChartModal({
                   onClick={() => {
                     if (step === 1) setStep(2);
                     else {
-                      if (mode === "insert" && editor) {
-                        // If mixed chart type is selected, default to bar for insertion
-                        const chartTypeToInsert =
-                          selectedChartType === "mixed"
-                            ? "bar"
-                            : selectedChartType;
-
-                        insertChartFromData(
-                          editor,
-                          chartTypeToInsert,
-                          options,
-                          chartData
-                        );
-                        closeButtonRef.current?.click();
-                      } else {
-                        // Use async/await to ensure onCreate is called after chart creation
-                        (async () => {
-                          try {
-                            await createChartWithDataSets(
-                              options,
-                              chartData,
-                              categorizedEsgDataList
-                            );
-                            closeButtonRef.current?.click();
-                            // Call onCreate callback only after chart is successfully created
-                            if (onCreate) onCreate();
-                          } catch (error) {
-                            console.error("Failed to create chart:", error);
-                          }
-                        })();
-                      }
+                      insertTableFromData(editor, categorizedEsgDataList);
+                      closeButtonRef.current?.click();
                     }
                   }}
                   _hover={{ bg: "#1D4FA3" }}
                 >
-                  {step === 1 ? "다음" : mode === "insert" ? "삽입" : "생성"}
+                  {step === 1 ? "다음" : "생성"}
                 </Button>
               </Flex>
             </Dialog.Footer>

@@ -87,7 +87,12 @@ const GRICategoryList = ({ sectionId, year, query }: CategoryListProps) => {
                             textAlign={"end"}
                             fontSize="sm"
                           >
-                            {item.esgData?.value || ""}
+                            {item.esgData?.value
+                              ? !isNaN(Number(item.esgData.value)) &&
+                                typeof item.esgData.value !== "boolean"
+                                ? Number(item.esgData.value).toLocaleString()
+                                : item.esgData.value
+                              : ""}
                           </Text>
                           <Text
                             fontWeight="medium"
@@ -99,7 +104,17 @@ const GRICategoryList = ({ sectionId, year, query }: CategoryListProps) => {
                           </Text>
                           <Clipboard.Root
                             value={
-                              `${item.esgData?.value || ""}` +
+                              `${item.categoryName} ` +
+                              `${
+                                item.esgData?.value
+                                  ? !isNaN(Number(item.esgData.value)) &&
+                                    typeof item.esgData.value !== "boolean"
+                                    ? Number(
+                                        item.esgData.value
+                                      ).toLocaleString()
+                                    : item.esgData.value
+                                  : ""
+                              } ` +
                               `${item.unit.unitName}`
                             }
                           >

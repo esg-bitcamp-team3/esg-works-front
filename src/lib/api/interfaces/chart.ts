@@ -1,7 +1,7 @@
 import { ESGData } from "./esgData";
 
 export interface ChartType {
-  type: "bar" | "line" | "pie" | "doughnut" | "mixed" | "table";
+  type: "bar" | "line" | "pie" | "doughnut" | "mixed";
   label: string;
   icons: React.ComponentType<any>;
 }
@@ -68,10 +68,7 @@ export interface DataSet {
   type: string;
   label: string;
   esgDataList: ESGData[];
-  backgroundColor: string;
-  borderColor: string;
-  borderWidth: string;
-  fill: string;
+  chartProperties: Record<string, any>;
 }
 
 export interface DataSetMap {
@@ -84,11 +81,12 @@ export interface IChart {
 }
 
 export interface ChartDetail {
+  chartType: any;
   chartId: string;
   type: string;
   corporationId: string;
   chartName: string;
-  dataSets: DataSetMap[];
+  dataSets: DataSet[];
   options: string;
   formatOptions: string; // JSON string (formatter 함수들과 관련 옵션들)
   labels: string[];

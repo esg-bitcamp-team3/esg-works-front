@@ -40,6 +40,7 @@ import {
 import { CustomEditor } from "../custom-types";
 import {
   insertChart,
+  insertChartFromData,
   insertImage,
   insertLink,
   insertTable,
@@ -49,6 +50,9 @@ import {
 import TableSizeSelector from "./TableSizeSelector";
 import UrlDialog from "./UrlDialog";
 import { exportToPdf } from "./exportToPdf";
+import { toaster } from "@/components/ui/toaster";
+import TableModal from "@/lib/components/modal/TableAddModal";
+import ChartModal from "@/lib/components/modal/chart-modal";
 
 const MenuButton = ({ label }: { label: string }) => (
   <Button
@@ -183,10 +187,14 @@ const FileMenu = ({ id, title, content }: FileBarProps) => {
       } else {
         await apiClient.post("/reports", payload);
       }
-      alert("문서가 저장되었습니다.");
+      toaster.success({
+        title: "문서 저장 성공",
+      });
     } catch (error) {
       console.error("Error saving document:", error);
-      alert("문서 저장에 실패했습니다.");
+      toaster.error({
+        title: "문서 저장 실패",
+      });
     }
   };
 
@@ -202,10 +210,16 @@ const FileMenu = ({ id, title, content }: FileBarProps) => {
     try {
       // Always create a new document when using "Save As"
       const response = await apiClient.post("/reports", payload);
-      alert("문서가 새 이름으로 저장되었습니다.");
+      if (response) {
+        toaster.success({
+          title: "문서 복제 성공",
+        });
+      }
     } catch (error) {
       console.error("Error saving document:", error);
-      alert("문서 저장에 실패했습니다.");
+      toaster.error({
+        title: "문서 저장 실패",
+      });
     }
   };
 
@@ -337,7 +351,9 @@ const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
       new URL(url);
       insertImage(editor, url);
     } catch (e) {
-      alert("유효한 URL을 입력해주세요.");
+      toaster.error({
+        title: "유효한 이미지 URL을 입력해주세요.",
+      });
     }
   };
 
@@ -351,12 +367,12 @@ const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
       new URL(url);
       insertLink(editor, url);
     } catch (e) {
-      alert("유효한 URL을 입력해주세요.");
+      toaster.error({
+        title: "유효한 URL을 입력해주세요.",
+      });
     }
   };
-  const handleChartInsert = () => {
-    insertChart(editor);
-  };
+
   return (
     <>
       <UrlDialog
@@ -410,22 +426,40 @@ const InsertMenu = ({ editor }: { editor: CustomEditor }) => {
                   trigger={
                     <MenuItem
                       icon={<LuTable2 />}
-                      label="표"
-                      value="insert_table"
+                      label="기본 표"
+                      value="insert_basic_table"
                       shortcut="Ctrl+T"
                       onClick={() => {}}
                       closeOnSelect={false}
                     />
                   }
                 />
-                <MenuItem
-                  icon={<LuChartColumnBig />}
-                  label="차트"
-                  value="insert_chart"
-                  shortcut="Ctrl+G"
-                  onClick={handleChartInsert}
+                <TableModal
+                  editor={editor}
+                  trigger={
+                    <MenuItem
+                      icon={<LuTable2 />}
+                      label="표"
+                      value="insert_table"
+                      onClick={() => {}}
+                      closeOnSelect={false}
+                    />
+                  }
                 />
-
+                <ChartModal
+                  editor={editor}
+                  mode="insert"
+                  trigger={
+                    <MenuItem
+                      icon={<LuChartColumnBig />}
+                      label="차트"
+                      value="insert_chart"
+                      shortcut="Ctrl+G"
+                      onClick={() => {}}
+                      closeOnSelect={false}
+                    />
+                  }
+                />
                 <MenuItem
                   icon={<LuLink2 />}
                   label="링크"
