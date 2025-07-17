@@ -1,18 +1,13 @@
 "use client";
 import React from "react";
 import { Flex } from "@chakra-ui/react";
-import RichTextExample from "./example";
+import RichTextExample from "./ReportEditor";
 import { useParams } from "next/navigation";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Transforms } from "slate";
 
-const TextEditor = () => {
-  const params = useParams();
-  const id = params.id;
-
-  if (!id || typeof id !== "string") return null;
-
+const TextEditor = ({ id }: { id: string }) => {
   return (
     <DndProvider backend={HTML5Backend}>
       <Flex

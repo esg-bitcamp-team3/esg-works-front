@@ -51,7 +51,7 @@ export default function SectionAddModal({
     <Dialog.Root initialFocusEl={() => ref.current}>
       <Dialog.Trigger asChild>
         <Button size="sm" variant="outline">
-          세부 평가 항목 추가
+          지표 하위 항목 추가
         </Button>
       </Dialog.Trigger>
 
@@ -61,13 +61,13 @@ export default function SectionAddModal({
           <Dialog.Content>
             <Dialog.Header>
               <Dialog.Title fontSize={"md"}>
-                새로운 세부 평가 항목 추가
+                새로운 지표 하위 항목 추가
               </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body pb="4">
               <Stack gap="4">
                 <Field.Root>
-                  <Field.Label>세부 평가 항목 이름</Field.Label>
+                  <Field.Label>세부 지표 항목 이름</Field.Label>
                   <Input
                     ref={ref}
                     value={newSection}
@@ -77,7 +77,7 @@ export default function SectionAddModal({
                     size="md"
                   />
                   <Field.HelperText mt={1} color="gray.500" fontSize="sm">
-                    세부 평가 항목의 이름을 입력해주세요
+                    지표 하위 항목의 이름을 입력해주세요
                   </Field.HelperText>
                 </Field.Root>
               </Stack>

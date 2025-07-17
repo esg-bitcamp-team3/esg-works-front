@@ -55,7 +55,7 @@ export default function CriterionMenuButton({
                 value={"edit"}
                 onClick={(e) => {
                   e.stopPropagation();
-                  router.push(`/criteria/${criterionId}/edit`);
+                  router.push(`/indicators/${criterionId}/edit`);
                 }}
                 justifyContent={"space-between"}
               >

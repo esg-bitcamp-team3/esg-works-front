@@ -167,11 +167,11 @@ const CriterionEditPage = ({ criterionId }: { criterionId: string }) => {
           <Breadcrumb.Root size="md">
             <Breadcrumb.List>
               <Breadcrumb.Item>
-                <Breadcrumb.Link href="/criteria">평가 기준</Breadcrumb.Link>
+                <Breadcrumb.Link href="/indicators">평가 기준</Breadcrumb.Link>
               </Breadcrumb.Item>
               <Breadcrumb.Separator />
               <Breadcrumb.Item>
-                <Breadcrumb.Link href={`/criteria/${criterion?.criterionId}`}>
+                <Breadcrumb.Link href={`/indicators/${criterion?.criterionId}`}>
                   {criterion?.criterionName}
                 </Breadcrumb.Link>
               </Breadcrumb.Item>
