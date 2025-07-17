@@ -139,9 +139,7 @@ const MyCriteriaPage = () => {
                 }}
                 px={4}
                 py={6}
-                onClick={() =>
-                  router.push(`/disclosure-data/${std.criterionId}`)
-                }
+                onClick={() => router.push(`/indicators/${std.criterionId}`)}
                 justifyContent={"space-between"}
               >
                 <Tooltip

@@ -47,7 +47,7 @@ import {
   ParagraphElement,
   RenderElementPropsFor,
   TableElement,
-} from "./custom-types.d";
+} from "./custom-types";
 import { Chart as ChartJSComponent } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -76,7 +76,7 @@ import { LuStar } from "react-icons/lu";
 import isUrl from "is-url";
 import { data } from "react-router-dom";
 import { ESGData } from "../api/interfaces/esgData";
-import { getInterestReport, getTemplate } from "../api/get";
+import { getInterestReport, getReportById, getTemplate } from "../api/get";
 import { PiStar, PiStarFill } from "react-icons/pi";
 import { deleteInterestReports } from "../api/delete";
 import { postInterestReports } from "../api/post";
@@ -133,13 +133,7 @@ const isKeyHotkey = (hotkey: string, event: KeyboardEvent): boolean => {
   return modifiersPressed && keyPressed;
 };
 
-const RichTextExample = ({
-  documentTitle,
-  template,
-}: {
-  documentTitle?: string;
-  template?: string;
-}) => {
+const RichTextExample = ({ documentId }: { documentId: string }) => {
   const [check, setCheck] = useState<boolean>(false);
 
   const renderElement = useCallback(
@@ -409,7 +403,7 @@ const RichTextExample = ({
   }));
   const [title, setTitle] = useState<string>("제목 없는 문서");
   const [value, setValue] = useState<Descendant[]>();
-  const [isLoading, setIsLoading] = useState(template ? true : false);
+  const [isLoading, setIsLoading] = useState(true);
   // 페이지 관련 상태 추가
   const [pageHeights, setPageHeights] = useState<number[]>([]);
   const editorContainerRef = useRef<HTMLDivElement>(null);
@@ -425,19 +419,22 @@ const RichTextExample = ({
 
   // 문서 ID가 있으면 문서 불러오기
   useEffect(() => {
-    if (template !== "blank") {
-      loadDocument();
-    } else {
-      setValue([
-        {
-          type: "paragraph",
-          children: [{ text: "" }],
-        },
-      ]);
-      setTitle(documentTitle || "제목 없는 문서");
+    try {
+      if (documentId) {
+        loadDocument();
+      } else {
+        setValue(initialValue);
+        setTitle("제목 없는 문서");
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error in useEffect:", error);
+      setValue(initialValue); // 기본값으로 설정
+      setTitle("제목 없는 문서");
+    } finally {
       setIsLoading(false);
     }
-  }, [template]);
+  }, []);
 
   const deserializeContent = (serialized: string): Descendant[] => {
     try {
@@ -451,10 +448,9 @@ const RichTextExample = ({
   const loadDocument = async () => {
     setIsLoading(true);
     try {
-      const response = await getTemplate();
-      console.log("Loaded document response:", response);
+      const response = await getReportById(documentId);
       setValue(deserializeContent(response?.content || "'"));
-      setTitle(documentTitle || response?.title || "제목 없는 문서");
+      setTitle(response?.title || "제목 없는 문서");
     } catch (error) {
       console.error("Error loading document:", error);
       toaster.error({

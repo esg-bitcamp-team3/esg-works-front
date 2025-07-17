@@ -294,7 +294,7 @@ export default function ListView({ keyword, filter, filter2 }: ListViewProps) {
 
   const route = useRouter();
   const goReport = (id: string) => {
-    route.push(`/editor/${id}`);
+    route.push(`/report/${id}`);
   };
 
   useEffect(() => {

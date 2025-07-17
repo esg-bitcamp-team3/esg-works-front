@@ -70,6 +70,7 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
       setLoading(true);
       const data = (await getSectionsByCriterion(criterionId)) || [];
       setSectionList(data);
+      setSectionId(data[0]?.sectionId || "");
     } catch (error) {
       console.error("Error fetching sections:", error);
     } finally {
@@ -101,7 +102,7 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
   }, [sectionList]);
 
   const fetchCategories = useCallback(
-    (sectionId: string) => {
+    (sectionId: string, year: string) => {
       setCategoryLoading(true);
       getGriByYearAndSectionId(year, sectionId)
         .then(async (data) => {
@@ -204,7 +205,13 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
             loading={loading}
             setLoading={setLoading}
           />
-          <YearSelector value={year} onValueChange={setYear} />
+          <YearSelector
+            value={year}
+            onValueChange={(value) => {
+              setYear(value);
+              fetchCategories(sectionId, value);
+            }}
+          />
         </HStack>
       </Flex>
 
@@ -251,7 +258,7 @@ const GriPage = ({ criterionId, criterionName }: Criterion) => {
                         setValue("");
                         return;
                       }
-                      fetchCategories(item.sectionId);
+                      fetchCategories(item.sectionId, year);
                       setValue(index.toString());
                     }}
                   >

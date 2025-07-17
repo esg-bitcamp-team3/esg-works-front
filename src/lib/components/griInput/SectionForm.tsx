@@ -33,6 +33,7 @@ import { postESGData } from "@/lib/api/post";
 import { LuCheck, LuClipboardPen, LuSave } from "react-icons/lu";
 import SectionSelector from "../edit/SectionSelector";
 import DynamicInputForm from "./DynamicInputForm";
+import YearSelector from "./YearSelector";
 
 const CARD_STYLES = {
   bg: "white",
@@ -59,7 +60,8 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
   const [value, setValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
-  const [categoryList, setCategoryList] = useState<SectionCategoryESGData>();
+  const [categoryList, setCategoryList] =
+    useState<SectionCategoryESGData | null>(null);
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
 
   const [criterion, setCriterion] = useState<Criterion>();
@@ -79,6 +81,7 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
       setLoading(true);
       const data = (await getSectionsByCriterion(criterionId)) || [];
       setSectionList(data);
+      setSectionId(data[0]?.sectionId || "");
     } catch (error) {
       console.error("Error fetching sections:", error);
     } finally {
@@ -110,23 +113,21 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
     setSection(sectionList);
   }, [sectionList]);
 
-  // section 변경시마다 categoryList 변경
-  const fetchCategories = useCallback(
-    (sectionId: string) => {
-      setCategoryLoading(true);
-      searchESGData({ year, sectionId, categoryName: "" })
-        .then(async (data) => {
-          await setCategoryList(data || undefined);
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        })
-        .finally(() => {
-          setCategoryLoading(false);
-        });
-    },
-    [sectionId, year]
-  );
+  const fetchCategories = async (sectionId: string, year: string) => {
+    setCategoryLoading(true);
+    try {
+      const data = await searchESGData({
+        year: year,
+        sectionId: sectionId,
+        categoryName: "",
+      });
+      setCategoryList(data || null);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
 
   // categoryList 변경사항 -------------------------------------
   const [fieldValues, setFieldValues] = useState<Field>({});
@@ -238,6 +239,13 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
             loading={loading}
             setLoading={setLoading}
           />
+          <YearSelector
+            value={year}
+            onValueChange={(value) => {
+              setYear(value);
+              fetchCategories(sectionId, value);
+            }}
+          />
         </HStack>
       </Flex>
       <VStack
@@ -281,7 +289,7 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
                         setValue("");
                         return;
                       }
-                      fetchCategories(item.sectionId);
+                      fetchCategories(item.sectionId, year);
                       setValue(index.toString());
                     }}
                   >
@@ -320,7 +328,8 @@ const SectionForm = ({ criterionId }: SectionFormProps) => {
                     >
                       <Spinner size="md" color="blue.500" />
                     </Box>
-                  ) : categoryList?.categoryESGDataList.length === 0 ? (
+                  ) : !categoryList ||
+                    categoryList.categoryESGDataList.length === 0 ? (
                     <Flex
                       direction="column"
                       alignItems="center"

@@ -46,9 +46,9 @@ const CategoryList = ({ year, query, sectionId }: CategoryListProps) => {
     try {
       setLoading(true);
       const data = await searchESGData({
-        year: "2020",
-        sectionId: "201",
-        categoryName: "",
+        year: year,
+        sectionId: sectionId,
+        categoryName: query,
       });
       console.log(data);
       setDataList(data || null);
@@ -92,7 +92,9 @@ const CategoryList = ({ year, query, sectionId }: CategoryListProps) => {
                     </Text>
                     <Clipboard.Root
                       value={
-                        `${item.esgData?.value || ""}` + `${item.unit.unitName}`
+                        `${item.categoryName || ""} ${
+                          item.esgData?.value || ""
+                        }` + `${item.unit.unitName}`
                       }
                     >
                       <Clipboard.Trigger asChild>

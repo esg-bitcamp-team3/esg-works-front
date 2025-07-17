@@ -54,7 +54,7 @@ export default function CriterionAddModal({
       <Dialog.Trigger asChild>
         <Button size="sm" variant="outline">
           {/* <FaPlus size="xs" style={{ marginRight: "4px" }} /> 기준 추가 */}
-          평가 기준 추가
+          고유 지표 추가
         </Button>
       </Dialog.Trigger>
 
@@ -63,12 +63,12 @@ export default function CriterionAddModal({
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title fontSize={"md"}>새로운 평가 항목 추가</Dialog.Title>
+              <Dialog.Title fontSize={"md"}>새로운 고유 지표 추가</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body pb="4">
               <Stack gap="4">
                 <Field.Root>
-                  <Field.Label>평가 항목 이름</Field.Label>
+                  <Field.Label>고유 지표 이름</Field.Label>
                   <Input
                     ref={ref}
                     value={newCriterion}
@@ -78,7 +78,7 @@ export default function CriterionAddModal({
                     size="md"
                   />
                   <Field.HelperText mt={1} color="gray.500" fontSize="sm">
-                    평가 항목의 이름을 입력해주세요
+                    새 고유 지표의 이름을 입력해주세요
                   </Field.HelperText>
                 </Field.Root>
               </Stack>

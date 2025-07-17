@@ -55,15 +55,7 @@ const items = [
 ];
 
 const DEFAULT_SIDEBAR_WIDTH = 550;
-const Subbar = ({
-  editor,
-  isExpanded,
-  setIsExpanded,
-}: {
-  editor: CustomEditor;
-  isExpanded: boolean;
-  setIsExpanded: (isExpanded: boolean) => void;
-}) => {
+const SubBar = () => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [selectedTab, setSelectedTab] = useState<"all" | "star">("all");
   const [chartList, setChartList] = useState<ChartDetail[]>([]);
@@ -180,7 +172,6 @@ const Subbar = ({
               onClick={() => {
                 setActiveIndex(idx);
                 setIsOpen(true);
-                setIsExpanded(true);
               }}
             >
               {item.icon}
@@ -225,7 +216,6 @@ const Subbar = ({
               <CloseButton
                 onClick={() => {
                   setIsOpen(false);
-                  setIsExpanded(false);
                 }}
               />
             </HStack>
@@ -486,4 +476,4 @@ const Subbar = ({
   );
 };
 
-export default Subbar;
+export default SubBar;

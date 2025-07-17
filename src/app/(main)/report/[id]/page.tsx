@@ -14,7 +14,7 @@ const Page = ({ params }: Props) => {
   return (
     <div>
       <DndProvider backend={HTML5Backend}>
-        {id && <TextEditor />}
+        {id && <TextEditor id={id} />}
         <Subbar />
       </DndProvider>
     </div>
