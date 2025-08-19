@@ -140,7 +140,7 @@ ESG 데이터 관리부터 보고서 작성까지 지원하는 통합 플랫폼.
 
 14. **보고서 관리**
 
-    ![Uploading image.png…]()
+    <img width="1917" height="903" alt="image" src="https://github.com/user-attachments/assets/d7341aa4-50ad-49f5-9a1d-a1c4ad89973b" />
 
     보고서 제목, 생성자, 작성일, 수정일 기준으로 빠르게 원하는 문서 검색할 수 있습니다.  
     자주 사용하는 보고서는 즐겨찾기로 등록하여 대시보드에서 바로 접근할 수 있습니다.  
