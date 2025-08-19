@@ -1,4 +1,4 @@
-# ESG Works <img width="50" height="50" alt="image" src="https://github.com/user-attachments/assets/3be66580-1ed8-4862-a067-851661bcfec2" />
+# <img width="50" height="50" alt="image" src="https://github.com/user-attachments/assets/3be66580-1ed8-4862-a067-851661bcfec2" /> ESG Works 
 
 ESG 데이터 관리부터 보고서 작성까지 지원하는 통합 플랫폼.
 
