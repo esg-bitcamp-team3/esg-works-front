@@ -1,6 +1,7 @@
 # ESG Works
 
-ESG Works는 ESG 데이터 관리부터 보고서 작성까지 지원하는 통합 플랫폼.
+<img width="374" height="374" alt="image" src="https://github.com/user-attachments/assets/3be66580-1ed8-4862-a067-851661bcfec2" />
+ESG 데이터 관리부터 보고서 작성까지 지원하는 통합 플랫폼.
 
 
 ### 개요
