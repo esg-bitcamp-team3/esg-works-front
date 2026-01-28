@@ -2,6 +2,10 @@
 
 ESG 데이터 관리부터 보고서 작성까지 지원하는 통합 플랫폼.
 
+<span>
+<img width="500" height="560" alt="image" src="https://github.com/user-attachments/assets/7a933777-d050-4c5a-90b9-71a5c0abd5d0" />
+<img width="491" height="560" alt="image" src="https://github.com/user-attachments/assets/5727cb58-d627-4dea-98c4-b48ffae92801" />
+</span>
 
 ### 개요
 국제 ESG 기준(GRI, SASB 등)에 기반한 체계적인 데이터 관리, 직관적인 시각화, 그리고 보고서 자동화를 통해 기업의 지속가능경영 보고서를 효율적으로 작성할 수 있도록 지원합니다.
